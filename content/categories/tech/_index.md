@@ -1,5 +1,5 @@
 ---
-title: 技术
+title: 技术博客
 description: 技术博客
 image:
 

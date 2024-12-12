@@ -1,7 +1,7 @@
 # Change baseurl before deploy
 baseurl = "https://cyber-blog.github.io"
 languageCode = "zh-ch"
-title = "仿生人会写记录吗？"
+title = "仿生人会记录感受吗？"
 
 # Theme i18n support
 # Available values: en, fr, id, ja, ko, pt-br, zh-cn, zh-tw, es, de, nl, it, th, el, uk, ar
