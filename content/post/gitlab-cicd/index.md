@@ -92,7 +92,7 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
     GitLab-Runner是配合GitLab-CI进行使用的。GitLab里面的每一个工程都会定义一个属于这个工程的软件集成脚本，用来自动化地完成一些软件集成工作。当这个工程的仓库代码发生变动时，比如有人push了代码，GitLab就会将这个变动通知GitLab-CI。这时GitLab-CI会找出与这个工程相关联的Runner，并通知这些Runner把代码更新到本地并执行预定义好的执行脚本。
        所以，GitLab-Runner就是一个用来执行软件集成脚本的东西。你可以想象一下：Runner就像一个个的工人，而GitLab-CI就是这些工人的一个管理中心，所有工人都要在GitLab-CI里面登记注册，并且表明自己是为哪个工程服务的。当相应的工程发生变化时，GitLab-CI就会通知相应的工人执行软件集成脚本。如下图所示：
 
-![]((20190325191119620.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xpemhpcWlhbmcxMjE3,size_16,color_FFFFFF,t_70))
+![](20190325191119620.png)
 
 ​	GitLab-Runner可以分类三种类型：Shared （共享）、Group（组私有）、Specific （库私有）。
   	Shared：这种Runner是所有工程都能够用的。只有系统管理员能够创建Shared类型的Runner。
