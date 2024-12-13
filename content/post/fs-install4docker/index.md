@@ -6,10 +6,10 @@ date: 2022-10-09 00:00:00+0000
 image: cover2.jpg
 categories:
     - tech
+tags:
+    - FreeSWITCH
 draft: false
 ---
-# Docker构建Freeswitch并部署
-
 随着生产环境ubuntu系统的更新。`FreeSWITC`1.6版本的安装和部署所依赖的一些库已经不兼容或不存在，导致安装会出现一些问题。为解决这些问题`FreeSWITC`的版本也需要升级。并且使用Docker的方式部署和安装。
 
 ## 构建镜像
