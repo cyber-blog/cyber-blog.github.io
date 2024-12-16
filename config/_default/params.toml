@@ -80,7 +80,7 @@ enabled = true
 provider = "disqus"
 
 [comments.disqusjs]
-shortname = ""
+shortname = "majiang"
 apiUrl = ""
 apiKey = ""
 admin = ""
