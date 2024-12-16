@@ -12,7 +12,7 @@ defaultContentLanguage = "zh-cn"
 hasCJKLanguage = true
 
 # Change it to your Disqus shortname before using
-disqusShortname = "hugo-theme-stack"
+disqusShortname = "majiang"
 
 [pagination]
 pagerSize = 10
