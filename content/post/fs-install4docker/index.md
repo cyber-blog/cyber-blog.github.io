@@ -3,7 +3,7 @@ title: Docker构建Freeswitch并部署
 description: 简要叙述 Docker 部署 Freeswitch 的过程
 slug: fs-install4docker
 date: 2022-10-09 00:00:00+0000
-image: cover2.jpg
+image: cover.jpg
 categories:
     - tech
 tags:
