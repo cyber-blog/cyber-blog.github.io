@@ -1,6 +1,6 @@
 ---
 title: Jenkins REST API介绍
-description: Jenkins REST API介绍
+description:  Jenkins 也提供了 REST API 来实现自动化CI/CD
 slug: jenkins-restful-api
 date: 2020-10-12 00:00:00+0000
 categories:

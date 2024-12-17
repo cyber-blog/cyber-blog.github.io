@@ -1,6 +1,6 @@
 ---
 title: JVM自动内存管理和垃圾回收
-description: JVM自动内存管理和垃圾回收
+description: JVM 的内存管理历史和未来（有点长）
 slug: jvm-gc
 date: 2022-11-24 00:00:00+0000
 image: cover.png

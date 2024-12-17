@@ -1,6 +1,6 @@
 ---
 title: 记一次C++内存泄漏的排查经过
-description: 记录工作当中遇到的一次 C++ 内存泄露的排查经过
+description: 一次 C++ 内存管理的疏忽造成的悲剧
 slug: cpp-memoryleak
 date: 2024-10-25 00:00:00+0000
 image: cover.png

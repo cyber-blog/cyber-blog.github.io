@@ -1,6 +1,6 @@
 ---
 title: 已有Rancher集群添加节点
-description: 已有Rancher集群添加节点
+description: 安装好的 Rancher （K8s）在需要添加新的节点时，应该怎么搞？
 slug: rancher-add-node
 date: 2020-12-04 00:00:00+0000
 categories:

@@ -1,6 +1,6 @@
 ---
 title: MacOS自行编译JDK
-description: MacOS自行编译JDK
+description: 尝试将 JDK 的 C 源码进行本地编译
 slug: macos-compile-jdk
 date: 2022-12-01 00:00:00+0000
 image: cover.png
@@ -8,6 +8,7 @@ categories:
     - tech
 tags:
     - java
+    - c
 draft: false
 ---
 

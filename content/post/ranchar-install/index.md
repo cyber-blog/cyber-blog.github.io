@@ -1,6 +1,6 @@
 ---
 title: Ranchar CentOS 安装指南
-description: Ranchar CentOS 安装指南
+description: Ranchar 2.x 在 CentOS 系统下如何安装，有哪些坑？
 slug: ranchar-install
 date: 2020-01-21 00:00:00+0000
 image: cover.png

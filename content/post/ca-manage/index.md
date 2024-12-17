@@ -1,6 +1,6 @@
 ---
 title: 内部 CA 证书管理
-description: 内部 CA 证书管理
+description: 签发一个 CA 根证书后，应该如何根据这个 CA 根证书生成泛域名证书？
 slug: ca-manage
 date: 2020-04-01 00:00:00+0000
 image: cover.png

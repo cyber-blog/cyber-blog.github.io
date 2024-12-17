@@ -1,6 +1,6 @@
 ---
 title: Freeswitch ASR 接口对接
-description: Freeswitch ASR 接口对接
+description: 通过编写 ASR 模块，对接科大讯飞的实时语音转写 API
 slug: fs-asr-api-connection
 date: 2024-03-25 00:00:00+0000
 image: cover.png

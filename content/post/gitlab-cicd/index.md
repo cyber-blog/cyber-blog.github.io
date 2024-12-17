@@ -1,5 +1,6 @@
 ---
 title: GitLab CI/CD 简介文档
+description: 主要记录在开发低代码平台的时候使用的 Gitlab CI/CD 的一些基础功能
 slug: gitlab-cicd
 date: 2020-11-24 00:00:00+0000
 image: cover.png
