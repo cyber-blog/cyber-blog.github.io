@@ -1,6 +1,6 @@
 ---
 title: 音频文件打包 Dataset 上传 HugginFace
-slug: cpp-memoryleak
+slug: dataset-upload2hugginface
 date: 2024-07-01 00:00:00+0000
 categories:
   - tech
