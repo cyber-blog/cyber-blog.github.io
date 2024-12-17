@@ -5,9 +5,9 @@ slug: jvm-gc
 date: 2022-11-24 00:00:00+0000
 image: cover.png
 categories:
-    - tech
+  - tech
 tags:
-    - java
+  - Java
 draft: false
 ---
 

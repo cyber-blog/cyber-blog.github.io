@@ -5,10 +5,10 @@ slug: macos-compile-jdk
 date: 2022-12-01 00:00:00+0000
 image: cover.png
 categories:
-    - tech
+  - tech
 tags:
-    - java
-    - c
+  - Java
+  - C
 draft: false
 ---
 

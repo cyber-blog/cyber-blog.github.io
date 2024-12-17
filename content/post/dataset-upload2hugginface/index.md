@@ -41,6 +41,11 @@ dataset.push_to_hub("Majiang213/ind_female")
 
 通过代码可以看到，我的数据保存格式是一个 Excel 文件，里面有 text 列，为音频的文本，audio 列为文件路径，speaker_id 列为声音 id。在读取 Excel 之后，将音频路径转换为了实际的音频数据。然后将 `Pandas DataFrame` 对象转换为了一个字典，通过 Hugging Face 包的 `Dataset` 对象，进行转换，并上传。
 
+另外不要忘记使用该命令登录
+```shell
+huggingface-cli login
+```
+
 
 这是读取音频数据的代码和需要引入的包
 
