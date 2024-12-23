@@ -1,6 +1,6 @@
 ---
 title: 实用深度学习 Part1-1.入门
-description: 翻译自互联网上的开源《Practical Deep Learning for Coders - Practical Deep Learning》课程-1.入门
+description: 翻译自互联网上的开源《Practical Deep Learning for Coders - Practical Deep Learning》课程-1.入门-Notebook
 slug: practicaldeeplearning-pdl-part1-gettingstarted
 date: 2024-12-19 00:00:00+0000
 categories:
