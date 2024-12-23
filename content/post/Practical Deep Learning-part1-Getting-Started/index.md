@@ -8,7 +8,7 @@ categories:
 tags:
   - AIGC
   - DeepLearning
-draft: true
+draft: false
 ---
 
 # 它是一只鸟吗？ 从您自己的数据创建模型
