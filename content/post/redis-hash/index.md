@@ -51,7 +51,7 @@ typedef struct dict {
 2. dictht 结构
 	dictht 是具体的哈希表结构，定义如下：
 ```c
-	typedef struct dictht {
+typedef struct dictht {
     dictEntry **table;       // 哈希表数组
     unsigned long size;      // 哈希表大小
     unsigned long sizemask;  // 用于计算索引的掩码 (size - 1)
@@ -59,12 +59,13 @@ typedef struct dict {
 } dictht;
 ```
 
-• table 是一个指针数组，每个元素指向一个 dictEntry 链表的头结点。
-• sizemask 和 size 用于快速计算哈希值的存储位置。
+- table 是一个指针数组，每个元素指向一个 dictEntry 链表的头结点。
+- sizemask 和 size 用于快速计算哈希值的存储位置。
+
 3. dictEntry 结构
 	dictEntry 是存储具体键值对的结构：
 ```c
-	typedef struct dictEntry {
+typedef struct dictEntry {
     void *key;               // 键
     union {
         void *val;           // 值（通用指针）
