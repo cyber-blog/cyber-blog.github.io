@@ -1,6 +1,6 @@
 ---
 title: 分布式锁的实现原理与方式详解
-slug: dataset-upload2hugginface
+slug: distributed-lock
 date: 2025-06-07 00:00:00+0000
 categories:
   - tech
