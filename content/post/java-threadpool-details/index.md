@@ -1,5 +1,5 @@
 ---
-title: 分布式锁的实现原理与方式详解
+title: Java 线程池详解
 slug: java-threadpool-details
 date: 2025-04-01 00:00:00+0000
 categories:
@@ -57,12 +57,12 @@ public ThreadPoolExecutor(
 
 用于缓存等待执行的任务，常见实现：
 
-|类型|特点|适用场景|
-|---|---|---|
-|ArrayBlockingQueue|有界，FIFO|控制内存使用，防止 OOM|
-|LinkedBlockingQueue|默认无界|默认队列类型，需防范内存泄漏风险|
-|SynchronousQueue|不缓存任务|高并发、短任务|
-|PriorityBlockingQueue|支持任务优先级|有优先级需求的场景|
+| 类型                    | 特点      | 适用场景             |
+| --------------------- | ------- | ---------------- |
+| ArrayBlockingQueue    | 有界，FIFO | 控制内存使用，防止 OOM    |
+| LinkedBlockingQueue   | 默认无界    | 默认队列类型，需防范内存泄漏风险 |
+| SynchronousQueue      | 不缓存任务   | 高并发、短任务          |
+| PriorityBlockingQueue | 支持任务优先级 | 有优先级需求的场景        |
 
 #### 5. threadFactory（线程工厂）
 
