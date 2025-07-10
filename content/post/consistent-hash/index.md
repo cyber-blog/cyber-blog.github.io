@@ -2,7 +2,7 @@
 title: 一致性哈希的简单介绍
 description: 一致性哈希算法的思想介绍
 slug: consistent-hash
-date: 2025-7-8 00:00:00+0000
+date: 2025-07-08 00:00:00+0000
 categories:
   - tech
 tags:
