@@ -1,0 +1,139 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="知识库对接方案 一、【方式 1】API 对接（推荐长期扩展性好、稳定） 由第三方系统提供标准接口，我方通过 API 自动获取文章数据。可实现实时或定时同步，方便扩展支持权限控制、审核状态等字段，扩展性强。\n"><title></title>
+<link rel=canonical href=https://cyber-blog.github.io/p/><link rel=stylesheet href=/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css><meta property='og:title' content><meta property='og:description' content="知识库对接方案 一、【方式 1】API 对接（推荐长期扩展性好、稳定） 由第三方系统提供标准接口，我方通过 API 自动获取文章数据。可实现实时或定时同步，方便扩展支持权限控制、审核状态等字段，扩展性强。\n"><meta property='og:url' content='https://cyber-blog.github.io/p/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta name=twitter:title content><meta name=twitter:description content="知识库对接方案 一、【方式 1】API 对接（推荐长期扩展性好、稳定） 由第三方系统提供标准接口，我方通过 API 自动获取文章数据。可实现实时或定时同步，方便扩展支持权限控制、审核状态等字段，扩展性强。\n"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/cyber-blog/cyber-blog.github.io target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><ol><li><a href=#一方式-1api-对接推荐长期扩展性好稳定><strong>一、【方式 1】API 对接（推荐长期扩展性好、稳定）</strong></a><ol><li><a href=#接入流程图api-拉取或推送模式><strong>接入流程图（API 拉取或推送模式）：</strong></a></li><li><a href=#优点><strong>优点：</strong></a></li><li><a href=#缺点><strong>缺点：</strong></a></li><li><a href=#适用场景><strong>适用场景：</strong></a></li><li><a href=#案例举例><strong>案例举例：</strong></a></li></ol></li><li><a href=#二方式-2网络共享文件读取自动读取文件导入>二、【方式 2】网络共享文件读取（自动读取文件导入）</a></li><li><a href=#自动文件接入流程图><strong>自动文件接入流程图：</strong></a></li><li><a href=#优点-1><strong>优点：</strong></a></li><li><a href=#缺点-1><strong>缺点：</strong></a></li><li><a href=#适用场景-1><strong>适用场景：</strong></a></li><li><a href=#案例举例-1><strong>案例举例：</strong></a></li><li><a href=#文件目录组织建议便于自动处理><strong>文件目录组织建议（便于自动处理）：</strong></a></li><li><a href=#三方式-3爬虫抓取适合临时获取内容><strong>三、【方式 3】爬虫抓取（适合临时获取内容）</strong></a><ol><li><a href=#爬虫流程图><strong>爬虫流程图：</strong></a></li><li><a href=#优点-2><strong>优点：</strong></a></li><li><a href=#缺点-2><strong>缺点：</strong></a></li><li><a href=#适用场景-2><strong>适用场景：</strong></a></li><li><a href=#案例举例-2><strong>案例举例：</strong></a></li></ol></li><li><a href=#四方式-4手工导入适用于初期和极端情况><strong>四、【方式 4】手工导入（适用于初期和极端情况）</strong></a><ol><li><a href=#优点-3><strong>优点：</strong></a></li><li><a href=#缺点-3><strong>缺点：</strong></a></li><li><a href=#适用场景-3><strong>适用场景：</strong></a></li><li><a href=#案例举例-3><strong>案例举例：</strong></a></li><li><a href=#手工导入流程图><strong>手工导入流程图：</strong></a></li></ol></li></ol></li><li><a href=#最终汇总表全对比><strong>最终汇总表（全对比）</strong></a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/p/></a></h2></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 4 分钟</time></div></footer></div></header><section class=article-content><h1 id=知识库对接方案>知识库对接方案</h1><h3 id=一方式-1api-对接推荐长期扩展性好稳定><strong>一、【方式 1】API 对接（推荐长期扩展性好、稳定）</strong></h3><p>由第三方系统提供标准接口，我方通过 API 自动获取文章数据。可实现实时或定时同步，方便扩展支持权限控制、审核状态等字段，扩展性强。</p><h4 id=接入流程图api-拉取或推送模式><strong>接入流程图（API 拉取或推送模式）：</strong></h4><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl> [第三方系统（各政务平台）]
+</span></span><span class=line><span class=cl>         |
+</span></span><span class=line><span class=cl>         v   推送数据到我方
+</span></span><span class=line><span class=cl>  +----------------+       
+</span></span><span class=line><span class=cl>  | 提供 REST API  | 
+</span></span><span class=line><span class=cl>  +----------------+          
+</span></span><span class=line><span class=cl>         |                    
+</span></span><span class=line><span class=cl>         v     接收       				 
+</span></span><span class=line><span class=cl>+-----------------------+
+</span></span><span class=line><span class=cl>| 知识库存储与审核系统     |
+</span></span><span class=line><span class=cl>| - 分类归档             |
+</span></span><span class=line><span class=cl>+-----------------------+  
+</span></span></code></pre></td></tr></table></div></div><h4 id=优点><strong>优点：</strong></h4><ul><li>标准化接口，结构清晰，易于自动化处理</li><li>支持增量同步（通过时间戳/版本号）</li><li>易扩展集成权限管理、审核机制等</li><li>变更检测快（实时/定时都行）</li></ul><h4 id=缺点><strong>缺点：</strong></h4><ul><li>需要第三方开发或修改系统接口</li></ul><h4 id=适用场景><strong>适用场景：</strong></h4><ul><li>内容持续更新，有权限控制需求</li></ul><h4 id=案例举例><strong>案例举例：</strong></h4><blockquote><p>某网站定期将政策公告、新闻通过 API 每日推送最新文档到知识库，字段包括标题、正文、分类、版本号、发布时间等。</p></blockquote><h3 id=二方式-2网络共享文件读取自动读取文件导入>二、【方式 2】网络共享文件读取（自动读取文件导入）</h3><p>我方系统通过网络访问第三方共享目录（如 SMB/NFS/SFTP），定期扫描并解析其中的 Word、Excel、PDF、Html 等文件，实现自动同步。有一定延迟性、扩展中等。</p><h3 id=自动文件接入流程图><strong>自动文件接入流程图：</strong></h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>+----------------------+
+</span></span><span class=line><span class=cl>|   第三方部门系统        |
+</span></span><span class=line><span class=cl>+----------+-----------+
+</span></span><span class=line><span class=cl>           |
+</span></span><span class=line><span class=cl>   文档保存到指定共享路径
+</span></span><span class=line><span class=cl>           |
+</span></span><span class=line><span class=cl> 📁 \\Shared\DeptA\Files
+</span></span><span class=line><span class=cl>           |
+</span></span><span class=line><span class=cl>           v
+</span></span><span class=line><span class=cl>+------------------------------+
+</span></span><span class=line><span class=cl>| 同步定时器             				|
+</span></span><span class=line><span class=cl>| - 访问共享/挂载目录             |
+</span></span><span class=line><span class=cl>| - 检查新文件或改动              |
+</span></span><span class=line><span class=cl>| - 提取内容     								 |
+</span></span><span class=line><span class=cl>+------------------------------+
+</span></span><span class=line><span class=cl>           |
+</span></span><span class=line><span class=cl>           v
+</span></span><span class=line><span class=cl>+-----------------------+
+</span></span><span class=line><span class=cl>| 知识库存储与审核系统     |
+</span></span><span class=line><span class=cl>| - 分类归档             |
+</span></span><span class=line><span class=cl>+-----------------------+
+</span></span></code></pre></td></tr></table></div></div><h3 id=优点-1><strong>优点：</strong></h3><ul><li><strong>第三方无需开发 API</strong>，仅需提供网络路径或共享文件夹</li><li><strong>支持定时同步</strong>，更新效率较高</li><li><strong>技术门槛低</strong>，大部分系统文章都会直接保存在磁盘</li></ul><h3 id=缺点-1><strong>缺点：</strong></h3><ul><li><strong>需要配置文件网络共享</strong></li><li>不支持实时通知（需轮询）</li></ul><h3 id=适用场景-1><strong>适用场景：</strong></h3><ul><li>各部门有文档生成到统一磁盘（Word、Excel、PDF、Html）</li><li>系统不支持开放 API，但可以输出文件到共享目录</li></ul><h3 id=案例举例-1><strong>案例举例：</strong></h3><blockquote><p>某部门每周会把政策更新文档保存到 \部门共享\发布文件\ 目录中，包含 Word 与 Excel 格式。</p></blockquote><h3 id=文件目录组织建议便于自动处理><strong>文件目录组织建议（便于自动处理）：</strong></h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>\\Shared\DeptName\政府要闻\YYYY-MM\
+</span></span><span class=line><span class=cl>├── 2025-04-法规更新.xlsx
+</span></span><span class=line><span class=cl>├── 2025-04-政策解读.docx
+</span></span><span class=line><span class=cl>└── metadata.json（可选附带元数据）
+</span></span></code></pre></td></tr></table></div></div><h3 id=三方式-3爬虫抓取适合临时获取内容><strong>三、【方式 3】爬虫抓取（适合临时获取内容）</strong></h3><p>通过爬虫程序抓取第三方系统中<strong>公开可访问的网页内容</strong>（如文章、新闻、公告页），自动提取文本并导入知识库系统。</p><p>此方式<strong>仅限抓取无需登录、无权限控制的页面</strong>，且建议<strong>提前获得授权、报备等</strong>，以确保合规性，避免引发技术或法律风险。适合作为补充手段使用，不建议长期或大规模依赖。</p><h4 id=爬虫流程图><strong>爬虫流程图：</strong></h4><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>[第三方网站（HTML）]
+</span></span><span class=line><span class=cl>         |
+</span></span><span class=line><span class=cl>         v
+</span></span><span class=line><span class=cl>[爬虫系统（Scrapy / Puppeteer / BeautifulSoup）]
+</span></span><span class=line><span class=cl>         |
+</span></span><span class=line><span class=cl>  内容解析、提取正文
+</span></span><span class=line><span class=cl>         |
+</span></span><span class=line><span class=cl>         v
+</span></span><span class=line><span class=cl>[中间处理层（结构映射）]
+</span></span><span class=line><span class=cl>         |
+</span></span><span class=line><span class=cl>         v
+</span></span><span class=line><span class=cl>[知识库存储系统] ——  去重 + 分类
+</span></span></code></pre></td></tr></table></div></div><h4 id=优点-2><strong>优点：</strong></h4><ul><li>不依赖第三方配合，主动采集内容</li><li>可用于数据试探和应急场景</li></ul><h4 id=缺点-2><strong>缺点：</strong></h4><ul><li>页面结构经常变，需维护爬虫规则</li><li>爬取内容不方便进行持续同步（修改和删除）</li></ul><h4 id=适用场景-2><strong>适用场景：</strong></h4><ul><li>第三方不合作但内容公开可见</li><li>临时收集/迁移内容</li></ul><h4 id=案例举例-2><strong>案例举例：</strong></h4><blockquote><p>部门网站没有对接能力，但其知识库公开展示，可通过爬虫定期采集更新。</p></blockquote><h3 id=四方式-4手工导入适用于初期和极端情况><strong>四、【方式 4】手工导入（适用于初期和极端情况）</strong></h3><p>由人工从各部门收集内容并手动录入知识库系统。适合少量重要资料补录或临时使用，人工成本高、不可持续，不建议长期依赖。</p><h4 id=优点-3><strong>优点：</strong></h4><ul><li>任何系统都能接入（复制粘贴、人工整理）</li><li>操作直观，适合少量高价值内容处理</li></ul><h4 id=缺点-3><strong>缺点：</strong></h4><ul><li>人工成本高、容易出错</li><li>内容不规范、不可扩展、无法持续同步、数据来源和追溯困难</li></ul><h4 id=适用场景-3><strong>适用场景：</strong></h4><ul><li>紧急场景（如迁移、应急文档）</li><li>少量内容、编辑性质内容（如 FAQ）</li></ul><h4 id=案例举例-3><strong>案例举例：</strong></h4><blockquote><p>某专家撰写的培训材料由管理员整理后人工输入知识库，附带关键词和分类。</p></blockquote><h4 id=手工导入流程图><strong>手工导入流程图：</strong></h4><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>  [第三方文档/网页]
+</span></span><span class=line><span class=cl>        |
+</span></span><span class=line><span class=cl>     人工查看/编辑
+</span></span><span class=line><span class=cl>        |
+</span></span><span class=line><span class=cl>        v
+</span></span><span class=line><span class=cl>[知识库后台管理系统]
+</span></span><span class=line><span class=cl>  - 手动填写标题/内容/分类
+</span></span><span class=line><span class=cl>  - 上传附件
+</span></span><span class=line><span class=cl>        |
+</span></span><span class=line><span class=cl>        v
+</span></span><span class=line><span class=cl>[知识库存储 + 展示]
+</span></span></code></pre></td></tr></table></div></div><h2 id=最终汇总表全对比><strong>最终汇总表（全对比）</strong></h2><div class=table-wrapper><table><thead><tr><th><strong>方式</strong></th><th><strong>自动化程度</strong></th><th><strong>实时性</strong></th><th>沟通协作成本</th><th><strong>实现成本</strong></th><th><strong>备注</strong></th></tr></thead><tbody><tr><td>API</td><td>高</td><td>高</td><td>高</td><td>中</td><td>长期标准方式</td></tr><tr><td>文件</td><td>中</td><td>中低</td><td>中</td><td>低</td><td>中期兼容方式</td></tr><tr><td>爬虫</td><td>中低</td><td>中</td><td>低</td><td>中高</td><td>临时应急/被动</td></tr><tr><td>手工</td><td>低</td><td>低</td><td>低</td><td>高</td><td>小量/非技术方式</td></tr></tbody></table></div></section><footer class=article-footer><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section></footer></article><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2025 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
