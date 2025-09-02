@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://xxx.com</id>
+    <title>Your Blog</title>
+    <updated>2025-04-05T13:14:31.224Z</updated>
+    <generator>Feed for Node.js</generator>
+    <author>
+        <name>Your Name</name>
+        <email>your.email@example.com</email>
+        <uri>https://xxx.com</uri>
+    </author>
+    <link rel="alternate" href="https://xxx.com"/>
+    <link rel="self" href="https://xxx.com/atom.xml"/>
+    <subtitle>Your Blog Description</subtitle>
+    <logo>https://xxx.com/favicon.png</logo>
+    <icon>https://xxx.com/favicon.ico</icon>
+    <rights>All rights reserved 2025, Your Name</rights>
+    <entry>
+        <title type="html"><![CDATA[Markdown 基本用法]]></title>
+        <id>https://xxx.com/blog/hello-world</id>
+        <link href="https://xxx.com/blog/hello-world"/>
+        <updated>2025-04-05T12:10:00.000Z</updated>
+        <summary type="html"><![CDATA[这篇文章包含markdown语法基本的内容。]]></summary>
+        <content type="html"><![CDATA[<p>这篇文章包含markdown语法基本的内容。</p>
+<p>在markdown里可以使用 \ 对特殊符号进行转义。  </p>
+<h1>1. 标题</h1>
+<p><strong>语法</strong></p>
+<pre><code class="language-md"># This is an &lt;h1&gt; tag
+## This is an &lt;h2&gt; tag
+### This is an &lt;h3&gt; tag
+#### This is an &lt;h4&gt; tag
+</code></pre>
+<p><strong>实例</strong></p>
+<h1>This is an h1 tag</h1>
+<h2>This is an h2 tag</h2>
+<h3>This is an h3 tag</h3>
+<h4>This is an h4 tag</h4>
+<h1>2. 强调和斜体</h1>
+<p><strong>语法</strong></p>
+<pre><code class="language-md">*This text will be italic*
+_This will also be italic_
+
+**This text will be bold**
+__This will also be bold__
+</code></pre>
+<p><strong>实例</strong></p>
+<p><em>This text will be italic</em>
+<em>This will also be italic</em></p>
+<p><strong>This text will be bold</strong>
+<strong>This will also be bold</strong></p>
+<h1>3. 有序列表和无序列表</h1>
+<p><strong>语法</strong></p>
+<pre><code class="language-md">* Item 1
+* Item 2
+* Item 3
+
+1. Item 1
+2. Item 2
+3. Item 3
+</code></pre>
+<p><strong>实例</strong></p>
+<ul>
+<li>Item 1</li>
+<li>Item 2</li>
+<li>Item 3</li>
+</ul>
+<ol>
+<li>Item 1</li>
+<li>Item 2</li>
+<li>Item 3</li>
+</ol>
+<h1>4. 图片</h1>
+<p><strong>语法</strong></p>
+<pre><code>![img-name](img-url)
+</code></pre>
+<p><strong>实例</strong>
+<img src="https://storage.guangzhengli.com/images/wechat-official-account.png" alt="微信公众号"></p>
+<h1>5. 超链接</h1>
+<p><strong>语法</strong></p>
+<pre><code>[link-name](link-url)
+</code></pre>
+<p><strong>实例</strong></p>
+<p><a href="https://storage.guangzhengli.com/images/wechat-official-account.png">微信公众号链接</a></p>
+<h1>6. 引用</h1>
+<p><strong>语法</strong></p>
+<pre><code class="language-md">&gt; 引用本意是引用别人的话之类  
+</code></pre>
+<p><strong>实例</strong></p>
+<blockquote>
+<p>If you please draw me a sheep!<br>不想当将军的士兵, 不是好士兵.  </p>
+</blockquote>
+<h1>7. 单行代码</h1>
+<p><strong>语法</strong></p>
+<pre><code>`This is an inline code.`
+</code></pre>
+<p><strong>实例</strong></p>
+<p><code>同样的单行代码, 我经常用来显示特殊名词</code></p>
+<h1>8. 多行代码</h1>
+<p><strong>语法</strong></p>
+<pre><code class="language-md">​```js
+for (var i=0; i&lt;100; i++) {
+    console.log(&quot;hello world&quot; + i);
+}
+​```
+</code></pre>
+<p><strong>实例</strong></p>
+<pre><code class="language-js">for (var i=0; i&lt;100; i++) {
+    console.log(&quot;hello world&quot; + i);
+}
+</code></pre>
+<p>也可以通过缩进来显示代码, 下面是示例:  </p>
+<pre><code>console.loe(&quot;Hello_World&quot;);
+</code></pre>
+<h1>9. 表格</h1>
+<h2>Table</h2>
+<table>
+<thead>
+<tr>
+<th>Table Header 1</th>
+<th>Table Header 2</th>
+<th>Table Header 3</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Division 1</td>
+<td>Division 2</td>
+<td>Division 3</td>
+</tr>
+<tr>
+<td>Division 1</td>
+<td>Division 2</td>
+<td>Division 3</td>
+</tr>
+<tr>
+<td>Division 1</td>
+<td>Division 2</td>
+<td>Division 3</td>
+</tr>
+</tbody></table>
+<h1>参考链接</h1>
+<ul>
+<li><a href="https://guides.github.com/features/mastering-markdown/">https://guides.github.com/features/mastering-markdown/</a>  </li>
+<li><a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/">https://help.github.com/articles/basic-writing-and-formatting-syntax/</a></li>
+</ul>
+]]></content>
+        <author>
+            <name>Your Name</name>
+            <email>your.email@example.com</email>
+            <uri>https://xxx.com</uri>
+        </author>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[博客模板介绍]]></title>
+        <id>https://xxx.com/blog/intro</id>
+        <link href="https://xxx.com/blog/intro"/>
+        <updated>2025-04-05T12:10:00.000Z</updated>
+        <summary type="html"><![CDATA[这是一个 Nextjs 博客模板，本文会介绍这个模板的一些基本用法]]></summary>
+        <content type="html"><![CDATA[<p>这是一个 Nextjs 博客模板，本文会介绍这个模板的一些基本用法。</p>
+<p>这个博客模板并没有设计成一个开箱即用的配置型模板，需要用户自行在代码中找到对应的配置。</p>
+<h2>1. 如何编写博客</h2>
+<p>这个仓库的博客文件需要放在 <code>src/content/blog</code> 目录下，可以是 markdown 文件，也可以是 mdx 文件。</p>
+<p>有以下这些元数据需要用户自行根据需要进行配置：</p>
+<ul>
+<li><code>title</code>: 博客标题</li>
+<li><code>date</code>: 博客发布日期</li>
+<li><code>updated</code>: 博客更新日期</li>
+<li><code>keywords</code>: 博客关键词，优化 SEO</li>
+<li><code>featured</code>: 是否放在首页</li>
+<li><code>summary</code>: 博客摘要</li>
+</ul>
+<h2>2. 博客配置</h2>
+]]></content>
+        <author>
+            <name>Your Name</name>
+            <email>your.email@example.com</email>
+            <uri>https://xxx.com</uri>
+        </author>
+    </entry>
+</feed>

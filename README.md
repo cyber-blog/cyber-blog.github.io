@@ -1,69 +1,227 @@
-<img align="right" width="150" alt="logo" src="https://user-images.githubusercontent.com/5889006/190859553-5b229b4f-c476-4cbd-928f-890f5265ca4c.png">
+# [中文文档](README.zh.md)
 
-# Hugo Theme Stack Starter Template
+<h1 align=center>Nextjs Blog Template | Ladder Theme | <a href="https://guangzhengli.com">Blog</a></h1>
 
-This is a quick start template for [Hugo theme Stack](https://github.com/CaiJimmy/hugo-theme-stack). It uses [Hugo modules](https://gohugo.io/hugo-modules/) feature to load the theme.
+This repository is a Next.js implementation of the [hugo-ladder-theme](https://github.com/guangzhengli/hugo-theme-ladder).
 
-It comes with a basic theme structure and configuration. GitHub action has been set up to deploy the theme to a public GitHub page automatically. Also, there's a cron job to update the theme automatically everyday.
+This is a Next.js blog template, and here's an introduction to the basic usage of this template.
 
-## Get started
-
-1. Click *Use this template*, and create your repository as `<username>.github.io` on GitHub.
-![Step 1](https://user-images.githubusercontent.com/5889006/156916624-20b2a784-f3a9-4718-aa5f-ce2a436b241f.png)
-
-2. Once the repository is created, create a GitHub codespace associated with it.
-![Create codespace](https://user-images.githubusercontent.com/5889006/156916672-43b7b6e9-4ffb-4704-b4ba-d5ca40ffcae7.png)
-
-3. And voila! You're ready to go. The codespace has been configured with the latest version of Hugo extended, just run `hugo server` in the terminal and see your new site in action.
-
-4. Check `config` folder for the configuration files. You can edit them to suit your needs. Make sure to update the `baseurl` property in `config/_default/config.toml` to your site's URL.
-
-5. Open Settings -> Pages. Change the build branch from `master` to `gh-pages`.
-![Build](https://github.com/namanh11611/hugo-theme-stack-starter/assets/16586200/12c763cd-bead-4923-b610-8788f388fcb5)
-
-6. Once you're done editing the site, just commit it and push it. GitHub action will deploy the site automatically to GitHub page asociated with the repository.
-![GitHub action](https://user-images.githubusercontent.com/5889006/156916881-90b8bb9b-1925-4e60-9d7a-8026cda729bf.png)
-
----
-
-In case you don't want to use GitHub codespace, you can also run this template in your local machine. **You need to install Git, Go and Hugo extended locally.**
-
-## Update theme manually
-
-Run:
+## How to develop locally?
 
 ```bash
-hugo mod get -u github.com/CaiJimmy/hugo-theme-stack/v3
-hugo mod tidy
+npm install
+
+
+npm run dev
 ```
 
-> This starter template has been configured with `v3` version of theme. Due to the limitation of Go module, once the `v4` or up version of theme is released, you need to update the theme manually. (Modifying `config/module.toml` file)
+## How to deploy
 
-## Deploy to another static page hostings
+Clone or fork locally, modify the configuration as described below, then select this repository for deployment on [Vercel](https://vercel.com).
 
-If you want to build this site using another static page hosting, you need to make sure they have Go installed in the machine. 
+All deployment configurations can use the default settings, no special configuration is needed.
 
-<details>
-  <summary>Vercel</summary>
-  
-You need to overwrite build command to install manually Go:
+If you need to use edge or fluid compute, please modify the code or vercel configuration yourself.
 
+# Blog Configuration
+
+## 1. How to write blogs
+
+Blog files in this repository need to be placed in the `src/content/blog` directory, they can be markdown files or mdx files.
+
+The following metadata needs to be configured according to your needs:
+
+- `title`: Blog title
+- `date`: Blog publication date
+- `updated`: Blog update date
+- `keywords`: Blog keywords for SEO optimization
+- `featured`: Whether to display on the homepage
+- `summary`: Blog summary
+
+## 2. Blog Configuration
+
+All blog configurations are centralized in the `src/lib/config.ts` file, which has the following advantages:
+
+1. Centralized management: All configurations are in one file, making it easy to maintain and modify
+2. Type safety: Using TypeScript provides type checking and auto-completion
+3. Reusability: Avoids duplicate configurations scattered across different files
+4. Consistency: Ensures the same configuration values are used everywhere
+
+### 2.1 Site Basic Configuration
+
+```typescript
+site: {
+  title: "Your blog title",
+  name: "Your blog name",
+  description: "Blog description",
+  keywords: ["keyword1", "keyword2"],
+  url: "https://yourdomain.com",
+  baseUrl: "https://yourdomain.com",
+  image: "https://yourdomain.com/og-image.png",
+  favicon: {
+    ico: "/favicon.ico",
+    png: "/favicon.png",
+    svg: "/favicon.svg",
+    appleTouchIcon: "/favicon.png",
+  },
+  manifest: "/site.webmanifest",
+}
 ```
-amazon-linux-extras install golang1.11 && hugo --gc --minify
+
+These configurations are used for:
+- Basic website information display
+- SEO optimization
+- Browser tab icons
+- Social media share previews
+
+### 2.2 Author Information Configuration
+
+```typescript
+author: {
+  name: "Your name",
+  email: "Your email",
+  bio: "Personal bio",
+}
 ```
 
-![](https://user-images.githubusercontent.com/5889006/156917172-01e4d418-3469-4ffb-97e4-a905d28b8424.png)
+Author information is used for:
+- Homepage display
+- RSS feed information
+- Author information in blog posts
 
-If you are using Node.js 20, you need to overwrite the install command to install manually Go:
+### 2.3 Social Media Configuration
 
+```typescript
+social: {
+  github: "https://github.com/yourusername",
+  x: "https://x.com/yourusername",
+  xiaohongshu: "https://www.xiaohongshu.com/user/profile/yourID",
+  wechat: "Your WeChat QR code image link",
+  buyMeACoffee: "https://www.buymeacoffee.com/yourusername",
+}
 ```
-dnf install -y golang
+
+These links will be displayed in:
+- Social media links area on the homepage
+- Social media icons in the navigation bar
+
+### 2.4 Comment System Configuration
+
+```typescript
+giscus: {
+  repo: "Your GitHub repository name",
+  repoId: "Repository ID",
+  categoryId: "Category ID",
+}
 ```
 
-![image](https://github.com/zhi-yi-huang/hugo-theme-stack-starter/assets/83860323/777c1109-dfc8-4893-9db7-1305ec027cf5)
+Using Giscus as the comment system requires:
+1. Install the Giscus app on GitHub
+2. Enable Discussions in your repository
+3. Get the configuration information and fill it in here
+
+### 2.5 Navigation Menu Configuration
+
+```typescript
+navigation: {
+  main: [
+    { 
+      title: "Articles", 
+      href: "/blog",
+    },
+    // You can add more navigation items
+  ],
+}
+```
+
+This configures the website's navigation menu, supporting:
+- Regular links
+- Dropdown menus with submenus
+
+### 2.6 SEO Configuration
+
+```typescript
+seo: {
+  metadataBase: new URL("https://yourdomain.com"),
+  alternates: {
+    canonical: './',
+  },
+  openGraph: {
+    type: "website" as const,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    creator: "@yourtwitterusername",
+  },
+}
+```
+
+These configurations are used for:
+- Search engine optimization
+- Social media sharing cards
+- Website metadata
+
+### 2.7 RSS Subscription Configuration
+
+```typescript
+rss: {
+  title: "Your blog title",
+  description: "Blog description",
+  feedLinks: {
+    rss2: "/rss.xml",
+    json: "/feed.json",
+    atom: "/atom.xml",
+  },
+}
+```
+
+These configurations are used to generate:
+- RSS 2.0 feeds
+- JSON Feed
+- Atom feeds
+
+## 3. How to modify configuration
+
+1. Open the `src/lib/config.ts` file
+2. Modify the corresponding configuration items according to your needs
+3. After saving the file, Next.js will automatically rebuild and apply the new configuration
+
+Notes:
+- Ensure all URLs are valid
+- Image links should be accessible
+- Social media links should be complete URLs
+- After modifying configuration, it's recommended to check the website's:
+  - Homepage display
+  - Navigation menu
+  - SEO information
+  - Social media sharing effects
+  - RSS feeds
+
+## 4. How to generate RSS feeds
+
+Modify the configuration in the scripts/generate-rss.js file, then run:
+
+```bash
+npm run generate-rss
+```
+
+## 5. How to generate Sitemap
+
+Modify the configuration in the scripts/generate-sitemap.js file, then run:
+
+```bash
+npm run generate-sitemap
+```
 
 
-Make sure also to specify Hugo version in the environment variable `HUGO_VERSION` (Use the latest version of Hugo extended):
+## Support
 
-![Environment variable](https://user-images.githubusercontent.com/5889006/156917212-afb7c70d-ab85-480f-8288-b15781a462c0.png)
-</details>
+This repository is open source, welcome to star and fork. If you find this repository helpful, you can support me in the following ways:
+
+
+<h2 align=center><a href="https://guangzhengli.com/blog/zh/build-nextjs-template">Support the best Next.js indie developer starter template</a></h2>
+
+<h3 align=center><a href="https://nextdevkit.com">NextDevKit</a></h3>
+
+![nextdevkit](/public/blog/nextdevkit-template.png)
