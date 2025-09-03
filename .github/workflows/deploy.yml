@@ -52,7 +52,8 @@ jobs:
 
   # 部署作业
   deploy:
-    # 移除环境限制以避免分支保护规则问题
+    environment:
+      name: github-pages
     runs-on: ubuntu-latest
     needs: build
     steps:
