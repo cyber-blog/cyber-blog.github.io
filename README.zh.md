@@ -15,11 +15,29 @@ npm run dev
 
 ## 如何部署
 
-Clone 或者 fork 到本地，按照下面的方式修改配置，然后在 [Vercel](https://vercel.com) 选择该仓库进行部署。
+Clone 或者 fork 到本地，按照下面的方式修改配置，然后可以通过两种方式部署此仓库：
+
+### 部署到 Vercel
+
+在 [Vercel](https://vercel.com) 选择该仓库进行部署。
 
 部署的配置所有选择默认即可，不需要进行特殊配置。
 
 如果你需要使用 edge 或者 fluid compute，请自行修改代码或者 vercel 配置。
+
+### 部署到 GitHub Pages
+
+本仓库也支持部署到 GitHub Pages，操作步骤如下：
+
+1. 创建一个新的 GitHub 仓库（或使用现有仓库）
+2. 将此代码推送到你的仓库
+3. 进入仓库的 Settings > Pages 设置
+4. 将 source 设置为 "GitHub Actions"
+5. 更新 `src/lib/config.ts` 文件中的站点配置，使用你的 GitHub Pages URL
+6. 如果使用项目站点（不是 username.github.io），取消注释并更新 `next.config.ts` 中的 `basePath`
+7. 推送更改以触发部署工作流
+
+详细说明请查看 [DEPLOY_GITHUB_PAGES.md](DEPLOY_GITHUB_PAGES.md) 文件。
 
 # 博客配置
 

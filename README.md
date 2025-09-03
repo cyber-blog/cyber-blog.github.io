@@ -17,11 +17,29 @@ npm run dev
 
 ## How to deploy
 
-Clone or fork locally, modify the configuration as described below, then select this repository for deployment on [Vercel](https://vercel.com).
+Clone or fork locally, modify the configuration as described below, then you can deploy this repository in two ways:
+
+### Deploy to Vercel
+
+Select this repository for deployment on [Vercel](https://vercel.com).
 
 All deployment configurations can use the default settings, no special configuration is needed.
 
 If you need to use edge or fluid compute, please modify the code or vercel configuration yourself.
+
+### Deploy to GitHub Pages
+
+This repository also supports deployment to GitHub Pages. Follow these steps:
+
+1. Create a new GitHub repository (or use an existing one)
+2. Push this code to your repository
+3. Go to your repository's Settings > Pages
+4. Set the source to "GitHub Actions"
+5. Update the site configuration in `src/lib/config.ts` with your GitHub Pages URL
+6. If using a project site (not username.github.io), uncomment and update the `basePath` in `next.config.ts`
+7. Push the changes to trigger the deployment workflow
+
+For detailed instructions, see [DEPLOY_GITHUB_PAGES.md](DEPLOY_GITHUB_PAGES.md).
 
 # Blog Configuration
 
