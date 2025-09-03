@@ -1,14 +1,16 @@
-name: Deploy to GitHub Pages
+name: Deploy NextJS Blog to GitHub Pages
 
 on:
   # 支持手动触发
   workflow_dispatch:
-  # 当推送到默认分支时触发
+  # 当推送到 nextjs-theme 分支时触发
   push:
     branches:
-      - main
-  # 当创建 pull request 时触发
+      - nextjs-theme
+  # 当创建到 nextjs-theme 分支的 pull request 时触发
   pull_request:
+    branches:
+      - nextjs-theme
 
 permissions:
   contents: read
@@ -17,7 +19,7 @@ permissions:
 
 # 只允许同时运行一个部署，跳过正在运行和挂起的运行
 concurrency:
-  group: "pages"
+  group: "nextjs-blog-pages"
   cancel-in-progress: false
 
 jobs:
