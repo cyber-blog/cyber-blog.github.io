@@ -30,11 +30,11 @@ export const config = {
     bio: "这是一个 Nextjs 博客模板",
   },
   social: {
-    github: "https://github.com/xxx",
-    x: "https://x.com/xxx",
-    xiaohongshu: "https://www.xiaohongshu.com/user/profile/xxx",
-    wechat: "https://storage.xxx.com/images/wechat-official-account.png",
-    buyMeACoffee: "https://www.buymeacoffee.com/xxx",
+    github: "https://github.com/majiang213/", // 指向您的主页
+    // x: "https://x.com/xxx",
+    // xiaohongshu: "https://www.xiaohongshu.com/user/profile/xxx",
+    // wechat: "https://storage.xxx.com/images/wechat-official-account.png",
+    // buyMeACoffee: "https://www.buymeacoffee.com/xxx",
   },
   giscus: {
     repo: "guangzhengli/hugo-ladder-exampleSite",

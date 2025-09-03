@@ -16,10 +16,11 @@ export function Header() {
   const pathname = usePathname();
   const isBlogPage = pathname.includes("/blog/");
 
+  // 只保留 Github 链接
   const socialLinks = [
     { title: "Github", key: "github", icon: <GithubIcon /> },
-    { title: "X", key: "x", icon: <XIcon /> },
-    { title: "Xiaohongshu", key: "xiaohongshu", icon: <XiaohongshuIcon /> },
+    // { title: "X", key: "x", icon: <XIcon /> },
+    // { title: "Xiaohongshu", key: "xiaohongshu", icon: <XiaohongshuIcon /> },
   ]
     .map(item => ({
       title: item.title,
