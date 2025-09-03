@@ -4,8 +4,9 @@ import Link from "next/link";
 import { NavDesktopMenu } from "./nav-desktop-menu";
 import { NavMobileMenu } from "./nav-mobile-menu";
 import GithubIcon from "@/components/icons/github";
-import XiaohongshuIcon from "@/components/icons/xiaohongshu";
-import XIcon from "@/components/icons/x";
+// 注释掉未使用的导入
+// import XiaohongshuIcon from "@/components/icons/xiaohongshu";
+// import XIcon from "@/components/icons/x";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";

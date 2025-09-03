@@ -9,17 +9,18 @@ export default function Home() {
     .filter((blog: any) => blog.featured === true)
     .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const socialLinks = [
-    { name: "赞赏", key: "buyMeACoffee" },
-    { name: "X", key: "x" },
-    { name: "小红书", key: "xiaohongshu" },
-    { name: "微信公众号", key: "wechat" },
-  ]
-    .map(item => ({
-      name: item.name,
-      href: config.social && config.social[item.key as keyof typeof config.social]
-    }))
-    .filter(link => !!link.href);
+  // 注释掉未使用的社交链接数组
+  // const socialLinks = [
+  //   { name: "赞赏", key: "buyMeACoffee" },
+  //   { name: "X", key: "x" },
+  //   { name: "小红书", key: "xiaohongshu" },
+  //   { name: "微信公众号", key: "wechat" },
+  // ]
+  //   .map(item => ({
+  //     name: item.name,
+  //     href: config.social && config.social[item.key as keyof typeof config.social]
+  //   }))
+  //   .filter(link => !!link.href);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
