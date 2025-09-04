@@ -8,7 +8,7 @@ categories:
     - tech
 tags:
     - Kubernetes
-draft: false
+draft: true
 ---
 ## 生成 CA 证书
 
