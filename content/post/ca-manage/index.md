@@ -25,6 +25,7 @@ openssl req -x509 -new -nodes -sha512 -days 3650 \
 
 ## 导入 CA 证书
 
+
 内部人员需要把该 ca.crt 证书添加到受信任的根证书中，这样通过改 CA 证书生成的其他证书也会被信任。
 
 ### Windows
