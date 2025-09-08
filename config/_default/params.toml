@@ -4,6 +4,11 @@ mainSections = ["post"]
 rssFullContent = true
 favicon = "/favicon.png"
 
+# SEO 相关
+description = "仿生人的技术思考，探索人工智能、编程技术与未来科技的边界"
+keywords = ["技术博客", "人工智能", "编程", "科技", "思考"]
+author = "majiang"
+
 [footer]
 since = 2020
 customText = ""
@@ -56,13 +61,13 @@ limit = 10
 type = "toc"
 
 [opengraph.twitter]
-site = ""
+site = ""                    # 设置你的 Twitter 用户名
 card = "summary_large_image"
 
 [defaultImage.opengraph]
-enabled = false
-local = false
-src = ""
+enabled = true
+local = true
+src = "img/og-default.png"   # 默认分享图片
 
 [colorScheme]
 toggle = true
