@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>MYSQL on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/mysql/</link><description>Recent content in MYSQL on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Mon, 04 Aug 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/mysql/index.xml" rel="self" type="application/rss+xml"/><item><title>MySQL InnoDB 索引机制与优化</title><link>https://cyber-blog.github.io/p/database-index/</link><pubDate>Mon, 04 Aug 2025 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/database-index/</guid><description>&lt;h1 id="mysql-innodb-索引机制与优化执行流程覆盖索引回表与索引下推">MySQL InnoDB 索引机制与优化：执行流程、覆盖索引、回表与索引下推
+&lt;/h1>&lt;p>InnoDB 表基于 B+ 树实现&lt;strong>聚簇索引&lt;/strong>（主键）和多个&lt;strong>二级索引&lt;/strong>。查询时，MySQL 优化器会选择合适的索引，然后按照执行流程依次进行索引查找（检索满足条件的索引项）、条件过滤、排序（如有需要）和&lt;strong>回表&lt;/strong>（根据二级索引叶子节点的主键值检索完整行）。如果所有查询列都包含在索引中（覆盖索引），则可避免回表，从而节省随机 IO ；否则需要通过主键到聚簇索引检索整行数据（回表），这增加了额外开销 。此外，InnoDB 支持&lt;strong>索引条件下推&lt;/strong>（Index Condition Pushdown，ICP）优化：在扫描二级索引时，将部分 WHERE 条件在存储引擎层提前过滤，从而减少了无效行的回表次数 。&lt;/p>
+&lt;p>以下内容通过实际建表、查询示例和 EXPLAIN 分析，详细阐述索引在各阶段的作用，比较覆盖索引与回表的差异，并说明 ICP 在执行流程中的作用与限制。&lt;/p>
+&lt;h2 id="innodb-索引查找与执行流程">&lt;strong>InnoDB 索引查找与执行流程&lt;/strong>
+&lt;/h2>&lt;p>MySQL 查询经过优化器确定执行计划，若使用索引，则执行引擎依次进行：&lt;strong>(1) 索引查找&lt;/strong>：根据索引 B+ 树定位满足前缀条件的叶子节点；&lt;strong>(2) 条件过滤&lt;/strong>：对于索引未能覆盖的条件，在存储引擎层过滤（ICP 可提前过滤部分条件），其余条件或计算在服务器层过滤；&lt;strong>(3) 排序&lt;/strong>：若 ORDER BY 条件与索引顺序一致，则可以顺序扫描索引避免额外排序；否则会使用额外的排序（Using filesort） ；&lt;strong>(4) 回表&lt;/strong>：如果查询需要的列不全在二级索引中，则根据索引叶子节点的主键值到聚簇索引查完整行，此过程即“回表”。整个流程如下：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>索引查找&lt;/strong>：优化器选择最合适的索引（如单列索引、多列联合索引）进行查找。InnoDB 二级索引叶子节点存储了对应行的主键值 ，因此定位二级索引时可直接获取主键。&lt;/li>
+&lt;li>&lt;strong>条件过滤&lt;/strong>：默认情况下，MySQL 服务器层将所有非索引列的过滤条件留到获取完整行后处理；对于索引列上的条件，存储引擎可在索引层过滤。启用 ICP 时，满足条件的行可以在索引层提前淘汰 。&lt;/li>
+&lt;li>&lt;strong>排序&lt;/strong>：如果查询涉及 ORDER BY，优化器检查索引顺序是否可以按需排序。若索引前缀完全匹配排序列并且无其他排序列，则无需额外排序；否则会产生 Using filesort 。&lt;/li>
+&lt;li>&lt;strong>回表（Bookmark Lookup）&lt;/strong>：当查询列超出索引范围时，需要回表。InnoDB 的二级索引只能快速定位主键值，故若查询还需其他列数据，就要通过主键到聚簇索引读取完整行，这就是回表过程 。&lt;/li>
+&lt;/ul>
+&lt;p>综上，优化索引以让查询满足覆盖索引条件，可避免回表，提高效率 ；否则回表成为瓶颈。我们下面通过示例演示这两种情况。&lt;/p>
+&lt;h2 id="覆盖索引与回表对比">&lt;strong>覆盖索引与回表对比&lt;/strong>
+&lt;/h2>&lt;ul>
+&lt;li>&lt;strong>覆盖索引&lt;/strong>：若查询的所有列都包含在一个索引中（包括二级索引列及隐含的主键列），则查询可以完全从索引读取所需数据，无需访问表数据 。EXPLAIN 中 Extra 字段会显示 Using index 。这意味着 MySQL 引擎使用索引即可得到结果，无须读取表行。&lt;/li>
+&lt;li>&lt;strong>回表&lt;/strong>：若查询涉及的列不全在索引中，则即使可以使用索引检索行主键，也必须通过主键到聚簇索引读出其余列，这称为回表。回表需要额外的随机 I/O 和时间 ，性能低于纯索引扫描。&lt;/li>
+&lt;/ul>
+&lt;p>我们以实际例子说明。假设有如下表和索引：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sql" data-lang="sql">&lt;span class="line">&lt;span class="cl">&lt;span class="k">CREATE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">TABLE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">demo&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">id&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nb">INT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">PRIMARY&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">KEY&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nb">VARCHAR&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">20&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nb">VARCHAR&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">20&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">salary&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nb">INT&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">age&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nb">INT&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">INDEX&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">idx_name_dept&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">salary&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ENGINE&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">InnoDB&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>&lt;strong>回表示例&lt;/strong>：查询非覆盖情况需要回表。比如查询 name=&amp;hellip;、dept=&amp;hellip; 和 age（未加索引列）：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sql" data-lang="sql">&lt;span class="line">&lt;span class="cl">&lt;span class="k">EXPLAIN&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">SELECT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">id&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">age&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">FROM&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">demo&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">WHERE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;Alice&amp;#39;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">AND&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;Sales&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>说明：索引 idx_name_dept(name,dept,salary) 可以用于查找符合 name 和 dept 的行，但列 age 不在索引中，因此每匹配到一条记录后，需要通过主键 id 回表读取 age。对应的执行计划可能如下（示例）：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>id&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>select_type&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>table&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>type&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>possible_keys&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>key&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>key_len&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>ref&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>rows&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Extra&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>SIMPLE&lt;/td>
+&lt;td>demo&lt;/td>
+&lt;td>ref&lt;/td>
+&lt;td>idx_name_dept&lt;/td>
+&lt;td>idx_name_dept&lt;/td>
+&lt;td>256&lt;/td>
+&lt;td>const,const&lt;/td>
+&lt;td>10&lt;/td>
+&lt;td>Using where&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;ul>
+&lt;li>&lt;strong>解释&lt;/strong>：type=ref 表示用二级索引范围查找；key=idx_name_dept；Extra 显示 Using where，表明服务器层需要再执行 WHERE 条件过滤（尽管在此例中过滤完毕后还需回表检索列）。注意由于 age 不在索引中，这不是覆盖索引查询，因此 MySQL 会回表获取完整行才能返回 age。回表导致额外开销 。&lt;/li>
+&lt;li>&lt;strong>覆盖索引示例&lt;/strong>：若查询列都在索引中，则不回表。继续上述表结构，如果查询只取 salary：&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sql" data-lang="sql">&lt;span class="line">&lt;span class="cl">&lt;span class="k">EXPLAIN&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">SELECT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">salary&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">FROM&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">demo&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">WHERE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;Alice&amp;#39;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">AND&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;Sales&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>因为 name, dept, salary 恰好是索引 idx_name_dept 的列，且 id（主键）会隐式包含在每个索引叶子节点中，故此查询的所有列（name, dept, salary 及聚簇主键 id）均可从索引中取得，无须回表。执行计划示例：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>id&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>select_type&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>table&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>type&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>possible_keys&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>key&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>key_len&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>ref&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>rows&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Extra&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>SIMPLE&lt;/td>
+&lt;td>demo&lt;/td>
+&lt;td>ref&lt;/td>
+&lt;td>idx_name_dept&lt;/td>
+&lt;td>idx_name_dept&lt;/td>
+&lt;td>256&lt;/td>
+&lt;td>const,const&lt;/td>
+&lt;td>5&lt;/td>
+&lt;td>Using index&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;ul>
+&lt;li>&lt;strong>解释&lt;/strong>：Extra 显示 Using index ，表示此查询可以由索引覆盖执行，不需要访问表（所谓覆盖索引）。通过覆盖索引，避免了读聚簇索引的随机 I/O ，查询效率更高。&lt;/li>
+&lt;/ul>
+&lt;p>下表总结覆盖索引与回表的区别：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>特性&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>覆盖索引&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>回表&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>列需求&lt;/td>
+&lt;td>查询列完全包含在索引中（加上主键列）&lt;/td>
+&lt;td>查询列不全在索引中&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>I/O 行为&lt;/td>
+&lt;td>直接从索引树读取数据，无需访问表&lt;/td>
+&lt;td>需要先查索引取主键值，再到聚簇索引读行&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>EXPLAIN Extra&lt;/td>
+&lt;td>Using index&lt;/td>
+&lt;td>通常含 Using where（或 Using index condition）&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>性能&lt;/td>
+&lt;td>最优（避免额外随机 I/O）&lt;/td>
+&lt;td>较差（额外随机 I/O 和 CPU 过滤开销）&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>适用场景&lt;/td>
+&lt;td>查询列固定且已编入索引；WHERE/GROUP BY/ORDER BY 列索引前缀&lt;/td>
+&lt;td>查询列超出索引；无覆盖索引需补列数据&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>以上示例说明：构造合理的联合索引，尽量让查询成为覆盖索引（如将常用的过滤列和返回列包含进索引），可以显著提高查询性能 。&lt;/p>
+&lt;h2 id="索引条件下推icp的作用与使用">&lt;strong>索引条件下推（ICP）的作用与使用&lt;/strong>
+&lt;/h2>&lt;p>**索引条件下推（Index Condition Pushdown, ICP）**是 MySQL 5.6+ 为 InnoDB 和 MyISAM 二级索引设计的优化功能 。当使用二级索引检索行时，如果查询中存在多个条件，其中只有部分条件能利用索引列，则 MySQL 默认会把满足索引的那部分条件下推到存储引擎中进行过滤，减少回表次数 。具体行为如下：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>无 ICP 时&lt;/strong>：存储引擎按索引查到每一行对应的主键值并回表，然后服务器层再对返回的行执行全部剩余的 WHERE 条件过滤 。这意味着即使某些条件可在索引层判断，也要等回表后才能筛选，导致大量不必要的行读取。&lt;/li>
+&lt;li>&lt;strong>启用 ICP 后&lt;/strong>：存储引擎在扫描索引时，将能够在索引列上判断的条件提前执行：&lt;strong>只有在索引条件也满足的情况下，才回表读取该行&lt;/strong> 。对于索引层无法判断（非索引列或函数列）的条件，待回表后再在服务器层过滤。&lt;/li>
+&lt;/ol>
+&lt;p>举例说明：继续上述 demo 表，如果我们对 idx_name_dept(name,dept,salary) 既有索引，又对列 age 没有索引，则考虑如下查询：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sql" data-lang="sql">&lt;span class="line">&lt;span class="cl">&lt;span class="k">EXPLAIN&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">SELECT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">id&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">salary&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">FROM&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">demo&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">WHERE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;Alice&amp;#39;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">AND&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">salary&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">&amp;gt;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="mi">50000&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">AND&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">age&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">&amp;lt;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="mi">30&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>索引 idx_name_dept 可用于 name=&amp;lsquo;Alice&amp;rsquo;（精确匹配）和 salary &amp;gt; 50000（范围匹配），但 age &amp;lt; 30 无索引参与。启用 ICP 时，存储引擎会首先根据 name 和 salary 在索引上查找主键，然后在索引层判断 age &amp;lt; 30 条件。如果 age 不在索引中，就不能在索引层判断，所以 age &amp;lt; 30 在索引层跳过，而在回表后由服务器层执行。&lt;/li>
+&lt;li>EXPLAIN 输出示例可能为：&lt;/li>
+&lt;/ul>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>id&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>select_type&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>table&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>type&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>possible_keys&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>key&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>key_len&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>ref&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>rows&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Extra&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>SIMPLE&lt;/td>
+&lt;td>demo&lt;/td>
+&lt;td>range&lt;/td>
+&lt;td>idx_name_dept&lt;/td>
+&lt;td>idx_name_dept&lt;/td>
+&lt;td>258&lt;/td>
+&lt;td>const,const&lt;/td>
+&lt;td>15&lt;/td>
+&lt;td>Using index condition&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>这里 Extra 显示 Using index condition ，意味着 ICP 被使用。根据官方文档：“Using index condition 说明索引条件下推已经生效 ”。此时 MySQL 引擎会先在索引层应用 name=&amp;lsquo;Alice&amp;rsquo; AND salary&amp;gt;50000 过滤匹配的行，只有满足这些条件的索引条目才会被读取主键，回表到主表后服务器再检查 age&amp;lt;30。由此避免了对不满足前两条件的行进行回表，从而降低了 I/O 和 CPU 开销 。如果关闭 ICP（例如执行 SET optimizer_switch=&amp;lsquo;index_condition_pushdown=off&amp;rsquo;;），则 EXPLAIN 中 Extra 只会显示 Using where ，意味着索引层只用 name=&amp;lsquo;Alice&amp;rsquo; 等定位，查询返回的所有行都要回表并在服务器层再做 age&amp;lt;30 筛选，效率较低。&lt;/p>
+&lt;p>需要注意的是，&lt;strong>ICP 只对二级索引有效&lt;/strong> 。InnoDB 的聚簇主键检索时，整行已经加载到缓冲区，故对主键索引应用 ICP 无意义。ICP 条件要求如文档所述：访问方法为 range/ref/eq_ref/ref_or_null，且表需要访问完整行 。此外，ICP 不能下推子查询和存储函数等复杂条件 。&lt;/p>
+&lt;p>以下示例演示 ICP 在 EXPLAIN 输出中的表现：假设 demo 表中数据足够多，我们执行上面查询（启用 ICP）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sql" data-lang="sql">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">-- 启用ICP（默认开启），执行查询
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">EXPLAIN&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">SELECT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">id&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">dept&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">salary&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">FROM&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">demo&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">WHERE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;Alice&amp;#39;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">AND&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">salary&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">&amp;gt;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="mi">50000&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">AND&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">age&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">&amp;lt;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="mi">30&lt;/span>&lt;span class="err">\&lt;/span>&lt;span class="k">G&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>执行计划解析（示例）：&lt;/p>
+&lt;ul>
+&lt;li>key=idx_name_dept：使用复合索引。&lt;/li>
+&lt;li>type=range：范围查找（因为对 salary &amp;gt; 50000）。&lt;/li>
+&lt;li>Extra=Using index condition ：说明引擎在索引层先应用了 name 和 salary 条件过滤，后续再回表检查 age 条件。&lt;/li>
+&lt;/ul>
+&lt;p>总结：ICP 在执行流程中的位置在&lt;strong>索引查找后、回表前&lt;/strong>，能有效减少回表次数 。在 EXPLAIN 输出中，Using index condition 表示 ICP 生效；若额外出现 Using where，说明仍有非索引列的过滤条件需在服务器层处理 。例如上例的 age&amp;lt;30 就因未在索引而留在服务器层。&lt;/p>
+&lt;h2 id="索引相关概念对比一览">&lt;strong>索引相关概念对比一览&lt;/strong>
+&lt;/h2>&lt;p>下表对照了本文讨论的关键概念及其适用场景：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>概念&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>触发条件&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>优势&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>EXPLAIN 标志&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;strong>覆盖索引&lt;/strong>&lt;/td>
+&lt;td>查询所需列全包含在某索引（包括主键）&lt;/td>
+&lt;td>避免回表，减少随机 IO，提高查询效率&lt;/td>
+&lt;td>Using index&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>回表&lt;/strong>&lt;/td>
+&lt;td>查询列超出所用索引时&lt;/td>
+&lt;td>无&lt;/td>
+&lt;td>Using where（无 Using index）&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>索引下推 (ICP)&lt;/strong>&lt;/td>
+&lt;td>复合索引扫描时，有部分条件非索引列&lt;/td>
+&lt;td>索引层提前过滤，减少回表次数&lt;/td>
+&lt;td>Using index condition&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>排序 (filesort)&lt;/strong>&lt;/td>
+&lt;td>ORDER BY 列未按索引顺序（或无合适索引）&lt;/td>
+&lt;td>数据量小或内存足够时开销可接受，小表也可忽略&lt;/td>
+&lt;td>Using filesort&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>表中各项分别对应覆盖索引利用索引免回表的优势 ；回表的触发（非覆盖）场景；ICP 适用情况与好处 ；以及排序相关的指标 Using filesort 表示排序在内存或外部进行 。&lt;/p>
+&lt;h2 id="实战优化建议best-practices">&lt;strong>实战优化建议（Best Practices）&lt;/strong>
+&lt;/h2>&lt;ul>
+&lt;li>&lt;strong>设计覆盖索引&lt;/strong>：分析业务查询，针对常见的 WHERE、GROUP BY、ORDER BY 和 SELECT 列，设计联合索引，使其尽量覆盖这些查询。覆盖索引能大幅减少随机读，从而提速 。&lt;/li>
+&lt;li>&lt;strong>注意索引列顺序&lt;/strong>：联合索引中将筛选条件最常用的列放在最左侧；只有左前缀匹配才能有效使用索引。复合索引建列顺序应符合查询逻辑，切勿盲目多列索引 。&lt;/li>
+&lt;li>&lt;strong>合理限制 SELECT 列&lt;/strong>：避免 SELECT *，只选取必要列。若查询返回较少列，能降低回表概率，或可让索引覆盖更多查询需求 。&lt;/li>
+&lt;li>&lt;strong>利用 EXPLAIN 分析执行计划&lt;/strong>：定期检查慢查询或关键查询的 EXPLAIN 输出，关注 type、key、rows、Extra 等字段。若出现 Using filesort 或全表扫描（type=ALL）等提示，要考虑创建索引或调整查询逻辑。&lt;/li>
+&lt;li>&lt;strong>启用 ICP（默认开启）&lt;/strong>：对于范围查询或多条件过滤，EXPLAIN 出现 Using index condition 时说明 ICP 正在减少回表。确认 MySQL 版本 ≥5.6，保持 optimizer_switch 中 index_condition_pushdown 为 on。注意ICP只对二级索引生效 。&lt;/li>
+&lt;li>&lt;strong>监控主键设计&lt;/strong>：主键越长，二级索引叶子节点也会越大（因为每条叶子记录都要存储主键），影响缓存命中和 I/O。避免在高频使用的表上构建过长的主键 。&lt;/li>
+&lt;li>&lt;strong>定期统计与优化&lt;/strong>：使用 ANALYZE TABLE 保持统计信息准确，确保优化器能正确估算成本。对极少更新的大表，可考虑手动分析。采用 OPTIMIZE TABLE 或在线重建表，以消除碎片、缩减数据页。&lt;/li>
+&lt;/ul>
+&lt;p>通过上述策略，配合对 EXPLAIN 输出的深入理解 和指标观察，可最大化发挥 InnoDB 索引的性能优势，避免不必要的回表和排序开销，从而优化查询性能。&lt;/p></description></item><item><title>Mysql 查询流程</title><link>https://cyber-blog.github.io/p/mysql-%E6%9F%A5%E8%AF%A2%E6%B5%81%E7%A8%8B/</link><pubDate>Tue, 24 Oct 2023 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/mysql-%E6%9F%A5%E8%AF%A2%E6%B5%81%E7%A8%8B/</guid><description>&lt;h1 id="mysql-索引结构与执行流程从-b-树到联合索引与索引下推全解析">&lt;strong>MySQL 索引结构与执行流程：从 B+ 树到联合索引与索引下推全解析&lt;/strong>
+&lt;/h1>&lt;p>本篇文章从 MySQL 为什么选择 B+ 树索引开始，逐步引出联合索引的最左匹配原则、索引下推（ICP）、回表机制和覆盖索引等关键执行细节，帮助你从结构、原理到实际执行路径深入理解索引背后的逻辑。&lt;/p>
+&lt;hr>
+&lt;h2 id="一为什么-mysql-选择-b-树而非-b-树">&lt;strong>一、为什么 MySQL 选择 B+ 树而非 B 树？&lt;/strong>
+&lt;/h2>&lt;p>MySQL 中使用最广泛的 InnoDB 存储引擎采用 &lt;strong>B+ 树&lt;/strong> 作为索引结构，这种选择并非偶然。&lt;/p>
+&lt;h3 id="1-b-树-vs-b-树-的结构差异">&lt;strong>1. B 树 vs B+ 树 的结构差异&lt;/strong>
+&lt;/h3>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>特性&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>B 树&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>B+ 树&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>数据存储&lt;/td>
+&lt;td>所有节点都存数据&lt;/td>
+&lt;td>仅叶子节点存数据，内部节点只存键&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>查询路径&lt;/td>
+&lt;td>查询可能在中间节点结束&lt;/td>
+&lt;td>查询必须走到叶子节点&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>范围扫描&lt;/td>
+&lt;td>需要中序遍历整棵树&lt;/td>
+&lt;td>叶子节点通过链表串联，天然支持范围查询&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="2-为什么-b-树更适合数据库索引">&lt;strong>2. 为什么 B+ 树更适合数据库索引？&lt;/strong>
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>磁盘访问效率更高&lt;/strong>：非叶子节点更小，内存缓存命中率更高，减少磁盘 IO；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>范围查询更高效&lt;/strong>：链表串联叶子节点，直接顺序扫描即可；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>结构稳定、查询均衡&lt;/strong>：所有查找都走到叶子节点，路径统一，优化更容易；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>排序与全表扫描友好&lt;/strong>：天然有序，支持快速 ORDER BY；&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>📌 &lt;strong>总结：B+ 树对磁盘 I/O、范围查、缓存友好，全面优于 B 树，是关系型数据库的首选。&lt;/strong>&lt;/p>
+&lt;hr>
+&lt;h2 id="二联合索引与最左匹配原则">&lt;strong>二、联合索引与最左匹配原则&lt;/strong>
+&lt;/h2>&lt;h3 id="1-什么是联合索引">&lt;strong>1. 什么是联合索引？&lt;/strong>
+&lt;/h3>&lt;p>联合索引是将多个字段作为一个整体创建的复合索引，例如：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">CREATE INDEX idx_abc ON user(a, b, c);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>在使用联合索引 (a, b, c) 时，会把每一行的 a、b、c 作为组合键 (a, b, c) 排序成一棵 B+ 树，其比较顺序就是字典序。它在 B+ 树的叶子节点上，按照 a -&amp;gt; b -&amp;gt; c 的顺序排列。&lt;/p>
+&lt;p>B+树索引示例&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"> Root Node
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> +-----------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> | (2,1,1) |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> +-----------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> / \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> / \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> +------------------+ +------------------+ ← 中间节点
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> | (1,2,1) | | (2,2,1) |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> +------------------+ +------------------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> / \ / \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> / \ / \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Leaf1 Leaf2 Leaf3 Leaf4 ← 叶子节点（有序链表）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+----------+ +----------+ +----------+ +----------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">|1,1,1 | → |1,1,2 | →|1,2,1 | →|2,1,1 |
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">+----------+ +----------+ +----------+ +----------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> +----------+
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> |2,2,1 | → (尾部 null)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> +----------+
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="2-为什么要遵循最左匹配原则">&lt;strong>2. 为什么要遵循最左匹配原则？&lt;/strong>
+&lt;/h3>&lt;p>只有&lt;strong>从最左侧字段开始连续使用&lt;/strong>，索引才能被利用。例如：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>WHERE 条件&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>是否命中 idx_abc&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>WHERE a = 1&lt;/td>
+&lt;td>✅ 使用 a&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>WHERE a = 1 AND b = 2&lt;/td>
+&lt;td>✅ 使用 a、b&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>WHERE b = 2&lt;/td>
+&lt;td>❌ 不使用联合索引&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>WHERE a = 1 AND c = 3&lt;/td>
+&lt;td>✅ 使用 a，但 c 不触发&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;blockquote>
+&lt;p>联合索引中的比较（如 &amp;lt; (2,1,1)）是基于联合键的&lt;strong>字典序&lt;/strong>，而最左前缀原则则是限制你&lt;strong>必须从前往后匹配字段&lt;/strong>，否则 B+ 树无法正确判断搜索路径。&lt;/p>
+&lt;/blockquote>
+&lt;hr>
+&lt;h2 id="三联合索引查询执行流程含回表索引下推覆盖索引">&lt;strong>三、联合索引查询执行流程（含回表、索引下推、覆盖索引）&lt;/strong>
+&lt;/h2>&lt;p>我们通过一个实际查询来讲解完整的执行流程：&lt;/p>
+&lt;h3 id="1-表结构与查询示例">&lt;strong>1. 表结构与查询示例&lt;/strong>
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">CREATE TABLE user (
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> id INT PRIMARY KEY,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> a INT,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> b INT,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> c INT,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> d VARCHAR(100),
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> KEY idx_abc (a, b, c)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">);
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">SELECT c FROM user WHERE a = 1 AND b = 2 AND c &amp;gt; 3;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="2-执行流程含-server-层与-innodb-层分工">&lt;strong>2. 执行流程（含 Server 层与 InnoDB 层分工）&lt;/strong>
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">【1】客户端发送 SQL 查询：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> SELECT d FROM t WHERE a = 1 AND c = 2;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">【2】Server 层：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ├─ 解析 SQL，生成执行计划
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ├─ 确认可以使用联合索引 idx_a_b_c（a 是最左字段）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ├─ 判断：c 不满足最左前缀 → 不能用于定位
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> └─ 但是 ✅ 可以使用 Index Condition Pushdown（ICP）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">【3】Server 层下发执行计划 + 下推过滤条件 (c=2) 到 InnoDB
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">【4】InnoDB 二级索引扫描 idx_a_b_c：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ├─ 根据 a=1 扫描对应索引区间
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ├─ 对每一个记录，**在扫描索引的同时检查 c=2**
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> └─ ✅ 满足 c=2 的主键 id 被保留，其他跳过（减少回表）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">【5】返回匹配的主键 id（如 id=123、id=456）给 Server
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">【6】Server 层判断：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> └─ 字段 d 不在索引中 ❌ → 必须回表
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">【7】InnoDB 根据主键 ID 回表：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ├─ 检查主键页是否在 Buffer Pool（缓存）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> │ └─ ✅ 在内存 → 直接读取
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> │ └─ ❌ 不在内存 → 触发磁盘 IO
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> └─ 返回完整行数据（含 d 字段）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">【8】Server 层组装最终结果，返回给客户端
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="3-术语解析">&lt;strong>3. 术语解析&lt;/strong>
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>✅ &lt;strong>索引下推（ICP）&lt;/strong>：将 c &amp;gt; 3 的判断提前到 InnoDB 层，在遍历索引时就过滤不符合的行，避免大量无效回表；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>✅ &lt;strong>覆盖索引&lt;/strong>：查询字段 c 已经在索引 idx_abc 中，直接从叶子节点读取，无需访问主键页（聚簇索引），提高效率；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>❌ &lt;strong>回表&lt;/strong>：如果 SELECT 中包含非索引字段（如 d），则需根据主键 id 再去聚簇索引中查找整行数据，增加开销；&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="四hash-索引对比补充适合极端等值查询">&lt;strong>四、Hash 索引对比补充：适合极端等值查询&lt;/strong>
+&lt;/h2>&lt;h3 id="1-hash-索引特点多用于-memory-引擎">&lt;strong>1. Hash 索引特点（多用于 Memory 引擎）&lt;/strong>
+&lt;/h3>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>特性&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Hash 索引&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>B+ 树索引&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>查找效率&lt;/td>
+&lt;td>✅ 等值查询最快&lt;/td>
+&lt;td>✅ 稍慢但功能更全&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>范围查询&lt;/td>
+&lt;td>❌ 不支持&lt;/td>
+&lt;td>✅ 支持&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>排序&lt;/td>
+&lt;td>❌ 不支持&lt;/td>
+&lt;td>✅ 支持（叶子链表）&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>支持引擎&lt;/td>
+&lt;td>仅 Memory，或自适应哈希&lt;/td>
+&lt;td>InnoDB、MyISAM、Memory 等&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="2-innodb-的自适应哈希索引ahi">&lt;strong>2. InnoDB 的自适应哈希索引（AHI）&lt;/strong>
+&lt;/h3>&lt;p>InnoDB 会自动监控某些 B+ 树热点页，自动为其建立 Hash 索引以优化等值查询，这对开发者透明、不可控制。&lt;/p>
+&lt;hr>
+&lt;h3 id="五innodb-无主键表时会如何查询">&lt;strong>五、InnoDB 无主键表时会如何查询&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>自动生成隐藏主键&lt;/strong>：&lt;/p>
+&lt;p>若表无显式主键或唯一非空索引，InnoDB 会自动添加一个 &lt;strong>6字节隐藏 RowID&lt;/strong>，作为聚簇索引的 key。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>二级索引指向 RowID&lt;/strong>：&lt;/p>
+&lt;p>所有二级索引将指向这个隐藏 RowID，而不是显式主键。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>查询过程与回表&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>查询时先通过二级索引查出 RowID；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>然后根据 RowID 去聚簇索引中“回表”获取整行数据；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>返回所需字段。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>性能与维护影响&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>无法控制 RowID 排序与结构；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>查询效率和调优难度高于有主键表；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>不利于数据管理和故障排查。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>六、Mysql 深分页的查询优化总结&lt;/p>
+&lt;h2 id="五总结与优化建议">&lt;strong>五、总结与优化建议&lt;/strong>
+&lt;/h2>&lt;ul>
+&lt;li>
+&lt;p>✅ B+ 树索引是数据库查询的核心结构，范围查、排序查都依赖它；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>✅ 联合索引需注意“最左前缀”匹配，字段顺序设计极关键；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>✅ ICP（索引下推）可减少回表成本，提高查询效率；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>✅ 覆盖索引是查询最优形态，能避免访问主键页；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>✅ Hash 索引虽快，但仅适合极简等值查找场景。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>📌 &lt;strong>优化索引设计的核心策略：&lt;/strong>&lt;/p>
+&lt;blockquote>
+&lt;p>通过合理设计联合索引顺序 + 使用覆盖索引 + 启用 ICP&lt;/p>
+&lt;/blockquote>
+&lt;p>从根源上减少回表次数，才是提升 MySQL 查询性能的核心。&lt;/p></description></item><item><title>MVCC总结</title><link>https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/</link><pubDate>Thu, 24 Aug 2023 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/</guid><description>&lt;p>&lt;strong>MVCC（多版本并发控制）&lt;/strong>
+MVCC（Multi-Version Concurrency Control，多版本并发控制）是一种用于解决数据库中并发事务问题的机制。它通过为每个事务提供数据库中数据的一个快照（Snapshot），允许多个事务同时读取和写入数据，从而实现高效的并发控制和事务隔离。&lt;/p>
+&lt;p>事务是由 MySQL 的引擎来实现的，我们常见的 InnoDB 引擎它是支持事务的。&lt;/p>
+&lt;p>不过并不是所有的引擎都能支持事务，比如 MySQL 原生的 MyISAM 引擎就不支持事务，也正是这样，所以大多数 MySQL 的引擎都是用 InnoDB。&lt;/p>
+&lt;p>事务看起来感觉简单，但是要实现事务必须要遵守 4 个特性，分别如下：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>原子性（Atomicity）&lt;/strong>：一个事务中的所有操作，要么全部完成，要么全部不完成，不会结束在中间某个环节，而且事务在执行过程中发生错误，会被回滚到事务开始前的状态，就像这个事务从来没有执行过一样，就好比买一件商品，购买成功时，则给商家付了钱，商品到手；购买失败时，则商品在商家手中，消费者的钱也没花出去。&lt;/li>
+&lt;li>&lt;strong>一致性（Consistency）&lt;/strong>：是指事务操作前和操作后，数据满足完整性约束，数据库保持一致性状态。&lt;/li>
+&lt;li>&lt;strong>隔离性（Isolation）&lt;/strong>：数据库允许多个并发事务同时对其数据进行读写和修改的能力，隔离性可以防止多个事务并发执行时由于交叉执行而导致数据的不一致，因为多个事务同时使用相同的数据时，不会相互干扰，每个事务都有一个完整的数据空间，对其他并发事务是隔离的。也就是说，消费者购买商品这个事务，是不影响其他消费者购买的。&lt;/li>
+&lt;li>&lt;strong>持久性（Durability）&lt;/strong>：事务处理结束后，对数据的修改就是永久的，即便系统故障也不会丢失。&lt;/li>
+&lt;/ul>
+&lt;p>InnoDB 引擎通过以下技术来保证事务的这四个特性&lt;/p>
+&lt;ul>
+&lt;li>持久性是通过 &lt;code>redo log&lt;/code> （重做日志）来保证的；&lt;/li>
+&lt;li>原子性是通过 &lt;code>undo log&lt;/code>（回滚日志） 来保证的；&lt;/li>
+&lt;li>隔离性是通过 &lt;code>MVCC&lt;/code>（多版本并发控制） 或锁机制来保证的；&lt;/li>
+&lt;li>一致性则是通过持久性+原子性+隔离性来保证；&lt;/li>
+&lt;/ul>
+&lt;h2 id="数据库的四种隔离级别">数据库的四种隔离级别
+&lt;/h2>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>隔离级别&lt;/th>
+&lt;th>脏读&lt;/th>
+&lt;th>不可重复读&lt;/th>
+&lt;th>幻读&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;strong>READ UNCOMMITTED&lt;/strong>：未提交读&lt;/td>
+&lt;td>可能发生&lt;/td>
+&lt;td>可能发生&lt;/td>
+&lt;td>可能发生&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>READ COMMITTED&lt;/strong>：已提交读&lt;/td>
+&lt;td>解决&lt;/td>
+&lt;td>可能发生&lt;/td>
+&lt;td>可能发生&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>REPEATABLE READ&lt;/strong>：可重复读&lt;/td>
+&lt;td>解决&lt;/td>
+&lt;td>解决&lt;/td>
+&lt;td>可能发生&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>SERIALIZABLE&lt;/strong>：可串行化&lt;/td>
+&lt;td>解决&lt;/td>
+&lt;td>解决&lt;/td>
+&lt;td>解决&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>为什么没有脏写？&lt;/strong>&lt;br>
+四种问题按照严重性排序：脏写 &amp;gt; 脏读 &amp;gt; 不可重复读 &amp;gt; 幻读&lt;br>
+脏写这个问题太严重了，不论是哪种隔离级别，都不允许脏写的情况发生。&lt;/p>
+&lt;p>SQL 标准提出了四种隔离级别来规避这些现象，隔离级别越高，性能效率就越低，这四个隔离级别如下：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>读未提交（&lt;em>read uncommitted&lt;/em>）&lt;/strong>，指一个事务还没提交时，它做的变更就能被其他事务看到；&lt;/li>
+&lt;li>&lt;strong>读提交（&lt;em>read committed&lt;/em>）&lt;/strong>，指一个事务提交之后，它做的变更才能被其他事务看到；&lt;/li>
+&lt;li>&lt;strong>可重复读（&lt;em>repeatable read&lt;/em>）&lt;/strong>，指一个事务执行过程中看到的数据，一直跟这个事务启动时看到的数据是一致的，&lt;strong>MySQL InnoDB 引擎的默认隔离级别&lt;/strong>；&lt;/li>
+&lt;li>&lt;strong>串行化（&lt;em>serializable&lt;/em> ）&lt;/strong>；会对记录加上读写锁，在多个事务对这条记录进行读写操作时，如果发生了读写冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行；&lt;/li>
+&lt;/ul>
+&lt;p>所以，要解决脏读现象，就要升级到「读提交」以上的隔离级别；要解决不可重复读现象，就要升级到「可重复读」的隔离级别，要解决幻读现象不建议将隔离级别升级到「串行化」。&lt;/p>
+&lt;p>不同的数据库厂商对 SQL 标准中规定的 4 种隔离级别的支持不一样，有的数据库只实现了其中几种隔离级别，&lt;strong>我们讨论的 MySQL 虽然支持 4 种隔离级别，但是与SQL 标准中规定的各级隔离级别允许发生的现象却有些出入&lt;/strong>。&lt;/p>
+&lt;p>MySQL 在「可重复读」隔离级别下，可以很大程度上避免幻读现象的发生（注意是很大程度避免，并不是彻底避免），所以 MySQL 并不会使用「串行化」隔离级别来避免幻读现象的发生，因为使用「串行化」隔离级别会影响性能。&lt;/p>
+&lt;p>&lt;strong>MySQL InnoDB 引擎的默认隔离级别虽然是「可重复读」，但是它很大程度上避免幻读现象（并不是完全解决了&lt;/strong>。解决的方案有两种：&lt;/p>
+&lt;ul>
+&lt;li>针对&lt;strong>快照读&lt;/strong>（普通 select 语句），是&lt;strong>通过 MVCC 方式解决了幻读&lt;/strong>，因为可重复读隔离级别下，事务执行过程中看到的数据，一直跟这个事务启动时看到的数据是一致的，即使中途有其他事务插入了一条数据，是查询不出来这条数据的，所以就很好了避免幻读问题。&lt;/li>
+&lt;li>针对&lt;strong>当前读&lt;/strong>（select &amp;hellip; for update 等语句），是&lt;strong>通过 next-key lock（记录锁+间隙锁）方式解决了幻读&lt;/strong>，因为当执行 select &amp;hellip; for update 语句的时候，会加上 next-key lock，如果有其他事务在 next-key lock 锁范围内插入了一条记录，那么这个插入语句就会被阻塞，无法成功插入，所以就很好了避免幻读问题。&lt;/li>
+&lt;/ul>
+&lt;h3 id="隔离级别实现方式">隔离级别实现方式
+&lt;/h3>&lt;ul>
+&lt;li>对于「读未提交」隔离级别的事务来说，因为可以读到未提交事务修改的数据，所以直接读取最新的数据就好了；&lt;/li>
+&lt;li>对于「串行化」隔离级别的事务来说，通过加读写锁的方式来避免并行访问；&lt;/li>
+&lt;li>对于「读提交」和「可重复读」隔离级别的事务来说，它们是通过 &lt;strong>Read View 来实现的，它们的区别在于创建 Read View 的时机不同，大家可以把 Read View 理解成一个数据快照，就像相机拍照那样，定格某一时刻的风景。&lt;/strong>「读提交」隔离级别是在「每个语句执行前」都会重新生成一个 Read View，而「可重复读」隔离级别是「启动事务时」生成一个 Read View，然后整个事务期间都在用这个 Read View**。&lt;/li>
+&lt;/ul>
+&lt;h2 id="read-view">Read View
+&lt;/h2>&lt;p>Read View 主要有以下两部分组成：&lt;/p>
+&lt;ul>
+&lt;li>Read View 中四个字段作用；&lt;/li>
+&lt;li>聚簇索引记录中两个跟事务有关的隐藏列；&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/readview%E7%BB%93%E6%9E%84.drawio.webp"
+width="900"
+height="437"
+srcset="https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/readview%E7%BB%93%E6%9E%84.drawio_hu9031801013325448962.webp 480w, https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/readview%E7%BB%93%E6%9E%84.drawio_hu14455649638736036759.webp 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="205"
+data-flex-basis="494px"
+>&lt;/p>
+&lt;p>Read View 有四个重要的字段：&lt;/p>
+&lt;ul>
+&lt;li>m_ids ：指的是在创建 Read View 时，当前数据库中「活跃事务」的&lt;strong>事务 id 列表&lt;/strong>，注意是一个列表，&lt;strong>“活跃事务”指的就是，启动了但还没提交的事务&lt;/strong>。&lt;/li>
+&lt;li>min_trx_id ：指的是在创建 Read View 时，当前数据库中「活跃事务」中事务 &lt;strong>id 最小的事务&lt;/strong>，也就是 m_ids 的最小值。&lt;/li>
+&lt;li>max_trx_id ：这个并不是 m_ids 的最大值，而是&lt;strong>创建 Read View 时当前数据库中应该给下一个事务的 id 值&lt;/strong>，也就是全局事务中最大的事务 id 值 + 1；&lt;/li>
+&lt;li>creator_trx_id ：指的是&lt;strong>创建该 Read View 的事务的事务 id&lt;/strong>。&lt;/li>
+&lt;/ul>
+&lt;p>对于使用 InnoDB 存储引擎的数据库表，它的聚簇索引记录中都包含下面两个隐藏列：&lt;/p>
+&lt;ul>
+&lt;li>trx_id，当一个事务对某条聚簇索引记录进行改动时，就会&lt;strong>把该事务的事务 id 记录在 trx_id 隐藏列里&lt;/strong>；&lt;/li>
+&lt;li>roll_pointer，每次对某条聚簇索引记录进行改动时，都会把旧版本的记录写入到 undo 日志中，然后&lt;strong>这个隐藏列是个指针，指向每一个旧版本记录&lt;/strong>，于是就可以通过它找到修改前的记录。&lt;/li>
+&lt;li>row_id，行ID，唯一标识一条记录（如果定义主键，它就没有啦）&lt;/li>
+&lt;/ul>
+&lt;p>在创建 Read View 后，我们可以将记录中的 trx_id 划分这三种情况：&lt;/p>
+&lt;p>&lt;img src="https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/ReadView.drawio.webp"
+width="707"
+height="332"
+srcset="https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/ReadView.drawio_hu4707241512921782630.webp 480w, https://cyber-blog.github.io/p/mvcc%E6%80%BB%E7%BB%93/ReadView.drawio_hu12158190206219245288.webp 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="212"
+data-flex-basis="511px"
+>&lt;/p>
+&lt;p>一个事务去访问记录的时候，除了自己的更新记录总是可见之外，还有这几种情况：&lt;/p>
+&lt;ul>
+&lt;li>如果记录的 trx_id 值小于 Read View 中的 &lt;code>min_trx_id&lt;/code> 值，表示这个版本的记录是在创建 Read View &lt;strong>前&lt;/strong>已经提交的事务生成的，所以该版本的记录对当前事务&lt;strong>可见&lt;/strong>。&lt;/li>
+&lt;li>如果记录的 trx_id 值大于等于 Read View 中的 &lt;code>max_trx_id&lt;/code> 值，表示这个版本的记录是在创建 Read View &lt;strong>后&lt;/strong>才启动的事务生成的，所以该版本的记录对当前事务&lt;strong>不可见&lt;/strong>。&lt;/li>
+&lt;li>如果记录的 trx_id 值在 Read View 的 &lt;code>min_trx_id&lt;/code> 和 &lt;code>max_trx_id&lt;/code> 之间，需要判断 trx_id 是否在 m_ids 列表中：
+&lt;ul>
+&lt;li>如果记录的 trx_id &lt;strong>在&lt;/strong> &lt;code>m_ids&lt;/code> 列表中，表示生成该版本记录的活跃事务依然活跃着（还没提交事务），所以该版本的记录对当前事务&lt;strong>不可见&lt;/strong>。&lt;/li>
+&lt;li>如果记录的 trx_id &lt;strong>不在&lt;/strong> &lt;code>m_ids&lt;/code>列表中，表示生成该版本记录的活跃事务已经被提交，所以该版本的记录对当前事务&lt;strong>可见&lt;/strong>。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>这种通过「版本链」来控制并发事务访问同一个记录时的行为就叫 MVCC（多版本并发控制）。&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>对于可重复读&lt;/strong>
+&lt;strong>可重复读隔离级别是启动事务时生成一个 Read View，然后整个事务期间都在用这个 Read View&lt;/strong>。&lt;/p>
+&lt;p>&lt;strong>对于读已提交&lt;/strong>
+&lt;strong>读提交隔离级别是在每次读取数据时，都会生成一个新的 Read View&lt;/strong>。&lt;/p></description></item></channel></rss>

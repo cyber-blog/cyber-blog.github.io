@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Zookeeper on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/zookeeper/</link><description>Recent content in Zookeeper on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Sat, 07 Jun 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/zookeeper/index.xml" rel="self" type="application/rss+xml"/><item><title>分布式锁的实现原理与方式详解</title><link>https://cyber-blog.github.io/p/distributed-lock/</link><pubDate>Sat, 07 Jun 2025 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/distributed-lock/</guid><description>&lt;h1 id="分布式锁的实现原理与方式详解">分布式锁的实现原理与方式详解
+&lt;/h1>&lt;h2 id="一基于-redis-的分布式锁实现">一、基于 Redis 的分布式锁实现
+&lt;/h2>&lt;p>Redis 是目前使用最广泛的分布式锁方案之一，通常通过如下命令实现：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">SET lock_key unique_id NX PX &lt;span class="m">30000&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="参数说明">参数说明
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;code>lock_key&lt;/code>：&lt;strong>键（Key）&lt;/strong>，表示分布式锁在 Redis 中的标识名；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>unique_id&lt;/code>：&lt;strong>值（Value）&lt;/strong>，代表当前请求加锁的客户端唯一标识（例如 UUID + ThreadID），用于确保释放锁时身份验证；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>NX&lt;/code>：表示仅在键不存在时才进行设置，防止覆盖其他客户端已持有的锁；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>PX 30000&lt;/code>：设置键的过期时间为 30 秒，防止因客户端异常退出而产生死锁。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="加锁失败的返回值">加锁失败的返回值
+&lt;/h3>&lt;p>如果 &lt;code>lock_key&lt;/code> 已存在，说明已有其他线程持有锁，命令将返回 &lt;code>null&lt;/code>，表示加锁失败。&lt;/p>
+&lt;h3 id="解锁-lua-脚本示例">解锁 Lua 脚本示例
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-lua" data-lang="lua">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">if&lt;/span> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;get&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">])&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="kr">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;del&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">end&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>该脚本判断当前请求者是否为锁的持有者（通过比对 &lt;code>unique_id&lt;/code>），只有持有者才能安全释放锁。&lt;/p>
+&lt;hr>
+&lt;h2 id="二基于-redisson-的分布式锁实现">二、基于 Redisson 的分布式锁实现
+&lt;/h2>&lt;p>Redisson 是 Redis 官方推荐的 Java 客户端之一，封装了丰富的分布式对象，其中对分布式锁的支持较为完整。&lt;/p>
+&lt;h3 id="主要特性">主要特性
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>支持可重入锁（同一线程可多次加锁）；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Watchdog 自动续期机制，防止锁自动过期；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Lua 脚本保障操作原子性；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>支持公平锁、读写锁、联锁等高级功能。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="加锁-lua-脚本">加锁 Lua 脚本
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-lua" data-lang="lua">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;exists&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">])&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="kr">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;hset&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;pexpire&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="kc">nil&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">end&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;hexists&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">])&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="kr">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;hincrby&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;pexpire&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="kc">nil&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">end&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">return&lt;/span> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;pttl&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>
+&lt;p>使用 Hash 存储锁持有者及重入次数；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>ARGV[2]&lt;/code> 为唯一标识（如线程 ID）；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>若当前线程已持有锁，则重入计数 +1 并续期。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="解锁-lua-脚本">解锁 Lua 脚本
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-lua" data-lang="lua">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;hexists&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">])&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="kr">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="kc">nil&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">end&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">local&lt;/span> &lt;span class="n">counter&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;hincrby&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">counter&lt;/span> &lt;span class="o">&amp;gt;&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="kr">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;pexpire&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">ARGV&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">redis.call&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;del&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">KEYS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">end&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>
+&lt;p>减少持有者的重入计数；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>若减为 0，释放锁。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="watchdog-自动续期机制">Watchdog 自动续期机制
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>默认锁的 TTL 为 30 秒；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>若未显式设置 TTL，Redisson 会启动“看门狗”线程，每隔 10 秒自动续期，直至业务逻辑完成；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>避免因执行时间较长导致锁意外过期。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="java-使用示例">Java 使用示例
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">RLock&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">lock&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">redissonClient&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getLock&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;myLock&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="k">try&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">lock&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">tryLock&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">5&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">30&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">TimeUnit&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">SECONDS&lt;/span>&lt;span class="p">))&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 执行业务逻辑&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">finally&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">lock&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">isHeldByCurrentThread&lt;/span>&lt;span class="p">())&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">lock&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">unlock&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;h2 id="三lua-脚本为何具备原子性">三、Lua 脚本为何具备原子性？
+&lt;/h2>&lt;h3 id="核心机制">核心机制
+&lt;/h3>&lt;p>Redis 执行 Lua 脚本时具备以下特性：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Redis 使用单线程模型；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;code>EVAL&lt;/code> 命令整体作为一个事务执行；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>执行脚本期间不会响应其他客户端请求；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>脚本内部多个 Redis 命令会被整体提交执行，无法被打断。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>因此，在 Redis 中执行 Lua 脚本具有天然的原子性，能够有效避免竞态条件。&lt;/p>
+&lt;hr>
+&lt;h2 id="四分布式锁的其他实现方式">四、分布式锁的其他实现方式
+&lt;/h2>&lt;h3 id="1-基于数据库如-mysqlpostgresql">1. 基于数据库（如 MySQL/PostgreSQL）
+&lt;/h3>&lt;h4 id="实现方式">实现方式
+&lt;/h4>&lt;ul>
+&lt;li>
+&lt;p>利用唯一约束：&lt;code>INSERT INTO lock_table (key) VALUES ('lockKey')&lt;/code>；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>或使用悲观锁：&lt;code>SELECT ... FOR UPDATE&lt;/code>。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="优缺点">优缺点
+&lt;/h4>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>优点&lt;/strong>：实现简单、依赖较少、与业务数据库一致性强；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>缺点&lt;/strong>：性能较差，不适合高并发场景，可能引发死锁或阻塞。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="2-基于-zookeeper-的分布式锁">2. 基于 ZooKeeper 的分布式锁
+&lt;/h3>&lt;h4 id="实现方式-1">实现方式
+&lt;/h4>&lt;ul>
+&lt;li>
+&lt;p>利用临时顺序节点（&lt;code>Ephemeral Sequential&lt;/code>）；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>所有客户端在某节点下创建顺序子节点；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>排序最小的节点获得锁，其他客户端监听前一个节点。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="优缺点-1">优缺点
+&lt;/h4>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>优点&lt;/strong>：可靠性高、天然支持顺序和事件通知机制；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>缺点&lt;/strong>：部署复杂、性能受限于 ZooKeeper 的吞吐能力。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="3-基于-etcd-的分布式锁">3. 基于 Etcd 的分布式锁
+&lt;/h3>&lt;h4 id="实现方式-2">实现方式
+&lt;/h4>&lt;ul>
+&lt;li>
+&lt;p>利用 Etcd 的租约（Lease）和事务（Txn）；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>客户端通过 CAS 机制创建唯一锁键，并绑定租约；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>续期机制保障锁的持有。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="优缺点-2">优缺点
+&lt;/h4>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>优点&lt;/strong>：一致性强、适用于容器编排等场景；&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>缺点&lt;/strong>：相对复杂，需要管理租约续期和连接状态。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="五小结">五、小结
+&lt;/h2>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>实现方式&lt;/th>
+&lt;th>优点&lt;/th>
+&lt;th>缺点&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Redis&lt;/td>
+&lt;td>高性能、实现简单、生态丰富&lt;/td>
+&lt;td>容易出现锁失效或误删&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Redisson&lt;/td>
+&lt;td>功能丰富、支持自动续期&lt;/td>
+&lt;td>相对重量级，需客户端支持&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>数据库&lt;/td>
+&lt;td>简单易用、无需引入中间件&lt;/td>
+&lt;td>性能瓶颈明显，存在死锁风险&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>ZooKeeper&lt;/td>
+&lt;td>高可靠性、顺序性好&lt;/td>
+&lt;td>部署复杂、性能有限&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Etcd&lt;/td>
+&lt;td>一致性强、支持租约机制&lt;/td>
+&lt;td>运维成本高，使用门槛较高&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>选择分布式锁实现方案时，应根据系统性能需求、可靠性要求和技术栈综合考虑。&lt;/p></description></item></channel></rss>
