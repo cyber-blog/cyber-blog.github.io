@@ -7,7 +7,10 @@ favicon = "/favicon.png"
 # SEO 相关
 description = "仿生人的技术思考，探索人工智能、编程技术与未来科技的边界"
 keywords = ["技术博客", "人工智能", "编程", "科技", "思考"]
-author = "majiang"
+
+[author]
+name = "majiang"
+email = "majiang213@foxmail.com"
 
 [footer]
 since = 2020
@@ -65,9 +68,9 @@ site = ""                    # 设置你的 Twitter 用户名
 card = "summary_large_image"
 
 [defaultImage.opengraph]
-enabled = true
-local = true
-src = "img/og-default.png"   # 默认分享图片
+enabled = false
+local = false
+src = ""
 
 [colorScheme]
 toggle = true
