@@ -2,7 +2,7 @@
 title: Spring Boot应用假死现象：SLF4J日志框架冲突深度分析
 description: 我最近遇到了一个奇怪的现象：在一个 Java Spring Boot 项目开发中，应用启动时显示了一些日志，然后就完全停止输出，程序看起来像是卡住了。控制台光标在闪烁，但是什么都不会发生。
 slug: spring-boot
-date: 2025-09-19 16:30:00+0000
+date: 2025-09-19 16:30:00+0800
 categories:
   - tech
 tags:
