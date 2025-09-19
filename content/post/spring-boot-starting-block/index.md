@@ -10,8 +10,6 @@ tags:
   - SpringBoot
 draft: false
 ---
-# Spring Boot应用假死现象：SLF4J日志框架冲突深度分析
-
 ## 引言
 
 ### 一个令人困惑的现象
