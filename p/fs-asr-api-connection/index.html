@@ -1,0 +1,1444 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="通过编写 ASR 模块，对接科大讯飞的实时语音转写 API"><title>FreeSWITCH ASR 接口对接</title>
+<link rel=canonical href=https://cyber-blog.github.io/p/fs-asr-api-connection/><link rel=stylesheet href=/scss/style.min.70a01615b5dd99826a360296920067f6e3896a41fe397d04d6b849efef75a174.css><meta property='og:title' content="FreeSWITCH ASR 接口对接"><meta property='og:description' content="通过编写 ASR 模块，对接科大讯飞的实时语音转写 API"><meta property='og:url' content='https://cyber-blog.github.io/p/fs-asr-api-connection/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='FreeSWITCH'><meta property='article:published_time' content='2024-03-25T00:00:00+00:00'><meta property='article:modified_time' content='2024-03-25T00:00:00+00:00'><meta property='og:image' content='https://cyber-blog.github.io/p/fs-asr-api-connection/cover.png'><meta name=twitter:title content="FreeSWITCH ASR 接口对接"><meta name=twitter:description content="通过编写 ASR 模块，对接科大讯飞的实时语音转写 API"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://cyber-blog.github.io/p/fs-asr-api-connection/cover.png'><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/majiang213 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#定义-asr-模块>定义 ASR 模块</a><ol><li><a href=#基础代码>基础代码</a></li><li><a href=#接口实现>接口实现</a></li><li><a href=#配置文件>配置文件</a></li></ol></li><li><a href=#websocketpp-模块>WebSocketPP 模块</a><ol><li><a href=#测试-demo>测试 Demo</a></li><li><a href=#实现代码>实现代码</a></li></ol></li><li><a href=#安装-mod_iflytekasr>安装 mod_iflytekasr</a></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/p/fs-asr-api-connection/><img src=/p/fs-asr-api-connection/cover_hu9454223635583319863.png srcset="/p/fs-asr-api-connection/cover_hu9454223635583319863.png 800w, /p/fs-asr-api-connection/cover_hu11324057453420205624.png 1600w" width=800 height=420 loading=lazy alt="Featured image of post FreeSWITCH ASR 接口对接"></a></div><div class=article-details><header class=article-category><a href=/categories/tech/ style=background-color:#2a9d8f;color:#fff>技术博客</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/fs-asr-api-connection/>FreeSWITCH ASR 接口对接</a></h2><h3 class=article-subtitle>通过编写 ASR 模块，对接科大讯飞的实时语音转写 API</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Mar 25, 2024</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 9 分钟</time></div></footer></div></header><section class=article-content><h2 id=定义-asr-模块>定义 ASR 模块</h2><p>在当前的外呼平台中，实时 ASR（语音识别）已成为一种常见的基础功能。尽管接触 FreeSWITCH 已有一段时间，但此前一直未进行 ASR 模块的定制化开发，仅通过 GitHub 上的开源项目实现需求。然而，这些方案往往无法完全满足业务需求，例如需要对接不同厂商的 ASR 接口、支持定制化开发（如实时 ASR、文件 ASR、打断功能等）。因此，基于具体需求进行定制开发势在必行。</p><p>目前的一个需求是实现 FreeSWITCH 的语音实时识别，采用的方案是通过 WebSocket 传输语音帧进行识别，具体可以通过以下方式实现。</p><h3 id=基础代码>基础代码</h3><p>Freeswitch 的 ASR 模块也是通过 media_bug 来实现的。
+FreeSWITCH 定义的模块，需要定义下面的这 3 个方法。分别定义模块加载、卸载和模块定义。</p><p>主要关注模块加载方法，定义了这个模块在 ASR 生命周期里的接口实现。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=k>extern</span> <span class=s>&#34;C&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=c1>// 模块定义，分别是模块加载、模块卸载
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=n>SWITCH_MODULE_LOAD_FUNCTION</span><span class=p>(</span><span class=n>mod_iflytekasr_load</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>SWITCH_MODULE_SHUTDOWN_FUNCTION</span><span class=p>(</span><span class=n>mod_iflytekasr_shutdown</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>SWITCH_MODULE_DEFINITION</span><span class=p>(</span><span class=n>mod_iflytekasr</span><span class=p>,</span> <span class=n>mod_iflytekasr_load</span><span class=p>,</span> <span class=n>mod_iflytekasr_shutdown</span><span class=p>,</span> <span class=nb>NULL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 模块加载
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>SWITCH_MODULE_LOAD_FUNCTION</span><span class=p>(</span><span class=n>mod_iflytekasr_load</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_asr_interface_t</span> <span class=o>*</span><span class=n>asr_interface</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>switch_mutex_init</span><span class=p>(</span><span class=o>&amp;</span><span class=n>MUTEX</span><span class=p>,</span> <span class=n>SWITCH_MUTEX_NESTED</span><span class=p>,</span> <span class=n>pool</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>globals</span><span class=p>.</span><span class=n>pool</span> <span class=o>=</span> <span class=n>pool</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>switch_mutex_lock</span><span class=p>(</span><span class=n>MUTEX</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>iflytekasr_load_config</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_mutex_unlock</span><span class=p>(</span><span class=n>MUTEX</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* connect my internal structure to the blank pointer passed to me */</span>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>module_interface</span> <span class=o>=</span> <span class=n>switch_loadable_module_create_module_interface</span><span class=p>(</span><span class=n>pool</span><span class=p>,</span> <span class=n>modname</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span> <span class=o>=</span> <span class=p>(</span><span class=n>switch_asr_interface_t</span> <span class=o>*</span><span class=p>)</span><span class=n>switch_loadable_module_create_interface</span><span class=p>(</span><span class=o>*</span><span class=n>module_interface</span><span class=p>,</span> <span class=n>SWITCH_ASR_INTERFACE</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>interface_name</span> <span class=o>=</span> <span class=s>&#34;iflytekasr&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_open</span> <span class=o>=</span> <span class=n>asr_open</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_close</span> <span class=o>=</span> <span class=n>asr_close</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_load_grammar</span> <span class=o>=</span> <span class=n>asr_load_grammar</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_unload_grammar</span> <span class=o>=</span> <span class=n>asr_unload_grammar</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_feed</span> <span class=o>=</span> <span class=n>asr_feed</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_pause</span> <span class=o>=</span> <span class=n>asr_pause</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_resume</span> <span class=o>=</span> <span class=n>asr_resume</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_check_results</span> <span class=o>=</span> <span class=n>asr_check_results</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_get_results</span> <span class=o>=</span> <span class=n>asr_get_results</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_start_input_timers</span> <span class=o>=</span> <span class=n>asr_start_input_timers</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_text_param</span> <span class=o>=</span> <span class=n>asr_text_param</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_numeric_param</span> <span class=o>=</span> <span class=n>asr_numeric_param</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>asr_interface</span><span class=o>-&gt;</span><span class=n>asr_float_param</span> <span class=o>=</span> <span class=n>asr_float_param</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=cm>/* indicate that the module should continue to be loaded */</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>module_interface</span> <span class=o>=</span> <span class=n>switch_loadable_module_create_module_interface</span><span class=p>(</span><span class=n>pool</span><span class=p>,</span> <span class=n>modname</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_LOG</span><span class=p>,</span> <span class=n>SWITCH_LOG_INFO</span><span class=p>,</span> <span class=s>&#34;iflytekasr mod loaded version 1.1 since 20241024.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 模块卸载
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>SWITCH_MODULE_SHUTDOWN_FUNCTION</span><span class=p>(</span><span class=n>mod_iflytekasr_shutdown</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_LOG</span><span class=p>,</span> <span class=n>SWITCH_LOG_WARNING</span><span class=p>,</span> <span class=s>&#34;iflytekasr shutdown</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>SWITCH_STATUS_UNLOAD</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=接口实现>接口实现</h3><p>下列接口定义了一个 ASR 模块的完整生命周期及其功能。在 FreeSWITCH 中，这些接口可用于与第三方 ASR API（如科大讯飞、Google Speech-to-Text 等）对接，负责从初始化到关闭的各种操作。以下是各接口的具体作用：</p><p>​ 1.asr_open：ASR 启动时执行，初始化 ASR 模块并建立连接。</p><p>​ 2.asr_close：ASR 关闭时执行，关闭 ASR 模块并释放资源。</p><p>​ 3.asr_load_grammar：在初始化资源之后执行，加载语法或语言模型。在开始 ASR 开启命令，可以加载一些外部传递来的参数，最终会传递到该接口解析。命令格式为 <code>detect_speech &lt;mod_name> &lt;gram_name> &lt;gram_path> [&lt;addr>]</code></p><p>​ 4.asr_unload_grammar：在 close 方法前执行，卸载语法或语言模型，释放资源。</p><p>​ 5.asr_feed：在拨打过程中，向 ASR API 传递语音数据帧。</p><p>​ 6.asr_pause：暂停当前语音识别任务。</p><p>​ 7.asr_resume：恢复暂停的语音识别任务。</p><p>​ 8.asr_check_results：检查识别结果是否已生成。<strong>注意：这个方法的实现要保证幂等性。在asr_get_results方法被调用之前，这个方法多次调用的结果要保持一致</strong></p><p>​ 9.asr_get_results：获取语音识别的最终结果。</p><p>​ 10.asr_start_input_timers：启动输入计时器控制时间窗口。</p><p>​ 11.asr_text_param：设置文本类型的配置参数。</p><p>​ 12.asr_numeric_param：设置数值类型的配置参数。</p><p>​ 13.asr_float_param：设置浮点类型的配置参数。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span><span class=lnt>117
+</span><span class=lnt>118
+</span><span class=lnt>119
+</span><span class=lnt>120
+</span><span class=lnt>121
+</span><span class=lnt>122
+</span><span class=lnt>123
+</span><span class=lnt>124
+</span><span class=lnt>125
+</span><span class=lnt>126
+</span><span class=lnt>127
+</span><span class=lnt>128
+</span><span class=lnt>129
+</span><span class=lnt>130
+</span><span class=lnt>131
+</span><span class=lnt>132
+</span><span class=lnt>133
+</span><span class=lnt>134
+</span><span class=lnt>135
+</span><span class=lnt>136
+</span><span class=lnt>137
+</span><span class=lnt>138
+</span><span class=lnt>139
+</span><span class=lnt>140
+</span><span class=lnt>141
+</span><span class=lnt>142
+</span><span class=lnt>143
+</span><span class=lnt>144
+</span><span class=lnt>145
+</span><span class=lnt>146
+</span><span class=lnt>147
+</span><span class=lnt>148
+</span><span class=lnt>149
+</span><span class=lnt>150
+</span><span class=lnt>151
+</span><span class=lnt>152
+</span><span class=lnt>153
+</span><span class=lnt>154
+</span><span class=lnt>155
+</span><span class=lnt>156
+</span><span class=lnt>157
+</span><span class=lnt>158
+</span><span class=lnt>159
+</span><span class=lnt>160
+</span><span class=lnt>161
+</span><span class=lnt>162
+</span><span class=lnt>163
+</span><span class=lnt>164
+</span><span class=lnt>165
+</span><span class=lnt>166
+</span><span class=lnt>167
+</span><span class=lnt>168
+</span><span class=lnt>169
+</span><span class=lnt>170
+</span><span class=lnt>171
+</span><span class=lnt>172
+</span><span class=lnt>173
+</span><span class=lnt>174
+</span><span class=lnt>175
+</span><span class=lnt>176
+</span><span class=lnt>177
+</span><span class=lnt>178
+</span><span class=lnt>179
+</span><span class=lnt>180
+</span><span class=lnt>181
+</span><span class=lnt>182
+</span><span class=lnt>183
+</span><span class=lnt>184
+</span><span class=lnt>185
+</span><span class=lnt>186
+</span><span class=lnt>187
+</span><span class=lnt>188
+</span><span class=lnt>189
+</span><span class=lnt>190
+</span><span class=lnt>191
+</span><span class=lnt>192
+</span><span class=lnt>193
+</span><span class=lnt>194
+</span><span class=lnt>195
+</span><span class=lnt>196
+</span><span class=lnt>197
+</span><span class=lnt>198
+</span><span class=lnt>199
+</span><span class=lnt>200
+</span><span class=lnt>201
+</span><span class=lnt>202
+</span><span class=lnt>203
+</span><span class=lnt>204
+</span><span class=lnt>205
+</span><span class=lnt>206
+</span><span class=lnt>207
+</span><span class=lnt>208
+</span><span class=lnt>209
+</span><span class=lnt>210
+</span><span class=lnt>211
+</span><span class=lnt>212
+</span><span class=lnt>213
+</span><span class=lnt>214
+</span><span class=lnt>215
+</span><span class=lnt>216
+</span><span class=lnt>217
+</span><span class=lnt>218
+</span><span class=lnt>219
+</span><span class=lnt>220
+</span><span class=lnt>221
+</span><span class=lnt>222
+</span><span class=lnt>223
+</span><span class=lnt>224
+</span><span class=lnt>225
+</span><span class=lnt>226
+</span><span class=lnt>227
+</span><span class=lnt>228
+</span><span class=lnt>229
+</span><span class=lnt>230
+</span><span class=lnt>231
+</span><span class=lnt>232
+</span><span class=lnt>233
+</span><span class=lnt>234
+</span><span class=lnt>235
+</span><span class=lnt>236
+</span><span class=lnt>237
+</span><span class=lnt>238
+</span><span class=lnt>239
+</span><span class=lnt>240
+</span><span class=lnt>241
+</span><span class=lnt>242
+</span><span class=lnt>243
+</span><span class=lnt>244
+</span><span class=lnt>245
+</span><span class=lnt>246
+</span><span class=lnt>247
+</span><span class=lnt>248
+</span><span class=lnt>249
+</span><span class=lnt>250
+</span><span class=lnt>251
+</span><span class=lnt>252
+</span><span class=lnt>253
+</span><span class=lnt>254
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-cpp data-lang=cpp><span class=line><span class=cl><span class=c1>// asr 模块开启时执行的方法，做一些初始化操作
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>test_speech_open</span><span class=p>(</span><span class=n>switch_speech_handle_t</span> <span class=o>*</span><span class=n>sh</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>voice_name</span><span class=p>,</span> <span class=kt>int</span> <span class=n>rate</span><span class=p>,</span> <span class=kt>int</span> <span class=n>channels</span><span class=p>,</span> <span class=n>switch_speech_flag_t</span> <span class=o>*</span><span class=n>flags</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=n>test_tts_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=n>switch_core_alloc</span><span class=p>(</span><span class=n>sh</span><span class=o>-&gt;</span><span class=n>memory_pool</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>test_tts_t</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>	<span class=n>switch_assert</span><span class=p>(</span><span class=n>context</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>context</span><span class=o>-&gt;</span><span class=n>samples</span> <span class=o>=</span> <span class=n>sh</span><span class=o>-&gt;</span><span class=n>samplerate</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>sh</span><span class=o>-&gt;</span><span class=n>private_info</span> <span class=o>=</span> <span class=n>context</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// close 时执行的方法，释放一些资源
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>test_speech_close</span><span class=p>(</span><span class=n>switch_speech_handle_t</span> <span class=o>*</span><span class=n>sh</span><span class=p>,</span> <span class=n>switch_speech_flag_t</span> <span class=o>*</span><span class=n>flags</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 通过查阅官方文档可以看到这个指令的格式为 detect_speech &lt;mod_name&gt; &lt;gram_name&gt; &lt;gram_path&gt; [&lt;addr&gt;]
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! function to load a grammar to the asr interface */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_load_grammar</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>grammar</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>name</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>test_asr_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=p>(</span><span class=n>test_asr_t</span> <span class=o>*</span><span class=p>)</span><span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>ah</span><span class=p>,</span> <span class=n>SWITCH_ASR_FLAG_CLOSED</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_LOG</span><span class=p>,</span> <span class=n>SWITCH_LOG_ERROR</span><span class=p>,</span> <span class=s>&#34;asr_open attempt on CLOSED asr handle</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>SWITCH_STATUS_FALSE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_INFO</span><span class=p>,</span> <span class=s>&#34;load grammar %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>grammar</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>context</span><span class=o>-&gt;</span><span class=n>grammar</span> <span class=o>=</span> <span class=n>switch_core_strdup</span><span class=p>(</span><span class=n>ah</span><span class=o>-&gt;</span><span class=n>memory_pool</span><span class=p>,</span> <span class=n>grammar</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/*! function to unload a grammar to the asr interface */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_unload_grammar</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>name</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 接收语音流的方法
+</span></span></span><span class=line><span class=cl><span class=c1>//  ASR 的 media_bug 会在 SWITCH_ABC_TYPE_READ 状态下调用这个方法。
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! function to feed audio to the ASR */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_feed</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=kt>void</span> <span class=o>*</span><span class=n>data</span><span class=p>,</span> <span class=kt>unsigned</span> <span class=kt>int</span> <span class=n>len</span><span class=p>,</span> <span class=n>switch_asr_flag_t</span> <span class=o>*</span><span class=n>flags</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=n>test_asr_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=p>(</span><span class=n>test_asr_t</span> <span class=o>*</span><span class=p>)</span> <span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>switch_status_t</span> <span class=n>status</span> <span class=o>=</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=n>switch_vad_state_t</span> <span class=n>vad_state</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>ah</span><span class=p>,</span> <span class=n>SWITCH_ASR_FLAG_CLOSED</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>SWITCH_STATUS_BREAK</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_RETURNED_RESULT</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>switch_test_flag</span><span class=p>(</span><span class=n>ah</span><span class=p>,</span> <span class=n>SWITCH_ASR_FLAG_AUTO_RESUME</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;Auto Resuming</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=n>test_asr_reset</span><span class=p>(</span><span class=n>context</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_READY</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>vad_state</span> <span class=o>=</span> <span class=n>switch_vad_process</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>vad</span><span class=p>,</span> <span class=p>(</span><span class=kt>int16_t</span> <span class=o>*</span><span class=p>)</span><span class=n>data</span><span class=p>,</span> <span class=n>len</span> <span class=o>/</span> <span class=k>sizeof</span><span class=p>(</span><span class=kt>uint16_t</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=n>vad_state</span> <span class=o>==</span> <span class=n>SWITCH_VAD_STATE_STOP_TALKING</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_set_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_RESULT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_INFO</span><span class=p>,</span> <span class=s>&#34;Talking stopped, have result.</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_vad_reset</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>vad</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_clear_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_READY</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>vad_state</span> <span class=o>==</span> <span class=n>SWITCH_VAD_STATE_START_TALKING</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_set_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_START_OF_SPEECH</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>speech_time</span> <span class=o>=</span> <span class=n>switch_micro_time_now</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>status</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// detect_speech resume 命令执行时会调用这个方法
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! function to resume recognizer */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_resume</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>test_asr_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=p>(</span><span class=n>test_asr_t</span> <span class=o>*</span><span class=p>)</span> <span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>ah</span><span class=p>,</span> <span class=n>SWITCH_ASR_FLAG_CLOSED</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_LOG</span><span class=p>,</span> <span class=n>SWITCH_LOG_ERROR</span><span class=p>,</span> <span class=s>&#34;asr_resume attempt on CLOSED asr handle</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>SWITCH_STATUS_FALSE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;Resuming</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>test_asr_reset</span><span class=p>(</span><span class=n>context</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// detect_speech pause 命令执行时会调用这个方法
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! function to pause recognizer */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_pause</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>test_asr_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=p>(</span><span class=n>test_asr_t</span> <span class=o>*</span><span class=p>)</span> <span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>ah</span><span class=p>,</span> <span class=n>SWITCH_ASR_FLAG_CLOSED</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_LOG</span><span class=p>,</span> <span class=n>SWITCH_LOG_ERROR</span><span class=p>,</span> <span class=s>&#34;asr_pause attempt on CLOSED asr handle</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>SWITCH_STATUS_FALSE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;Pausing</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=n>context</span><span class=o>-&gt;</span><span class=n>flags</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 检查是否获取到 ASR 结果的方法。每个语音帧都会调用。
+</span></span></span><span class=line><span class=cl><span class=c1>// **注意：这个方法的实现要保证幂等性。在asr_get_results方法被调用之前，这个方法多次调用的结果要保持一致
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! function to read results from the ASR*/</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_check_results</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=n>switch_asr_flag_t</span> <span class=o>*</span><span class=n>flags</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>test_asr_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=p>(</span><span class=n>test_asr_t</span> <span class=o>*</span><span class=p>)</span> <span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_RETURNED_RESULT</span><span class=p>)</span> <span class=o>||</span> <span class=n>switch_test_flag</span><span class=p>(</span><span class=n>ah</span><span class=p>,</span> <span class=n>SWITCH_ASR_FLAG_CLOSED</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>SWITCH_STATUS_BREAK</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_RETURNED_START_OF_SPEECH</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_START_OF_SPEECH</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>((</span><span class=o>!</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_RESULT</span><span class=p>))</span> <span class=o>&amp;&amp;</span> <span class=p>(</span><span class=o>!</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_NOINPUT_TIMEOUT</span><span class=p>)))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_INPUT_TIMERS</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=o>!</span><span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_START_OF_SPEECH</span><span class=p>))</span> <span class=o>&amp;&amp;</span>
+</span></span><span class=line><span class=cl>				<span class=n>context</span><span class=o>-&gt;</span><span class=n>no_input_timeout</span> <span class=o>&gt;=</span> <span class=mi>0</span> <span class=o>&amp;&amp;</span>
+</span></span><span class=line><span class=cl>				<span class=p>(</span><span class=n>switch_micro_time_now</span><span class=p>()</span> <span class=o>-</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>no_input_time</span><span class=p>)</span> <span class=o>/</span> <span class=mi>1000</span> <span class=o>&gt;=</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>no_input_timeout</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;NO INPUT TIMEOUT %&#34;</span> <span class=n>SWITCH_TIME_T_FMT</span> <span class=s>&#34;ms</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=p>(</span><span class=n>switch_micro_time_now</span><span class=p>()</span> <span class=o>-</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>no_input_time</span><span class=p>)</span> <span class=o>/</span> <span class=mi>1000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_set_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_NOINPUT_TIMEOUT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_START_OF_SPEECH</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>speech_timeout</span> <span class=o>&gt;</span> <span class=mi>0</span> <span class=o>&amp;&amp;</span> <span class=p>(</span><span class=n>switch_micro_time_now</span><span class=p>()</span> <span class=o>-</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>speech_time</span><span class=p>)</span> <span class=o>/</span> <span class=mi>1000</span> <span class=o>&gt;=</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>speech_timeout</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;SPEECH TIMEOUT %&#34;</span> <span class=n>SWITCH_TIME_T_FMT</span> <span class=s>&#34;ms</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=p>(</span><span class=n>switch_micro_time_now</span><span class=p>()</span> <span class=o>-</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>speech_time</span><span class=p>)</span> <span class=o>/</span> <span class=mi>1000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_START_OF_SPEECH</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=n>switch_set_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_RESULT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=n>switch_set_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_NOINPUT_TIMEOUT</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_RESULT</span><span class=p>)</span> <span class=o>||</span> <span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_NOINPUT_TIMEOUT</span><span class=p>)</span> <span class=o>?</span> <span class=nl>SWITCH_STATUS_SUCCESS</span> <span class=p>:</span> <span class=n>SWITCH_STATUS_BREAK</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 获取识别加过的方法，识别结果复制给 xmlstr 这个指针。返回 true 时 Freeswitch 会对外发送 detected-speech 事件
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! function to read results from the ASR */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_get_results</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=kt>char</span> <span class=o>**</span><span class=n>xmlstr</span><span class=p>,</span> <span class=n>switch_asr_flag_t</span> <span class=o>*</span><span class=n>flags</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>udp_info_t</span> <span class=o>*</span><span class=n>udp_info</span> <span class=o>=</span> <span class=p>(</span><span class=n>udp_info_t</span> <span class=o>*</span><span class=p>)</span><span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_INFO</span><span class=p>,</span> <span class=s>&#34;[[iflytekasr_callback--&gt;asr_get_results]] get result start [%s] </span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>connection_metadata</span><span class=o>::</span><span class=n>ptr</span> <span class=n>metadata_it</span> <span class=o>=</span> <span class=n>globals</span><span class=p>.</span><span class=n>endpoint</span><span class=o>-&gt;</span><span class=n>get_metadata</span><span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>switch_mutex_lock</span><span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>flag_mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>index</span> <span class=o>=</span> <span class=n>metadata_it</span><span class=o>-&gt;</span><span class=n>get_m_last_index</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>seq</span> <span class=o>==</span> <span class=n>index</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>SWITCH_STATUS_FALSE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>seq</span> <span class=o>=</span> <span class=n>index</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_INFO</span><span class=p>,</span> <span class=s>&#34;[[iflytekasr_callback--&gt;asr_get_results]] get result get mutex [%s] </span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=o>*</span><span class=n>xmlstr</span> <span class=o>=</span> <span class=n>switch_mprintf</span><span class=p>(</span><span class=s>&#34;%s&#34;</span><span class=p>,</span> <span class=n>get_switch_buffer_ptr</span><span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>text_buffer</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_LOG</span><span class=p>,</span> <span class=n>SWITCH_LOG_INFO</span><span class=p>,</span> <span class=s>&#34;[[iflytekasr_callback--&gt;asr_get_result]] asr results is [%s] </span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=o>*</span><span class=n>xmlstr</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=n>switch_buffer_zero</span><span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>text_buffer</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>switch_mutex_unlock</span><span class=p>(</span><span class=n>udp_info</span><span class=o>-&gt;</span><span class=n>flag_mutex</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 设置超时时间接口
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! function to start input timeouts */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_status_t</span> <span class=nf>asr_start_input_timers</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    	<span class=n>test_asr_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=p>(</span><span class=n>test_asr_t</span> <span class=o>*</span><span class=p>)</span> <span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>ah</span><span class=p>,</span> <span class=n>SWITCH_ASR_FLAG_CLOSED</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_LOG</span><span class=p>,</span> <span class=n>SWITCH_LOG_ERROR</span><span class=p>,</span> <span class=s>&#34;asr_start_input_timers attempt on CLOSED asr handle</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=n>SWITCH_STATUS_FALSE</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;start_input_timers</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>switch_test_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_INPUT_TIMERS</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>switch_set_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_INPUT_TIMERS</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=n>context</span><span class=o>-&gt;</span><span class=n>no_input_time</span> <span class=o>=</span> <span class=n>switch_micro_time_now</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_INFO</span><span class=p>,</span> <span class=s>&#34;Input timers already started</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=n>SWITCH_STATUS_SUCCESS</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 加载参数
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=cm>/*! set text parameter */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>void</span> <span class=nf>asr_text_param</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>param</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=n>val</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=n>test_asr_t</span> <span class=o>*</span><span class=n>context</span> <span class=o>=</span> <span class=p>(</span><span class=n>test_asr_t</span> <span class=o>*</span><span class=p>)</span> <span class=n>ah</span><span class=o>-&gt;</span><span class=n>private_info</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>zstr</span><span class=p>(</span><span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=o>!</span><span class=n>zstr</span><span class=p>(</span><span class=n>val</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=kt>int</span> <span class=n>nval</span> <span class=o>=</span> <span class=n>atoi</span><span class=p>(</span><span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=kt>double</span> <span class=n>fval</span> <span class=o>=</span> <span class=n>atof</span><span class=p>(</span><span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;no-input-timeout&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>switch_is_number</span><span class=p>(</span><span class=n>val</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>no_input_timeout</span> <span class=o>=</span> <span class=n>nval</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;no-input-timeout = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>no_input_timeout</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;speech-timeout&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>switch_is_number</span><span class=p>(</span><span class=n>val</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>speech_timeout</span> <span class=o>=</span> <span class=n>nval</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;speech-timeout = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>speech_timeout</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;start-input-timers&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>start_input_timers</span> <span class=o>=</span> <span class=n>switch_true</span><span class=p>(</span><span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>start_input_timers</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=n>switch_set_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_INPUT_TIMERS</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=n>switch_clear_flag</span><span class=p>(</span><span class=n>context</span><span class=p>,</span> <span class=n>ASRFLAG_INPUT_TIMERS</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;start-input-timers = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>start_input_timers</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;vad-mode&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;vad-mode = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>vad</span><span class=p>)</span> <span class=n>switch_vad_set_mode</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>vad</span><span class=p>,</span> <span class=n>nval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;vad-voice-ms&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>nval</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>voice_ms</span> <span class=o>=</span> <span class=n>nval</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_vad_set_param</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>vad</span><span class=p>,</span> <span class=s>&#34;voice_ms&#34;</span><span class=p>,</span> <span class=n>nval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;vad-silence-ms&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>nval</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>silence_ms</span> <span class=o>=</span> <span class=n>nval</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_vad_set_param</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>vad</span><span class=p>,</span> <span class=s>&#34;silence_ms&#34;</span><span class=p>,</span> <span class=n>nval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;vad-thresh&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>nval</span> <span class=o>&gt;</span> <span class=mi>0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>thresh</span> <span class=o>=</span> <span class=n>nval</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_vad_set_param</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>vad</span><span class=p>,</span> <span class=s>&#34;thresh&#34;</span><span class=p>,</span> <span class=n>nval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;channel-uuid&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span> <span class=o>=</span> <span class=n>switch_core_strdup</span><span class=p>(</span><span class=n>ah</span><span class=o>-&gt;</span><span class=n>memory_pool</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;channel-uuid = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;result&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>result_text</span> <span class=o>=</span> <span class=n>switch_core_strdup</span><span class=p>(</span><span class=n>ah</span><span class=o>-&gt;</span><span class=n>memory_pool</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;result = %s</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>val</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;confidence&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>fval</span> <span class=o>&gt;=</span> <span class=mf>0.0</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>result_confidence</span> <span class=o>=</span> <span class=n>fval</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;confidence = %f</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>fval</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span> <span class=k>else</span> <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=n>strcasecmp</span><span class=p>(</span><span class=s>&#34;partial&#34;</span><span class=p>,</span> <span class=n>param</span><span class=p>)</span> <span class=o>&amp;&amp;</span> <span class=n>switch_true</span><span class=p>(</span><span class=n>val</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=n>context</span><span class=o>-&gt;</span><span class=n>partial</span> <span class=o>=</span> <span class=mi>3</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>			<span class=n>switch_log_printf</span><span class=p>(</span><span class=n>SWITCH_CHANNEL_UUID_LOG</span><span class=p>(</span><span class=n>context</span><span class=o>-&gt;</span><span class=n>channel_uuid</span><span class=p>),</span> <span class=n>SWITCH_LOG_DEBUG</span><span class=p>,</span> <span class=s>&#34;partial = %d</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>,</span> <span class=n>context</span><span class=o>-&gt;</span><span class=n>partial</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/*! set numeric parameter */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>void</span> <span class=nf>asr_numeric_param</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>param</span><span class=p>,</span> <span class=kt>int</span> <span class=n>val</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=cm>/*! set float parameter */</span>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=kt>void</span> <span class=nf>asr_float_param</span><span class=p>(</span><span class=n>switch_asr_handle_t</span> <span class=o>*</span><span class=n>ah</span><span class=p>,</span> <span class=kt>char</span> <span class=o>*</span><span class=n>param</span><span class=p>,</span> <span class=kt>double</span> <span class=n>val</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=配置文件>配置文件</h3><p>自定义模块的配置文件参考，可以在加载模块时读取一些配置，保存到模块的全局变量当中</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;configuration</span> <span class=na>name=</span><span class=s>&#34;iflytekasr.conf&#34;</span> <span class=na>description=</span><span class=s>&#34;ybs ws asr configuration&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;settings&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;param</span> <span class=na>name=</span><span class=s>&#34;auto-reload&#34;</span> <span class=na>value=</span><span class=s>&#34;true&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=c>&lt;!-- save the wave file for debug --&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;param</span> <span class=na>name=</span><span class=s>&#34;wav-file-dir&#34;</span> <span class=na>value=</span><span class=s>&#34;/data/tmp/iflytekasr/&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;/settings&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/configuration&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=websocketpp-模块>WebSocketPP 模块</h2><p>WebSocket 模块经过多种调研，选择使用了 <a class=link href=https://github.com/zaphoyd/websocketpp.git target=_blank rel=noopener>WebSocketPP</a>。</p><p>Websocketpp 需要依赖 boost，CentOS 安装方法如下，其他分发版本可以参考官方文档</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl><span class=c1># 安装 boost</span>
+</span></span><span class=line><span class=cl>yum install boost
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>yum install boost-devel 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 安装 websocketpp</span>
+</span></span><span class=line><span class=cl>git clone https://github.com/zaphoyd/websocketpp.git
+</span></span><span class=line><span class=cl><span class=nb>cd</span> websocketpp <span class=c1>#进入目录</span>
+</span></span><span class=line><span class=cl>mkdir build <span class=o>&amp;&amp;</span> <span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>cmake .. <span class=c1>#执行cmake</span>
+</span></span><span class=line><span class=cl>sudo make
+</span></span><span class=line><span class=cl>sudo make install
+</span></span></code></pre></td></tr></table></div></div><h3 id=测试-demo>测试 Demo</h3><p>你可以进入该项目运行下面的脚本编译代码，启动 Server 端和 Client 端进行简单测试</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl><span class=nb>cd</span> ../examples/echo_server
+</span></span><span class=line><span class=cl>g++ -o echo_server echo_server.cpp -lboost_system -lpthread   -std<span class=o>=</span>c++11
+</span></span><span class=line><span class=cl><span class=c1>#编译链接echo_server</span>
+</span></span><span class=line><span class=cl>./echo_server   
+</span></span><span class=line><span class=cl><span class=c1>#启动服务器端</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> ../examples/echo_client    
+</span></span><span class=line><span class=cl><span class=c1>#编译链接echo_client</span>
+</span></span><span class=line><span class=cl>g++ -o echo_client echo_client.cpp -lboost_system -lpthread   -std<span class=o>=</span>c++11
+</span></span><span class=line><span class=cl><span class=c1>#启动客户端</span>
+</span></span><span class=line><span class=cl>./echo_client
+</span></span></code></pre></td></tr></table></div></div><h3 id=实现代码>实现代码</h3><p>下面代码定义了一个 <code>endpoint</code> 对象，提供了一些基础方法，如<code>send</code>、<code>close</code>等。该对象还维持了多个 WebSocket 链接对象，这些对象包含一些 如<code>on_message</code>的钩子方法。代码如下</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span><span class=lnt>117
+</span><span class=lnt>118
+</span><span class=lnt>119
+</span><span class=lnt>120
+</span><span class=lnt>121
+</span><span class=lnt>122
+</span><span class=lnt>123
+</span><span class=lnt>124
+</span><span class=lnt>125
+</span><span class=lnt>126
+</span><span class=lnt>127
+</span><span class=lnt>128
+</span><span class=lnt>129
+</span><span class=lnt>130
+</span><span class=lnt>131
+</span><span class=lnt>132
+</span><span class=lnt>133
+</span><span class=lnt>134
+</span><span class=lnt>135
+</span><span class=lnt>136
+</span><span class=lnt>137
+</span><span class=lnt>138
+</span><span class=lnt>139
+</span><span class=lnt>140
+</span><span class=lnt>141
+</span><span class=lnt>142
+</span><span class=lnt>143
+</span><span class=lnt>144
+</span><span class=lnt>145
+</span><span class=lnt>146
+</span><span class=lnt>147
+</span><span class=lnt>148
+</span><span class=lnt>149
+</span><span class=lnt>150
+</span><span class=lnt>151
+</span><span class=lnt>152
+</span><span class=lnt>153
+</span><span class=lnt>154
+</span><span class=lnt>155
+</span><span class=lnt>156
+</span><span class=lnt>157
+</span><span class=lnt>158
+</span><span class=lnt>159
+</span><span class=lnt>160
+</span><span class=lnt>161
+</span><span class=lnt>162
+</span><span class=lnt>163
+</span><span class=lnt>164
+</span><span class=lnt>165
+</span><span class=lnt>166
+</span><span class=lnt>167
+</span><span class=lnt>168
+</span><span class=lnt>169
+</span><span class=lnt>170
+</span><span class=lnt>171
+</span><span class=lnt>172
+</span><span class=lnt>173
+</span><span class=lnt>174
+</span><span class=lnt>175
+</span><span class=lnt>176
+</span><span class=lnt>177
+</span><span class=lnt>178
+</span><span class=lnt>179
+</span><span class=lnt>180
+</span><span class=lnt>181
+</span><span class=lnt>182
+</span><span class=lnt>183
+</span><span class=lnt>184
+</span><span class=lnt>185
+</span><span class=lnt>186
+</span><span class=lnt>187
+</span><span class=lnt>188
+</span><span class=lnt>189
+</span><span class=lnt>190
+</span><span class=lnt>191
+</span><span class=lnt>192
+</span><span class=lnt>193
+</span><span class=lnt>194
+</span><span class=lnt>195
+</span><span class=lnt>196
+</span><span class=lnt>197
+</span><span class=lnt>198
+</span><span class=lnt>199
+</span><span class=lnt>200
+</span><span class=lnt>201
+</span><span class=lnt>202
+</span><span class=lnt>203
+</span><span class=lnt>204
+</span><span class=lnt>205
+</span><span class=lnt>206
+</span><span class=lnt>207
+</span><span class=lnt>208
+</span><span class=lnt>209
+</span><span class=lnt>210
+</span><span class=lnt>211
+</span><span class=lnt>212
+</span><span class=lnt>213
+</span><span class=lnt>214
+</span><span class=lnt>215
+</span><span class=lnt>216
+</span><span class=lnt>217
+</span><span class=lnt>218
+</span><span class=lnt>219
+</span><span class=lnt>220
+</span><span class=lnt>221
+</span><span class=lnt>222
+</span><span class=lnt>223
+</span><span class=lnt>224
+</span><span class=lnt>225
+</span><span class=lnt>226
+</span><span class=lnt>227
+</span><span class=lnt>228
+</span><span class=lnt>229
+</span><span class=lnt>230
+</span><span class=lnt>231
+</span><span class=lnt>232
+</span><span class=lnt>233
+</span><span class=lnt>234
+</span><span class=lnt>235
+</span><span class=lnt>236
+</span><span class=lnt>237
+</span><span class=lnt>238
+</span><span class=lnt>239
+</span><span class=lnt>240
+</span><span class=lnt>241
+</span><span class=lnt>242
+</span><span class=lnt>243
+</span><span class=lnt>244
+</span><span class=lnt>245
+</span><span class=lnt>246
+</span><span class=lnt>247
+</span><span class=lnt>248
+</span><span class=lnt>249
+</span><span class=lnt>250
+</span><span class=lnt>251
+</span><span class=lnt>252
+</span><span class=lnt>253
+</span><span class=lnt>254
+</span><span class=lnt>255
+</span><span class=lnt>256
+</span><span class=lnt>257
+</span><span class=lnt>258
+</span><span class=lnt>259
+</span><span class=lnt>260
+</span><span class=lnt>261
+</span><span class=lnt>262
+</span><span class=lnt>263
+</span><span class=lnt>264
+</span><span class=lnt>265
+</span><span class=lnt>266
+</span><span class=lnt>267
+</span><span class=lnt>268
+</span><span class=lnt>269
+</span><span class=lnt>270
+</span><span class=lnt>271
+</span><span class=lnt>272
+</span><span class=lnt>273
+</span><span class=lnt>274
+</span><span class=lnt>275
+</span><span class=lnt>276
+</span><span class=lnt>277
+</span><span class=lnt>278
+</span><span class=lnt>279
+</span><span class=lnt>280
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-c++ data-lang=c++><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;websocketpp/config/asio_no_tls_client.hpp&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;websocketpp/client.hpp&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;websocketpp/common/thread.hpp&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;websocketpp/common/memory.hpp&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>typedef</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>client</span><span class=o>&lt;</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>config</span><span class=o>::</span><span class=n>asio_client</span><span class=o>&gt;</span> <span class=n>client</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>static</span> <span class=n>switch_mutex_t</span> <span class=o>*</span><span class=n>MUTEX</span> <span class=o>=</span> <span class=nb>NULL</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>class</span> <span class=nc>connection_metadata</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=k>public</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>    <span class=k>typedef</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>shared_ptr</span><span class=o>&lt;</span><span class=n>connection_metadata</span><span class=o>&gt;</span> <span class=n>ptr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>connection_metadata</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>uuid</span><span class=p>,</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>connection_hdl</span> <span class=n>hdl</span><span class=p>,</span> <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>uri</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=o>:</span> <span class=n>m_uuid</span><span class=p>(</span><span class=n>uuid</span><span class=p>),</span> <span class=n>m_hdl</span><span class=p>(</span><span class=n>hdl</span><span class=p>),</span> <span class=n>m_status</span><span class=p>(</span><span class=s>&#34;Connecting&#34;</span><span class=p>),</span> <span class=n>m_uri</span><span class=p>(</span><span class=n>uri</span><span class=p>),</span> <span class=n>m_server</span><span class=p>(</span><span class=s>&#34;N/A&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=nf>on_open</span><span class=p>(</span><span class=n>client</span> <span class=o>*</span><span class=n>c</span><span class=p>,</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>connection_hdl</span> <span class=n>hdl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_status</span> <span class=o>=</span> <span class=s>&#34;Open&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>client</span><span class=o>::</span><span class=n>connection_ptr</span> <span class=n>con</span> <span class=o>=</span> <span class=n>c</span><span class=o>-&gt;</span><span class=n>get_con_from_hdl</span><span class=p>(</span><span class=n>hdl</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_server</span> <span class=o>=</span> <span class=n>con</span><span class=o>-&gt;</span><span class=n>get_response_header</span><span class=p>(</span><span class=s>&#34;Server&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=nf>on_fail</span><span class=p>(</span><span class=n>client</span> <span class=o>*</span><span class=n>c</span><span class=p>,</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>connection_hdl</span> <span class=n>hdl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_status</span> <span class=o>=</span> <span class=s>&#34;Failed&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>client</span><span class=o>::</span><span class=n>connection_ptr</span> <span class=n>con</span> <span class=o>=</span> <span class=n>c</span><span class=o>-&gt;</span><span class=n>get_con_from_hdl</span><span class=p>(</span><span class=n>hdl</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_server</span> <span class=o>=</span> <span class=n>con</span><span class=o>-&gt;</span><span class=n>get_response_header</span><span class=p>(</span><span class=s>&#34;Server&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_error_reason</span> <span class=o>=</span> <span class=n>con</span><span class=o>-&gt;</span><span class=n>get_ec</span><span class=p>().</span><span class=n>message</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=nf>on_close</span><span class=p>(</span><span class=n>client</span> <span class=o>*</span><span class=n>c</span><span class=p>,</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>connection_hdl</span> <span class=n>hdl</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_status</span> <span class=o>=</span> <span class=s>&#34;Closed&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>client</span><span class=o>::</span><span class=n>connection_ptr</span> <span class=n>con</span> <span class=o>=</span> <span class=n>c</span><span class=o>-&gt;</span><span class=n>get_con_from_hdl</span><span class=p>(</span><span class=n>hdl</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>std</span><span class=o>::</span><span class=n>stringstream</span> <span class=n>s</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>s</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;close code: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>con</span><span class=o>-&gt;</span><span class=n>get_remote_close_code</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=s>&#34; (&#34;</span>
+</span></span><span class=line><span class=cl>          <span class=o>&lt;&lt;</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>close</span><span class=o>::</span><span class=n>status</span><span class=o>::</span><span class=n>get_string</span><span class=p>(</span><span class=n>con</span><span class=o>-&gt;</span><span class=n>get_remote_close_code</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>          <span class=o>&lt;&lt;</span> <span class=s>&#34;), close reason: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>con</span><span class=o>-&gt;</span><span class=n>get_remote_close_reason</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_error_reason</span> <span class=o>=</span> <span class=n>s</span><span class=p>.</span><span class=n>str</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=nf>on_message</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>connection_hdl</span><span class=p>,</span> <span class=n>client</span><span class=o>::</span><span class=n>message_ptr</span> <span class=n>msg</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>msg</span><span class=o>-&gt;</span><span class=n>get_opcode</span><span class=p>()</span> <span class=o>==</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>frame</span><span class=o>::</span><span class=n>opcode</span><span class=o>::</span><span class=n>text</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>m_messages</span><span class=p>.</span><span class=n>push_back</span><span class=p>(</span><span class=n>msg</span><span class=o>-&gt;</span><span class=n>get_payload</span><span class=p>());</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>else</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>m_messages</span><span class=p>.</span><span class=n>push_back</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>utility</span><span class=o>::</span><span class=n>to_hex</span><span class=p>(</span><span class=n>msg</span><span class=o>-&gt;</span><span class=n>get_payload</span><span class=p>()));</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>// std::cout &lt;&lt; &#34;&gt; recived message is: &#34; &lt;&lt; msg-&gt;get_payload() &lt;&lt; &#34;index is: &#34; &lt;&lt; m_messages.size() &lt;&lt; std::endl;
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>websocketpp</span><span class=o>::</span><span class=n>connection_hdl</span> <span class=n>get_hdl</span><span class=p>()</span> <span class=k>const</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>m_hdl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>get_uuid</span><span class=p>()</span> <span class=k>const</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>m_uuid</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>get_status</span><span class=p>()</span> <span class=k>const</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>m_status</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=nf>get_size</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>m_messages</span><span class=p>.</span><span class=n>size</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>get_message</span><span class=p>(</span><span class=kt>int</span> <span class=n>index</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=n>m_messages</span><span class=p>[</span><span class=n>index</span><span class=p>];</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>friend</span> <span class=n>std</span><span class=o>::</span><span class=n>ostream</span> <span class=o>&amp;</span><span class=k>operator</span><span class=o>&lt;&lt;</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>ostream</span> <span class=o>&amp;</span><span class=n>out</span><span class=p>,</span> <span class=n>connection_metadata</span> <span class=k>const</span> <span class=o>&amp;</span><span class=n>data</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>private</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>m_uuid</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>websocketpp</span><span class=o>::</span><span class=n>connection_hdl</span> <span class=n>m_hdl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>m_status</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>m_uri</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>m_server</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>m_error_reason</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=n>std</span><span class=o>::</span><span class=n>string</span><span class=o>&gt;</span> <span class=n>m_messages</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>std</span><span class=o>::</span><span class=n>ostream</span> <span class=o>&amp;</span><span class=k>operator</span><span class=o>&lt;&lt;</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>ostream</span> <span class=o>&amp;</span><span class=n>out</span><span class=p>,</span> <span class=n>connection_metadata</span> <span class=k>const</span> <span class=o>&amp;</span><span class=n>data</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>out</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; URI: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>data</span><span class=p>.</span><span class=n>m_uri</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Status: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>data</span><span class=p>.</span><span class=n>m_status</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Remote Server: &#34;</span> <span class=o>&lt;&lt;</span> <span class=p>(</span><span class=n>data</span><span class=p>.</span><span class=n>m_server</span><span class=p>.</span><span class=n>empty</span><span class=p>()</span> <span class=o>?</span> <span class=s>&#34;None Specified&#34;</span> <span class=o>:</span> <span class=n>data</span><span class=p>.</span><span class=n>m_server</span><span class=p>)</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Error/close reason: &#34;</span> <span class=o>&lt;&lt;</span> <span class=p>(</span><span class=n>data</span><span class=p>.</span><span class=n>m_error_reason</span><span class=p>.</span><span class=n>empty</span><span class=p>()</span> <span class=o>?</span> <span class=s>&#34;N/A&#34;</span> <span class=o>:</span> <span class=n>data</span><span class=p>.</span><span class=n>m_error_reason</span><span class=p>)</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=n>out</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Messages Processed: (&#34;</span> <span class=o>&lt;&lt;</span> <span class=n>data</span><span class=p>.</span><span class=n>m_messages</span><span class=p>.</span><span class=n>size</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;) </span><span class=se>\n</span><span class=s>&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>vector</span><span class=o>&lt;</span><span class=n>std</span><span class=o>::</span><span class=n>string</span><span class=o>&gt;::</span><span class=n>const_iterator</span> <span class=n>it</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=p>(</span><span class=n>it</span> <span class=o>=</span> <span class=n>data</span><span class=p>.</span><span class=n>m_messages</span><span class=p>.</span><span class=n>begin</span><span class=p>();</span> <span class=n>it</span> <span class=o>!=</span> <span class=n>data</span><span class=p>.</span><span class=n>m_messages</span><span class=p>.</span><span class=n>end</span><span class=p>();</span> <span class=o>++</span><span class=n>it</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>out</span> <span class=o>&lt;&lt;</span> <span class=o>*</span><span class=n>it</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;</span><span class=se>\n</span><span class=s>&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>out</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>class</span> <span class=nc>websocket_endpoint</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=k>public</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>websocket_endpoint</span><span class=p>()</span> <span class=o>:</span> <span class=n>m_next_id</span><span class=p>(</span><span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>clear_error_channels</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>log</span><span class=o>::</span><span class=n>elevel</span><span class=o>::</span><span class=n>none</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>set_access_channels</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>log</span><span class=o>::</span><span class=n>alevel</span><span class=o>::</span><span class=n>none</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>clear_access_channels</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>log</span><span class=o>::</span><span class=n>alevel</span><span class=o>::</span><span class=n>none</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=c1>// m_endpoint.set_access_channels(websocketpp::log::alevel::all);
+</span></span></span><span class=line><span class=cl><span class=c1></span>        <span class=c1>// m_endpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>init_asio</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>start_perpetual</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>m_thread</span> <span class=o>=</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>make_shared</span><span class=o>&lt;</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=kr>thread</span><span class=o>&gt;</span><span class=p>(</span><span class=o>&amp;</span><span class=n>client</span><span class=o>::</span><span class=n>run</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>m_endpoint</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=o>~</span><span class=n>websocket_endpoint</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>stop_perpetual</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>for</span> <span class=p>(</span><span class=n>con_list</span><span class=o>::</span><span class=n>const_iterator</span> <span class=n>it</span> <span class=o>=</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>begin</span><span class=p>();</span> <span class=n>it</span> <span class=o>!=</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>end</span><span class=p>();</span> <span class=o>++</span><span class=n>it</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=p>(</span><span class=n>it</span><span class=o>-&gt;</span><span class=n>second</span><span class=o>-&gt;</span><span class=n>get_status</span><span class=p>()</span> <span class=o>!=</span> <span class=s>&#34;Open&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=c1>// Only close open connections
+</span></span></span><span class=line><span class=cl><span class=c1></span>                <span class=k>continue</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Closing connection &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>it</span><span class=o>-&gt;</span><span class=n>second</span><span class=o>-&gt;</span><span class=n>get_uuid</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>error_code</span> <span class=n>ec</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=n>m_endpoint</span><span class=p>.</span><span class=n>close</span><span class=p>(</span><span class=n>it</span><span class=o>-&gt;</span><span class=n>second</span><span class=o>-&gt;</span><span class=n>get_hdl</span><span class=p>(),</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>close</span><span class=o>::</span><span class=n>status</span><span class=o>::</span><span class=n>going_away</span><span class=p>,</span> <span class=s>&#34;&#34;</span><span class=p>,</span> <span class=n>ec</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=k>if</span> <span class=p>(</span><span class=n>ec</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Error closing connection &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>it</span><span class=o>-&gt;</span><span class=n>second</span><span class=o>-&gt;</span><span class=n>get_uuid</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;: &#34;</span>
+</span></span><span class=line><span class=cl>                          <span class=o>&lt;&lt;</span> <span class=n>ec</span><span class=p>.</span><span class=n>message</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>m_thread</span><span class=o>-&gt;</span><span class=n>join</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=nf>connect</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>uuid</span><span class=p>,</span> <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=k>const</span> <span class=o>&amp;</span><span class=n>uri</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>error_code</span> <span class=n>ec</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>client</span><span class=o>::</span><span class=n>connection_ptr</span> <span class=n>con</span> <span class=o>=</span> <span class=n>m_endpoint</span><span class=p>.</span><span class=n>get_connection</span><span class=p>(</span><span class=n>uri</span><span class=p>,</span> <span class=n>ec</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>ec</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Connect initialization error: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>ec</span><span class=p>.</span><span class=n>message</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=o>-</span><span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>connection_metadata</span><span class=o>::</span><span class=n>ptr</span> <span class=n>metadata_ptr</span> <span class=o>=</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>make_shared</span><span class=o>&lt;</span><span class=n>connection_metadata</span><span class=o>&gt;</span><span class=p>(</span><span class=n>uuid</span><span class=p>,</span> <span class=n>con</span><span class=o>-&gt;</span><span class=n>get_handle</span><span class=p>(),</span> <span class=n>uri</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_connection_list</span><span class=p>[</span><span class=n>uuid</span><span class=p>]</span> <span class=o>=</span> <span class=n>metadata_ptr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>con</span><span class=o>-&gt;</span><span class=n>set_open_handler</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>bind</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=o>&amp;</span><span class=n>connection_metadata</span><span class=o>::</span><span class=n>on_open</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>metadata_ptr</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=o>&amp;</span><span class=n>m_endpoint</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>placeholders</span><span class=o>::</span><span class=n>_1</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=n>con</span><span class=o>-&gt;</span><span class=n>set_fail_handler</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>bind</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=o>&amp;</span><span class=n>connection_metadata</span><span class=o>::</span><span class=n>on_fail</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>metadata_ptr</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=o>&amp;</span><span class=n>m_endpoint</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>placeholders</span><span class=o>::</span><span class=n>_1</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=n>con</span><span class=o>-&gt;</span><span class=n>set_close_handler</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>bind</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=o>&amp;</span><span class=n>connection_metadata</span><span class=o>::</span><span class=n>on_close</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>metadata_ptr</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=o>&amp;</span><span class=n>m_endpoint</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>placeholders</span><span class=o>::</span><span class=n>_1</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>        <span class=n>con</span><span class=o>-&gt;</span><span class=n>set_message_handler</span><span class=p>(</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>bind</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>            <span class=o>&amp;</span><span class=n>connection_metadata</span><span class=o>::</span><span class=n>on_message</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>metadata_ptr</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>placeholders</span><span class=o>::</span><span class=n>_1</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>placeholders</span><span class=o>::</span><span class=n>_2</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>connect</span><span class=p>(</span><span class=n>con</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=nf>close</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>uuid</span><span class=p>,</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>close</span><span class=o>::</span><span class=n>status</span><span class=o>::</span><span class=n>value</span> <span class=n>code</span><span class=p>,</span> <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>reason</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>error_code</span> <span class=n>ec</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>con_list</span><span class=o>::</span><span class=n>iterator</span> <span class=n>metadata_it</span> <span class=o>=</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>find</span><span class=p>(</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>metadata_it</span> <span class=o>==</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>end</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; No connection found with uuid &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>uuid</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>close</span><span class=p>(</span><span class=n>metadata_it</span><span class=o>-&gt;</span><span class=n>second</span><span class=o>-&gt;</span><span class=n>get_hdl</span><span class=p>(),</span> <span class=n>code</span><span class=p>,</span> <span class=n>reason</span><span class=p>,</span> <span class=n>ec</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>ec</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Error initiating close: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>ec</span><span class=p>.</span><span class=n>message</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=n>m_connection_list</span><span class=p>.</span><span class=n>erase</span><span class=p>(</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=nf>send</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>uuid</span><span class=p>,</span> <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>message</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>error_code</span> <span class=n>ec</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>con_list</span><span class=o>::</span><span class=n>iterator</span> <span class=n>metadata_it</span> <span class=o>=</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>find</span><span class=p>(</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>metadata_it</span> <span class=o>==</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>end</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; No connection found with uuid &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>uuid</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>send</span><span class=p>(</span><span class=n>metadata_it</span><span class=o>-&gt;</span><span class=n>second</span><span class=o>-&gt;</span><span class=n>get_hdl</span><span class=p>(),</span> <span class=n>message</span><span class=p>,</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>frame</span><span class=o>::</span><span class=n>opcode</span><span class=o>::</span><span class=n>text</span><span class=p>,</span> <span class=n>ec</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>ec</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Error sending message: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>ec</span><span class=p>.</span><span class=n>message</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kt>void</span> <span class=nf>sendBinary</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>uuid</span><span class=p>,</span> <span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>message</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>error_code</span> <span class=n>ec</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>con_list</span><span class=o>::</span><span class=n>iterator</span> <span class=n>metadata_it</span> <span class=o>=</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>find</span><span class=p>(</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>metadata_it</span> <span class=o>==</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>end</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; No connection found with uuid &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>uuid</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>m_endpoint</span><span class=p>.</span><span class=n>send</span><span class=p>(</span><span class=n>metadata_it</span><span class=o>-&gt;</span><span class=n>second</span><span class=o>-&gt;</span><span class=n>get_hdl</span><span class=p>(),</span> <span class=n>message</span><span class=p>,</span> <span class=n>websocketpp</span><span class=o>::</span><span class=n>frame</span><span class=o>::</span><span class=n>opcode</span><span class=o>::</span><span class=n>binary</span><span class=p>,</span> <span class=n>ec</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>ec</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;&gt; Error sending message: &#34;</span> <span class=o>&lt;&lt;</span> <span class=n>ec</span><span class=p>.</span><span class=n>message</span><span class=p>()</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>connection_metadata</span><span class=o>::</span><span class=n>ptr</span> <span class=n>get_metadata</span><span class=p>(</span><span class=n>std</span><span class=o>::</span><span class=n>string</span> <span class=n>uuid</span><span class=p>)</span> <span class=k>const</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=n>con_list</span><span class=o>::</span><span class=n>const_iterator</span> <span class=n>metadata_it</span> <span class=o>=</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>find</span><span class=p>(</span><span class=n>uuid</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=p>(</span><span class=n>metadata_it</span> <span class=o>==</span> <span class=n>m_connection_list</span><span class=p>.</span><span class=n>end</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=n>connection_metadata</span><span class=o>::</span><span class=n>ptr</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>        <span class=k>else</span>
+</span></span><span class=line><span class=cl>        <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=k>return</span> <span class=n>metadata_it</span><span class=o>-&gt;</span><span class=n>second</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>private</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>    <span class=k>typedef</span> <span class=n>std</span><span class=o>::</span><span class=n>map</span><span class=o>&lt;</span><span class=n>std</span><span class=o>::</span><span class=n>string</span><span class=p>,</span> <span class=n>connection_metadata</span><span class=o>::</span><span class=n>ptr</span><span class=o>&gt;</span> <span class=n>con_list</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>client</span> <span class=n>m_endpoint</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=n>shared_ptr</span><span class=o>&lt;</span><span class=n>websocketpp</span><span class=o>::</span><span class=n>lib</span><span class=o>::</span><span class=kr>thread</span><span class=o>&gt;</span> <span class=n>m_thread</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>con_list</span> <span class=n>m_connection_list</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kt>int</span> <span class=n>m_next_id</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>};</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=安装-mod_iflytekasr>安装 mod_iflytekasr</h2><p>Makefile 参考如下</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-makefile data-lang=makefile><span class=line><span class=cl><span class=nv>FREESWITCH_MOD_PATH</span><span class=o>=</span>/usr/local/freeswitch/mod
+</span></span><span class=line><span class=cl><span class=nv>MODNAME</span> <span class=o>=</span> mod_iflytekasr.so
+</span></span><span class=line><span class=cl><span class=nv>MODOBJ</span> <span class=o>=</span> mod_iflytekasr.o base64.o
+</span></span><span class=line><span class=cl><span class=nv>MODCFLAGS</span> <span class=o>=</span> -Wall -Wno-unused-function  -I/usr/src/freeswitch/src/include -I/usr/src/freeswitch/libs/libteletone/src -lboost_system -lpthread
+</span></span><span class=line><span class=cl><span class=nv>CC</span> <span class=o>=</span> g++
+</span></span><span class=line><span class=cl><span class=nv>CPPFLAGS</span> <span class=o>=</span> -fPIC -std<span class=o>=</span>c++11 -g <span class=k>$(</span>MODCFLAGS<span class=k>)</span>
+</span></span><span class=line><span class=cl><span class=nv>LDFLAGS</span> <span class=o>=</span> <span class=k>$(</span>MODLDFLAGS<span class=k>)</span>
+</span></span><span class=line><span class=cl><span class=nf>all</span><span class=o>:</span> <span class=k>$(</span><span class=nv>MODNAME</span><span class=k>)</span>
+</span></span><span class=line><span class=cl><span class=nf>$(MODNAME)</span><span class=o>:</span> <span class=k>$(</span><span class=nv>MODOBJ</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>	@<span class=k>$(</span>CC<span class=k>)</span> -shared <span class=k>$(</span>CPPFLAGS<span class=k>)</span> -o <span class=nv>$@</span> <span class=k>$(</span>MODOBJ<span class=k>)</span> <span class=k>$(</span>LDFLAGS<span class=k>)</span>
+</span></span><span class=line><span class=cl><span class=nf>.PHONY</span><span class=o>:</span> <span class=n>all</span> <span class=n>clean</span>
+</span></span><span class=line><span class=cl><span class=nf>clean</span><span class=o>:</span>
+</span></span><span class=line><span class=cl>	rm -f <span class=k>$(</span>MODNAME<span class=k>)</span> <span class=k>$(</span>MODOBJ<span class=k>)</span>
+</span></span><span class=line><span class=cl><span class=nf>install</span><span class=o>:</span> <span class=k>$(</span><span class=nv>MODNAME</span><span class=k>)</span>
+</span></span><span class=line><span class=cl>	install -d <span class=k>$(</span>FREESWITCH_MOD_PATH<span class=k>)</span>
+</span></span><span class=line><span class=cl>	install <span class=k>$(</span>MODNAME<span class=k>)</span> <span class=k>$(</span>FREESWITCH_MOD_PATH<span class=k>)</span>
+</span></span><span class=line><span class=cl><span class=nf>mod_iflytekasr.o</span><span class=o>:</span> <span class=n>mod_iflytekasr</span>.<span class=n>cpp</span>
+</span></span><span class=line><span class=cl><span class=nf>base64.o</span><span class=o>:</span> <span class=n>base</span>64.<span class=n>cpp</span> <span class=n>base</span>64.<span class=n>h</span>
+</span></span></code></pre></td></tr></table></div></div><ol><li>在 ${FREESWITCH_SOURCE_ROOT}/modules.conf 添加以下两个模块</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>asr_tts/mod_iflytekasr
+</span></span></code></pre></td></tr></table></div></div><p>通过将以下行添加到 <code>${FREESWITCH_INSTALLATION_ROOT}/conf/autoload_configs/modules.conf.xml</code> 来激活 mod_iflytekasr</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;load</span> <span class=na>module=</span><span class=s>&#34;mod_iflytekasr&#34;</span><span class=nt>/&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><ol start=2><li>将模块复制到 <code>${FREESWITCH_SOURCE_ROOT}/src/mod/asr_tts/</code> 目录下</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl><span class=nb>cd</span> mod_iflytekasr
+</span></span><span class=line><span class=cl>make install
+</span></span></code></pre></td></tr></table></div></div><ol start=3><li><p>重启 freeswitch 加载模块</p></li><li><p>复制以下lua脚本到<code>${FREESWITCH_INSTALLATION_ROOT}/scripts/</code>里</p></li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-lua data-lang=lua><span class=line><span class=cl><span class=c1>-- asr text for one round</span>
+</span></span><span class=line><span class=cl><span class=kd>local</span> <span class=n>asr_text</span> <span class=o>=</span> <span class=kc>nil</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>-- 通话的事件都会回调这个接口</span>
+</span></span><span class=line><span class=cl><span class=c1>-- This is the input callback used by dtmf or any other events on this session such as ASR.</span>
+</span></span><span class=line><span class=cl><span class=kr>function</span> <span class=nf>onInput</span><span class=p>(</span><span class=n>s</span><span class=p>,</span> <span class=n>type</span><span class=p>,</span> <span class=n>obj</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>freeswitch.consoleLog</span><span class=p>(</span><span class=s2>&#34;info&#34;</span><span class=p>,</span> <span class=s2>&#34;Callback with type &#34;</span> <span class=o>..</span> <span class=n>type</span> <span class=o>..</span> <span class=s2>&#34;</span><span class=se>\n</span><span class=s2>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=c1>-- freeswitch.consoleLog(&#34;info&#34;, &#34;s=&#34; .. s .. &#34;\n&#34;);</span>
+</span></span><span class=line><span class=cl>    <span class=n>freeswitch.consoleLog</span><span class=p>(</span><span class=s2>&#34;info&#34;</span><span class=p>,</span> <span class=s2>&#34;obj=&#34;</span> <span class=o>..</span> <span class=n>obj</span><span class=p>:</span><span class=n>serialize</span><span class=p>()</span> <span class=o>..</span> <span class=s2>&#34;</span><span class=se>\n</span><span class=s2>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kr>if</span> <span class=p>(</span><span class=n>type</span> <span class=o>==</span> <span class=s2>&#34;dtmf&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>        <span class=n>freeswitch.consoleLog</span><span class=p>(</span><span class=s2>&#34;info&#34;</span><span class=p>,</span> <span class=s2>&#34;DTMF Digit: &#34;</span> <span class=o>..</span> <span class=n>obj.digit</span> <span class=o>..</span> <span class=s2>&#34;</span><span class=se>\n</span><span class=s2>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kr>elseif</span> <span class=p>(</span><span class=n>type</span> <span class=o>==</span> <span class=s2>&#34;event&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>        <span class=kd>local</span> <span class=n>event</span> <span class=o>=</span> <span class=n>obj</span><span class=p>:</span><span class=n>getHeader</span><span class=p>(</span><span class=s2>&#34;Speech-Type&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=kr>if</span> <span class=p>(</span><span class=n>event</span> <span class=o>==</span> <span class=s2>&#34;begin-speaking&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>            <span class=n>freeswitch.consoleLog</span><span class=p>(</span><span class=s2>&#34;info&#34;</span><span class=p>,</span> <span class=s2>&#34;speaking=&#34;</span> <span class=o>..</span> <span class=n>obj</span><span class=p>:</span><span class=n>serialize</span><span class=p>()</span> <span class=o>..</span> <span class=s2>&#34;</span><span class=se>\n</span><span class=s2>&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>            <span class=c1>-- Return break on begin-speaking events to stop playback of the fire or tts.</span>
+</span></span><span class=line><span class=cl>            <span class=kr>return</span> <span class=s2>&#34;break&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=kr>if</span> <span class=p>(</span><span class=n>event</span> <span class=o>==</span> <span class=s2>&#34;detected-speech&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>            <span class=c1>-- freeswitch.consoleLog(&#34;info&#34;, &#34;\n&#34; .. obj:serialize() .. &#34;\n&#34;);</span>
+</span></span><span class=line><span class=cl>            <span class=kd>local</span> <span class=n>text</span> <span class=o>=</span> <span class=n>obj</span><span class=p>:</span><span class=n>getBody</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>            <span class=kr>if</span> <span class=p>(</span><span class=n>text</span> <span class=o>~=</span> <span class=s2>&#34;(null)&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>                <span class=c1>-- Pause speech detection (this is on auto but pausing it just in case)</span>
+</span></span><span class=line><span class=cl>                <span class=n>session</span><span class=p>:</span><span class=n>execute</span><span class=p>(</span><span class=s2>&#34;detect_speech&#34;</span><span class=p>,</span> <span class=s2>&#34;pause&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=c1>-- Parse the results from the event into the results table for later use.</span>
+</span></span><span class=line><span class=cl>                <span class=c1>-- results = getResults(obj:getBody());</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                <span class=c1>-- set the global asr text for later use</span>
+</span></span><span class=line><span class=cl>                <span class=n>asr_text</span> <span class=o>=</span> <span class=n>text</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>            <span class=kr>end</span>
+</span></span><span class=line><span class=cl>            <span class=c1>-- return &#34;break&#34;;</span>
+</span></span><span class=line><span class=cl>        <span class=kr>end</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>answer</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>-- Register the input callback</span>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>setInputCallback</span><span class=p>(</span><span class=s2>&#34;onInput&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=c1>-- Sleep a little bit to get media time to be fully up</span>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>sleep</span><span class=p>(</span><span class=mi>100</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>streamFile</span><span class=p>(</span><span class=s2>&#34;hello.wav&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>execute</span><span class=p>(</span><span class=s2>&#34;detect_speech&#34;</span><span class=p>,</span> <span class=s2>&#34;test directory directory&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>-- keep the thread alive</span>
+</span></span><span class=line><span class=cl><span class=kr>while</span> <span class=p>(</span><span class=n>session</span><span class=p>:</span><span class=n>ready</span><span class=p>()</span> <span class=o>==</span> <span class=kc>true</span><span class=p>)</span> <span class=kr>do</span>
+</span></span><span class=line><span class=cl>    <span class=kr>if</span> <span class=p>(</span><span class=n>asr_text</span> <span class=o>==</span> <span class=kc>nil</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>        <span class=n>session</span><span class=p>:</span><span class=n>sleep</span><span class=p>(</span><span class=mi>20</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kr>elseif</span> <span class=p>(</span><span class=n>asr_text</span> <span class=o>==</span> <span class=s2>&#34;&#34;</span><span class=p>)</span> <span class=kr>then</span>
+</span></span><span class=line><span class=cl>        <span class=n>session</span><span class=p>:</span><span class=n>streamFile</span><span class=p>(</span><span class=s2>&#34;I didn&#39;t hear you.wav&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>asr_text</span> <span class=o>=</span> <span class=kc>nil</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=n>session</span><span class=p>:</span><span class=n>execute</span><span class=p>(</span><span class=s2>&#34;detect_speech&#34;</span><span class=p>,</span> <span class=s2>&#34;resume&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kr>else</span>
+</span></span><span class=line><span class=cl>        <span class=c1>-- do your NLU here ?</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=c1>-- echo back the recognition result</span>
+</span></span><span class=line><span class=cl>        <span class=n>session</span><span class=p>:</span><span class=n>streamFile</span><span class=p>(</span><span class=s2>&#34;Yes.wav&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>        <span class=n>asr_text</span> <span class=o>=</span> <span class=kc>nil</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>session</span><span class=p>:</span><span class=n>execute</span><span class=p>(</span><span class=s2>&#34;detect_speech&#34;</span><span class=p>,</span> <span class=s2>&#34;resume&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=kr>end</span>
+</span></span><span class=line><span class=cl><span class=kr>end</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>-- stop the detect_speech and hangup</span>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>execute</span><span class=p>(</span><span class=s2>&#34;detect_speech&#34;</span><span class=p>,</span> <span class=s2>&#34;stop&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>sleep</span><span class=p>(</span><span class=mi>1000</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=n>session</span><span class=p>:</span><span class=n>hangup</span><span class=p>();</span>
+</span></span></code></pre></td></tr></table></div></div></section><footer class=article-footer><section class=article-tags><a href=/tags/freeswitch/>FreeSWITCH</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Mar 25, 2024 00:00 UTC</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/p/fs-install4docker/><div class=article-image><img src=/p/fs-install4docker/cover.c514d916917173a48a42e0114b469961_hu7626638945853200361.jpg width=250 height=150 loading=lazy alt="Featured image of post Docker 构建 FreeSWITCH 并部署" data-key=fs-install4docker data-hash="md5-xRTZFpFxc6SKQuARS0aZYQ=="></div><div class=article-details><h2 class=article-title>Docker 构建 FreeSWITCH 并部署</h2></div></a></article><article><a href=/p/spring-boot/><div class=article-details><h2 class=article-title>Spring Boot应用假死现象：SLF4J日志框架冲突深度分析</h2></div></a></article><article><a href=/p/database-index/><div class=article-details><h2 class=article-title>MySQL InnoDB 索引机制与优化</h2></div></a></article><article><a href=/p/jmm/><div class=article-details><h2 class=article-title>JMM</h2></div></a></article><article><a href=/p/consistent-hash/><div class=article-details><h2 class=article-title>一致性哈希的简单介绍</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2025 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>SpringBoot on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/springboot/</link><description>Recent content in SpringBoot on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Fri, 19 Sep 2025 16:30:00 +0800</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/springboot/index.xml" rel="self" type="application/rss+xml"/><item><title>Spring Boot应用假死现象：SLF4J日志框架冲突深度分析</title><link>https://cyber-blog.github.io/p/spring-boot/</link><pubDate>Fri, 19 Sep 2025 16:30:00 +0800</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/spring-boot/</guid><description>&lt;h2 id="引言">引言
+&lt;/h2>&lt;h3 id="一个令人困惑的现象">一个令人困惑的现象
+&lt;/h3>&lt;p>我最近遇到了一个奇怪的现象：在一个 Java Spring Boot 项目开发中，应用启动时显示了一些日志，然后就完全停止输出，程序看起来像是卡住了。控制台光标在闪烁，但是什么都不会发生。&lt;/p>
+&lt;p>然而，通过排除一个jar包，程序就能正常启动。这让我非常困惑。 为什么排除一个日志相关的依赖就能解决问题？程序真的卡住了吗？&lt;/p>
+&lt;p>我将分析我最近遇到的一个真实案例。&lt;/p>
+&lt;h2 id="一当程序卡住的那一刻">一、当程序&amp;quot;卡住&amp;quot;的那一刻
+&lt;/h2>&lt;h3 id="初步现象程序似乎停止了">初步现象：程序似乎停止了
+&lt;/h3>&lt;p>我执行通过IDEA执行&lt;code>mvn spring-boot:run&lt;/code> 启动应用时，控制台显示了这些信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;span class="lnt">43
+&lt;/span>&lt;span class="lnt">44
+&lt;/span>&lt;span class="lnt">45
+&lt;/span>&lt;span class="lnt">46
+&lt;/span>&lt;span class="lnt">47
+&lt;/span>&lt;span class="lnt">48
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">W&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Class&lt;/span> &lt;span class="n">path&lt;/span> &lt;span class="n">contains&lt;/span> &lt;span class="n">multiple&lt;/span> &lt;span class="n">SLF4J&lt;/span> &lt;span class="n">providers&lt;/span>&lt;span class="o">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">W&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Found&lt;/span> &lt;span class="n">provider&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">slf4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">reload4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">Reload4jServiceProvider&lt;/span>&lt;span class="err">@&lt;/span>&lt;span class="mi">64&lt;/span>&lt;span class="n">cd705f&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">W&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Found&lt;/span> &lt;span class="n">provider&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">apache&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">logging&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">slf4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">SLF4JServiceProvider&lt;/span>&lt;span class="err">@&lt;/span>&lt;span class="mi">9225652&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Actual&lt;/span> &lt;span class="n">provider&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="n">of&lt;/span> &lt;span class="n">type&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">slf4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">reload4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">Reload4jServiceProvider&lt;/span>&lt;span class="err">@&lt;/span>&lt;span class="mi">64&lt;/span>&lt;span class="n">cd705f&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">log4j&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="n">WARN&lt;/span> &lt;span class="n">No&lt;/span> &lt;span class="n">appenders&lt;/span> &lt;span class="n">could&lt;/span> &lt;span class="n">be&lt;/span> &lt;span class="n">found&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">logger&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sankuai&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">octo&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">mns&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">util&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">ProcessInfoUtil&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">log4j&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="n">WARN&lt;/span> &lt;span class="n">Please&lt;/span> &lt;span class="n">initialize&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">log4j&lt;/span> &lt;span class="n">system&lt;/span> &lt;span class="n">properly&lt;/span>&lt;span class="o">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">2025&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">09&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">19&lt;/span>&lt;span class="n">T02&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mf">23.178052&lt;/span>&lt;span class="n">Z&lt;/span> &lt;span class="n">main&lt;/span> &lt;span class="n">INFO&lt;/span> &lt;span class="n">create&lt;/span> &lt;span class="n">XMDFileAppender&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">xmdCraneAppender&lt;/span> &lt;span class="n">fullFileName&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">crane&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span> &lt;span class="n">appkey&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span> &lt;span class="n">fullFilePattern&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">crane&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">d&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="n">yyyy&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">MM&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">dd&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">2025&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">09&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">19&lt;/span>&lt;span class="n">T02&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mf">23.178277&lt;/span>&lt;span class="n">Z&lt;/span> &lt;span class="n">main&lt;/span> &lt;span class="n">INFO&lt;/span> &lt;span class="n">create&lt;/span> &lt;span class="n">XMDFileAppender&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">xmdMafkaAppender&lt;/span> &lt;span class="n">fullFileName&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">mafka&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span> &lt;span class="n">appkey&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span> &lt;span class="n">fullFilePattern&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">mafka&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">d&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="n">yyyy&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">MM&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">dd&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">2025&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">09&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">19&lt;/span>&lt;span class="n">T02&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mf">23.178424&lt;/span>&lt;span class="n">Z&lt;/span> &lt;span class="n">main&lt;/span> &lt;span class="n">INFO&lt;/span> &lt;span class="n">create&lt;/span> &lt;span class="n">XMDFileAppender&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">xmdRhinoAppender&lt;/span> &lt;span class="n">fullFileName&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">rhino&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span> &lt;span class="n">appkey&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span> &lt;span class="n">fullFilePattern&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">rhino&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">d&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="n">yyyy&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">MM&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">dd&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">2025&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">09&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">19&lt;/span>&lt;span class="n">T02&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mf">23.178563&lt;/span>&lt;span class="n">Z&lt;/span> &lt;span class="n">main&lt;/span> &lt;span class="n">INFO&lt;/span> &lt;span class="n">create&lt;/span> &lt;span class="n">XMDFileAppender&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">xmdKmsAppender&lt;/span> &lt;span class="n">fullFileName&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">kms&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span> &lt;span class="n">appkey&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span> &lt;span class="n">fullFilePattern&lt;/span>&lt;span class="o">=/&lt;/span>&lt;span class="n">data&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">applogs&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">kms&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">d&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="n">yyyy&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">MM&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">dd&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="o">-%&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">log&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">2025&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">09&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">19&lt;/span>&lt;span class="n">T02&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mf">23.183208&lt;/span>&lt;span class="n">Z&lt;/span> &lt;span class="n">main&lt;/span> &lt;span class="n">INFO&lt;/span> &lt;span class="n">Begin&lt;/span> &lt;span class="n">Stop&lt;/span> &lt;span class="n">AsyncScibeAppender&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ScribeAsyncAppender&lt;/span> &lt;span class="n">Queue&lt;/span> &lt;span class="n">still&lt;/span> &lt;span class="n">has&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="n">events&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">2025&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">09&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">19&lt;/span>&lt;span class="n">T02&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mf">23.183676&lt;/span>&lt;span class="n">Z&lt;/span> &lt;span class="n">main&lt;/span> &lt;span class="n">INFO&lt;/span> &lt;span class="n">End&lt;/span> &lt;span class="n">Stop&lt;/span> &lt;span class="n">AsyncScibeAppender&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">ScribeAsyncAppender&lt;/span> &lt;span class="n">Queue&lt;/span> &lt;span class="n">still&lt;/span> &lt;span class="n">has&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="n">events&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">////////////////////////////////////////////////////////////////////&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="n">_ooOoo_&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="n">o8888888o&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="mi">88&lt;/span>&lt;span class="s2">&amp;#34; . &amp;#34;&lt;/span>&lt;span class="mi">88&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">|&lt;/span> &lt;span class="o">^&lt;/span>&lt;span class="n">_&lt;/span>&lt;span class="o">^&lt;/span> &lt;span class="o">|&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="n">O&lt;/span>\ &lt;span class="o">=&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">O&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="n">____&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="err">`&lt;/span>&lt;span class="o">---&lt;/span>&lt;span class="s1">&amp;#39;\____ //&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">.&lt;/span>&lt;span class="s1">&amp;#39; &lt;/span>&lt;span class="se">\\&lt;/span>&lt;span class="s1">| |// `. //&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">/&lt;/span> \\&lt;span class="o">|||&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="o">|||//&lt;/span> \ &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">/&lt;/span> &lt;span class="n">_&lt;/span>&lt;span class="o">|||||&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="o">-&lt;/span> &lt;span class="o">|||||-&lt;/span> \ &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">|&lt;/span> \\\ &lt;span class="o">-&lt;/span> &lt;span class="o">///&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">|&lt;/span> \&lt;span class="n">_&lt;/span>&lt;span class="o">|&lt;/span> &lt;span class="s1">&amp;#39;&amp;#39;&lt;/span>\&lt;span class="o">---/&lt;/span>&lt;span class="s1">&amp;#39;&amp;#39;&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> \ &lt;span class="o">.-&lt;/span>\&lt;span class="n">__&lt;/span> &lt;span class="err">`&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="err">`&lt;/span> &lt;span class="n">___&lt;/span>&lt;span class="o">/-.&lt;/span> &lt;span class="o">/&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="n">___&lt;/span>&lt;span class="err">`&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="o">.&lt;/span>&lt;span class="s1">&amp;#39; /--.--\ `. . ___ //&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&amp;#34;&lt;/span> &lt;span class="s1">&amp;#39;&amp;lt; `.___\_&amp;lt;|&amp;gt;_/___.&amp;#39;&lt;/span> &lt;span class="o">&amp;gt;&lt;/span>&lt;span class="s1">&amp;#39;&amp;#34;&amp;#34;. //&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="err">`&lt;/span>&lt;span class="o">-&lt;/span> \&lt;span class="err">`&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="err">`&lt;/span>\ &lt;span class="n">_&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="err">`&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="err">`&lt;/span>&lt;span class="o">/&lt;/span> &lt;span class="o">-&lt;/span> &lt;span class="err">`&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> \ \ &lt;span class="err">`&lt;/span>&lt;span class="o">-.&lt;/span> \&lt;span class="n">_&lt;/span> &lt;span class="n">__&lt;/span>\ &lt;span class="o">/&lt;/span>&lt;span class="n">__&lt;/span> &lt;span class="n">_&lt;/span>&lt;span class="o">/&lt;/span> &lt;span class="o">.-&lt;/span>&lt;span class="err">`&lt;/span> &lt;span class="o">/&lt;/span> &lt;span class="o">/&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">========&lt;/span>&lt;span class="err">`&lt;/span>&lt;span class="o">-.&lt;/span>&lt;span class="n">____&lt;/span>&lt;span class="err">`&lt;/span>&lt;span class="o">-.&lt;/span>&lt;span class="n">___&lt;/span>\&lt;span class="n">_____&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">___&lt;/span>&lt;span class="o">.-&lt;/span>&lt;span class="err">`&lt;/span>&lt;span class="n">____&lt;/span>&lt;span class="o">.-&lt;/span>&lt;span class="s1">&amp;#39;======== //&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="err">`&lt;/span>&lt;span class="o">=---=&lt;/span>&lt;span class="s1">&amp;#39; //&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="o">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="err">佛祖保佑&lt;/span> &lt;span class="err">永不宕机&lt;/span> &lt;span class="err">永无&lt;/span>&lt;span class="n">BUG&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="n">Thanks&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">Buddha&lt;/span>&lt;span class="s1">&amp;#39;s blessing, may our system //&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">//&lt;/span> &lt;span class="n">remain&lt;/span> &lt;span class="n">stable&lt;/span> &lt;span class="ow">and&lt;/span> &lt;span class="n">bug&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">free&lt;/span> &lt;span class="n">forever&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="o">//&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">////////////////////////////////////////////////////////////////////&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">9&lt;/span>&lt;span class="err">月&lt;/span> &lt;span class="mi">19&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">2025&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">26&lt;/span> &lt;span class="err">上午&lt;/span> &lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">bouncycastle&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">jsse&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">PropertyUtils&lt;/span> &lt;span class="n">getStringSecurityProperty&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="err">信息&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Found&lt;/span> &lt;span class="n">string&lt;/span> &lt;span class="n">security&lt;/span> &lt;span class="n">property&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">jdk&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">tls&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">disabledAlgorithms&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">SSLv3&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">TLSv1&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">TLSv1&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">RC4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">DES&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">MD5withRSA&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">DH&lt;/span> &lt;span class="n">keySize&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="mi">1024&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">EC&lt;/span> &lt;span class="n">keySize&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="mi">224&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="n">DES_EDE_CBC&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">anon&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">NULL&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">9&lt;/span>&lt;span class="err">月&lt;/span> &lt;span class="mi">19&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">2025&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">26&lt;/span> &lt;span class="err">上午&lt;/span> &lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">bouncycastle&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">jsse&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">PropertyUtils&lt;/span> &lt;span class="n">getStringSecurityProperty&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="err">信息&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Found&lt;/span> &lt;span class="n">string&lt;/span> &lt;span class="n">security&lt;/span> &lt;span class="n">property&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">jdk&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">certpath&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">disabledAlgorithms&lt;/span>&lt;span class="p">]:&lt;/span> &lt;span class="n">MD2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">MD5&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">SHA1&lt;/span> &lt;span class="n">jdkCA&lt;/span> &lt;span class="o">&amp;amp;&lt;/span> &lt;span class="n">usage&lt;/span> &lt;span class="n">TLSServer&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">RSA&lt;/span> &lt;span class="n">keySize&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="mi">1024&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">DSA&lt;/span> &lt;span class="n">keySize&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="mi">1024&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">EC&lt;/span> &lt;span class="n">keySize&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="mi">224&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">SHA1&lt;/span> &lt;span class="n">usage&lt;/span> &lt;span class="n">SignedJAR&lt;/span> &lt;span class="o">&amp;amp;&lt;/span> &lt;span class="n">denyAfter&lt;/span> &lt;span class="mi">2019&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">01&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">01&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">9&lt;/span>&lt;span class="err">月&lt;/span> &lt;span class="mi">19&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">2025&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">26&lt;/span> &lt;span class="err">上午&lt;/span> &lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">bouncycastle&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">jsse&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">DisabledAlgorithmConstraints&lt;/span> &lt;span class="n">create&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="err">警告&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Ignoring&lt;/span> &lt;span class="n">unsupported&lt;/span> &lt;span class="n">entry&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="s1">&amp;#39;jdk.certpath.disabledAlgorithms&amp;#39;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">SHA1&lt;/span> &lt;span class="n">jdkCA&lt;/span> &lt;span class="o">&amp;amp;&lt;/span> &lt;span class="n">usage&lt;/span> &lt;span class="n">TLSServer&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">9&lt;/span>&lt;span class="err">月&lt;/span> &lt;span class="mi">19&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">2025&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">26&lt;/span> &lt;span class="err">上午&lt;/span> &lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">bouncycastle&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">jsse&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">provider&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">DisabledAlgorithmConstraints&lt;/span> &lt;span class="n">create&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="err">警告&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Ignoring&lt;/span> &lt;span class="n">unsupported&lt;/span> &lt;span class="n">entry&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="s1">&amp;#39;jdk.certpath.disabledAlgorithms&amp;#39;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">SHA1&lt;/span> &lt;span class="n">usage&lt;/span> &lt;span class="n">SignedJAR&lt;/span> &lt;span class="o">&amp;amp;&lt;/span> &lt;span class="n">denyAfter&lt;/span> &lt;span class="mi">2019&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">01&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">01&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">2025&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">09&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">19&lt;/span>&lt;span class="n">T02&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mf">26.632017&lt;/span>&lt;span class="n">Z&lt;/span> &lt;span class="n">xmdlog&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">registry&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">service&lt;/span> &lt;span class="n">INFO&lt;/span> &lt;span class="n">Registry&lt;/span> &lt;span class="n">LogManager&lt;/span> &lt;span class="n">register&lt;/span> &lt;span class="n">status&lt;/span> &lt;span class="bp">true&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">url&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="n">http&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="o">//&lt;/span>&lt;span class="nb">log&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">inf&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sankuai&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">api&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">register&lt;/span>&lt;span class="err">?&lt;/span>&lt;span class="n">appkey&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">example&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">com&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">ip&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mf">172.18&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mf">151.200&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">port&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">12315&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">env&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">TEST&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">version&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mf">2.2&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="mi">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Local&lt;/span> &lt;span class="n">Appenv&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">deployenv&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">qa&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">env&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">test&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">AppEnv&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="n">deployenv&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;qa&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">env&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;test&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">swimlane&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;tmp-test&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">cell&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;null&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">grouptags&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;null&amp;#39;&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Fri&lt;/span> &lt;span class="n">Sep&lt;/span> &lt;span class="mi">19&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">13&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">48&lt;/span> &lt;span class="n">CST&lt;/span> &lt;span class="mi">2025&lt;/span> &lt;span class="n">WARN&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Establishing&lt;/span> &lt;span class="n">SSL&lt;/span> &lt;span class="n">connection&lt;/span> &lt;span class="n">without&lt;/span> &lt;span class="n">server&lt;/span>&lt;span class="s1">&amp;#39;s identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn&amp;#39;&lt;/span>&lt;span class="n">t&lt;/span> &lt;span class="n">set&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="n">For&lt;/span> &lt;span class="n">compliance&lt;/span> &lt;span class="n">with&lt;/span> &lt;span class="n">existing&lt;/span> &lt;span class="n">applications&lt;/span> &lt;span class="ow">not&lt;/span> &lt;span class="n">using&lt;/span> &lt;span class="n">SSL&lt;/span> &lt;span class="n">the&lt;/span> &lt;span class="n">verifyServerCertificate&lt;/span> &lt;span class="n">property&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="n">set&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="s1">&amp;#39;false&amp;#39;&lt;/span>&lt;span class="o">.&lt;/span> &lt;span class="n">You&lt;/span> &lt;span class="n">need&lt;/span> &lt;span class="n">either&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="n">explicitly&lt;/span> &lt;span class="n">disable&lt;/span> &lt;span class="n">SSL&lt;/span> &lt;span class="n">by&lt;/span> &lt;span class="n">setting&lt;/span> &lt;span class="n">useSSL&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="bp">false&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="ow">or&lt;/span> &lt;span class="n">set&lt;/span> &lt;span class="n">useSSL&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="bp">true&lt;/span> &lt;span class="ow">and&lt;/span> &lt;span class="n">provide&lt;/span> &lt;span class="n">truststore&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="n">server&lt;/span> &lt;span class="n">certificate&lt;/span> &lt;span class="n">verification&lt;/span>&lt;span class="o">.&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>在显示了一些组件初始化信息和ASCII图案后，程序就完全停止输出了。控制台光标在闪烁，但是什么都不会发生。&lt;/p>
+&lt;h2 id="二真相往往出人意料">二、真相往往出人意料
+&lt;/h2>&lt;h3 id="数字不会说谎567的cpu使用率">数字不会说谎：56.7%的CPU使用率
+&lt;/h3>&lt;p>首先使用 &lt;code>ps&lt;/code> 命令查看进程信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">$ ps aux &lt;span class="p">|&lt;/span> grep ApplicationLoader
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">majiang &lt;span class="m">97897&lt;/span> 56.7 2.5 &lt;span class="m">443940128&lt;/span> &lt;span class="m">633216&lt;/span> ?? R 11:34AM 1:19.25
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这个结果让我震惊：&lt;/p>
+&lt;ul>
+&lt;li>进程状态: R (Running) — 程序在运行，不是阻塞状态&lt;/li>
+&lt;li>CPU使用率: 56.7% — 程序在积极工作&lt;/li>
+&lt;li>运行时间: 1小时19分钟 — 程序一直在持续运行&lt;/li>
+&lt;/ul>
+&lt;p>我原本以为程序卡住了，如果真是这样，CPU使用率应该接近0%。但现在56.7%的CPU使用率说明程序在正常运行！&lt;/p>
+&lt;h3 id="深入检查使用各种分析工具">深入检查：使用各种分析工具
+&lt;/h3>&lt;p>为了彻底搞清楚程序在做什么，我使用了多种分析手段：&lt;/p>
+&lt;p>线程状态分析: 使用&lt;code>jstack&lt;/code>反复检查，没有发现死锁或异常阻塞&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Profiler火焰图: 通过JProfiler查看方法调用，程序执行正常&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>线程时间线: 观察线程的时间分布，各个线程都在正常工作&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>线程快照: 多次获取线程快照对比，线程状态正常工作&lt;/p>
+&lt;p>所有这些工具都指向同一个结论：程序运行完全正常，没有任何阻塞或性能问题。&lt;/p>
+&lt;p>进一步分析线程堆栈，我发现了关键信息：&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl"> $ jstack &lt;span class="m">97897&lt;/span> &lt;span class="p">|&lt;/span> grep -E &lt;span class="s2">&amp;#34;main.*tid&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 没有找到main线程！&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> $ jstack &lt;span class="m">97897&lt;/span> &lt;span class="p">|&lt;/span> head -20
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;qtp1366921090-106&amp;#34;&lt;/span> &lt;span class="c1">#106 prio=5 ... waiting on condition&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;qtp1366921090-107&amp;#34;&lt;/span> &lt;span class="c1">#107 prio=5 ... runnable &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;RhinoHttpSeverBossGroup-2-1&amp;#34;&lt;/span> &lt;span class="c1">#128 prio=5 ... runnable&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;MtthriftServerBossGroup-8-1&amp;#34;&lt;/span> &lt;span class="c1">#346 prio=5 ... runnable&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;DestroyJavaVM&amp;#34;&lt;/span> &lt;span class="c1">#377 prio=5 ... waiting on condition&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这些发现彻底改变了我的认知：&lt;/p>
+&lt;ul>
+&lt;li>✅ Main线程已经正常执行完毕并退出&lt;/li>
+&lt;li>✅ Spring Boot应用完全启动成功&lt;/li>
+&lt;li>✅ HTTP服务器线程池（qtp开头的线程）在正常运行&lt;/li>
+&lt;li>✅ 各种服务组件的工作线程都在运行&lt;/li>
+&lt;/ul>
+&lt;p>程序根本没有&amp;quot;卡住&amp;quot;！&lt;/p>
+&lt;p>真正发生的是：应用在后台正常运行，但是没有任何日志输出。这给我造成了程序停止响应的错觉。&lt;/p>
+&lt;p>问题的本质从&amp;quot;程序阻塞&amp;quot;变成了&amp;quot;日志系统失效&amp;quot;。&lt;/p>
+&lt;h2 id="三静默杀手的真面目">三、静默杀手的真面目
+&lt;/h2>&lt;h3 id="slf4j的选择困难症">SLF4J的选择困难症
+&lt;/h3>&lt;p>既然程序正常运行但没有日志输出，问题就出在日志系统上。回看最初的警告信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl"> &lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">W&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Class&lt;/span> &lt;span class="n">path&lt;/span> &lt;span class="n">contains&lt;/span> &lt;span class="n">multiple&lt;/span> &lt;span class="n">SLF4J&lt;/span> &lt;span class="n">providers&lt;/span>&lt;span class="o">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">W&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Found&lt;/span> &lt;span class="n">provider&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">slf4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">reload4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">Reload4jServiceProvider&lt;/span>&lt;span class="err">@&lt;/span>&lt;span class="mi">64&lt;/span>&lt;span class="n">cd705f&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">W&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Found&lt;/span> &lt;span class="n">provider&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">apache&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">logging&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">slf4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">SLF4JServiceProvider&lt;/span>&lt;span class="err">@&lt;/span>&lt;span class="mi">9225652&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">SLF4J&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="n">Actual&lt;/span> &lt;span class="n">provider&lt;/span> &lt;span class="n">is&lt;/span> &lt;span class="n">of&lt;/span> &lt;span class="n">type&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="n">org&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">slf4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">reload4j&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">Reload4jServiceProvider&lt;/span>&lt;span class="err">@&lt;/span>&lt;span class="mi">64&lt;/span>&lt;span class="n">cd705f&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这里揭示了关键问题：&lt;strong>SLF4J在两个日志实现之间选择了错误的那个&lt;/strong>。&lt;/p>
+&lt;p>&lt;code>SLF4J&lt;/code>是一个日志门面，它在运行时从classpath中选择一个具体的日志实现。选择策略很简单：使用第一个发现的提供者。&lt;/p>
+&lt;p>&lt;strong>两个冲突的提供者&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>org.slf4j.reload4j.Reload4jServiceProvider&lt;/code> — 来自&lt;code>slf4j-reload4j&lt;/code>包，兼容Log4j 1.x&lt;/li>
+&lt;li>&lt;code>org.apache.logging.slf4j.SLF4JServiceProvider&lt;/code> — 来自&lt;code>log4j-slf4j2-impl&lt;/code>包，支持Log4j 2.x&lt;/li>
+&lt;/ul>
+&lt;p>SLF4J选择了reload4j提供者，但我的项目配置的是Log4j 2.x格式。&lt;/p>
+&lt;h3 id="被吞噬的日志去了哪里">被吞噬的日志去了哪里
+&lt;/h3>&lt;p>我的项目使用的是标准的Log4j 2.x配置文件：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;configuration&lt;/span> &lt;span class="na">status=&lt;/span>&lt;span class="s">&amp;#34;info&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;appenders&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;Console&lt;/span> &lt;span class="na">name=&lt;/span>&lt;span class="s">&amp;#34;Console&amp;#34;&lt;/span> &lt;span class="na">target=&lt;/span>&lt;span class="s">&amp;#34;SYSTEM_OUT&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;PatternLayout&lt;/span> &lt;span class="na">pattern=&lt;/span>&lt;span class="s">&amp;#34;${sys:CONSOLE_LOG_PATTERN}&amp;#34;&lt;/span> &lt;span class="nt">/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/Console&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;XMDFile&lt;/span> &lt;span class="na">name=&lt;/span>&lt;span class="s">&amp;#34;infoAppender&amp;#34;&lt;/span> &lt;span class="na">fileName=&lt;/span>&lt;span class="s">&amp;#34;info.log&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c">&amp;lt;!-- Log4j 2.x特有的appender --&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/XMDFile&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/appenders&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;loggers&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;root&lt;/span> &lt;span class="na">level=&lt;/span>&lt;span class="s">&amp;#34;info&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;appender-ref&lt;/span> &lt;span class="na">ref=&lt;/span>&lt;span class="s">&amp;#34;Console&amp;#34;&lt;/span>&lt;span class="nt">/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/root&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/loggers&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;/configuration&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>问题在于：reload4j只能理解Log4j 1.x的配置格式，无法解析Log4j 2.x的高级语法。&lt;/p>
+&lt;p>失败链路：&lt;/p>
+&lt;ol>
+&lt;li>reload4j尝试解析log4j2.xml&lt;/li>
+&lt;li>遇到不认识的&lt;code>&amp;lt;XMDFile&amp;gt;&lt;/code>等Log4j 2.x元素&lt;/li>
+&lt;li>配置解析失败，没有创建任何appender&lt;/li>
+&lt;li>所有日志调用都被静默丢弃&lt;/li>
+&lt;/ol>
+&lt;p>这就是为什么会出现这个警告：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">log4j:WARN No appenders could be found for logger (com.sankuai.inf.octo.mns.util.ProcessInfoUtil).
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">log4j:WARN Please initialize the log4j system properly.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>完整的&amp;quot;吞噬&amp;quot;过程：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl"> 第1步: 业务代码调用
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> logger.info&lt;span class="o">(&lt;/span>&lt;span class="s2">&amp;#34;Spring Boot application started&amp;#34;&lt;/span>&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 第2步: SLF4J门面接收调用
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> org.slf4j.Logger.info&lt;span class="o">(&lt;/span>String msg&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 第3步: SLF4J路由到选中的提供者
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> SLF4J → org.slf4j.reload4j.Reload4jLoggerAdapter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 第4步: reload4j适配器委托给Log4j 1.x
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Reload4jLoggerAdapter → org.apache.log4j.Logger &lt;span class="o">(&lt;/span>reload4j实现&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 第5步: Log4j检查可用的appender
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> logger.getAllAppenders&lt;span class="o">()&lt;/span> → 返回空集合 &lt;span class="o">(&lt;/span>因为配置解析失败&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 第6步: 没有appender可用
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Log4j判断：既然没有appender，就直接丢弃这条消息
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 第7步: 静默返回
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 方法正常返回，不抛异常，业务代码继续执行
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 结果: 用户完全看不到任何日志输出
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Log4j采用&amp;quot;静默失败&amp;quot;策略：当没有可用的appender时，所有日志调用正常执行但输出被完全丢弃，不会抛出异常影响业务逻辑。&lt;/p>
+&lt;p>这就是为什么排除slf4j-reload4j能解决问题：去掉错误的提供者后，SLF4J会选择正确的Log4j 2.x实现，日志系统恢复正常。&lt;/p>
+&lt;h2 id="四破解之道">四、破解之道
+&lt;/h2>&lt;h3 id="斩断混乱的依赖链">斩断混乱的依赖链
+&lt;/h3>&lt;p>理解了问题本质后，解决方案就很清楚了：&lt;strong>消除SLF4J提供者冲突&lt;/strong>。&lt;/p>
+&lt;p>通过Maven依赖排除，将错误的提供者从classpath中移除：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;groupId&amp;gt;&lt;/span>com.sankuai.com&lt;span class="nt">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;artifactId&amp;gt;&lt;/span>example-sdk&lt;span class="nt">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;version&amp;gt;&lt;/span>1.0&lt;span class="nt">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;exclusions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;exclusion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;artifactId&amp;gt;&lt;/span>slf4j-reload4j&lt;span class="nt">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;groupId&amp;gt;&lt;/span>org.slf4j&lt;span class="nt">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/exclusion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/exclusions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>修复后的效果：&lt;/p>
+&lt;ol>
+&lt;li>Classpath中只剩下log4j-slf4j2-impl提供者&lt;/li>
+&lt;li>SLF4J自动选择Log4j 2.x实现&lt;/li>
+&lt;li>Log4j 2.x正确解析log4j2.xml配置文件&lt;/li>
+&lt;li>Console和File appender正常创建&lt;/li>
+&lt;li>日志输出恢复正常，应用&amp;quot;复活&amp;quot;&lt;/li>
+&lt;/ol>
+&lt;p>验证修复结果：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">2025-09-19 10:37:00.840 INFO 62045 --- [ main] c.s.h.g.g.ApplicationLoader : Starting ApplicationLoader using Java 17.0.10
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2025-09-19 10:37:00.840 INFO 62045 --- [ main] c.s.h.g.g.ApplicationLoader : The following 1 profile is active: &amp;#34;test&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2025-09-19 10:37:15.234 INFO 62045 --- [ main] c.s.h.g.g.ApplicationLoader : Started ApplicationLoader in 14.628 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>没有了SLF4J警告信息，没有了log4j的错误提示，一切都恢复正常。&lt;/p>
+&lt;h3 id="为什么会一直使用reald4j">为什么会一直使用reald4j?
+&lt;/h3>&lt;p>通过查看项目的pom.xml文件，我发现&lt;code>photo-thrift-client&lt;/code>依赖的位置确实影响了SLF4J提供者的选择。&lt;/p>
+&lt;p>在&lt;code>hrmdm-globaldata-gateway-infrastructure/pom.xml&lt;/code>中，&lt;code>photo-thrift-client&lt;/code>依赖位于：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;groupId&amp;gt;&lt;/span>com.sankuai.com&lt;span class="nt">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;artifactId&amp;gt;&lt;/span>example-sdk&lt;span class="nt">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;version&amp;gt;&lt;/span>1.0&lt;span class="nt">&amp;lt;/version&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;exclusions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;exclusion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;artifactId&amp;gt;&lt;/span>slf4j-reload4j&lt;span class="nt">&amp;lt;/artifactId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;groupId&amp;gt;&lt;/span>org.slf4j&lt;span class="nt">&amp;lt;/groupId&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/exclusion&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;lt;/exclusions&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;lt;/dependency&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这个依赖在文件中的位置相对较前，而且它直接引入了slf4j-reload4j作为传递依赖。由于Maven构建classpath时按照依赖在文件中的声明顺序，slf4j-reload4j的ServiceProvider文件被先加载到ServiceLoader中。&lt;/p>
+&lt;p>具体的加载顺序：&lt;/p>
+&lt;ol>
+&lt;li>Maven解析依赖树，photo-thrift-client较早被处理&lt;/li>
+&lt;li>photo-thrift-client → slf4j-reload4j 被添加到classpath靠前位置&lt;/li>
+&lt;li>ServiceLoader扫描时，先发现slf4j-reload4j的ServiceProvider&lt;/li>
+&lt;li>SLF4J选择第一个发现的提供者：reload4j&lt;/li>
+&lt;/ol>
+&lt;p>这就是为什么slf4j-reload4j被优先选择的根本原因。不同的项目中，如果依赖声明顺序不同，可能就会选择log4j-slf4j2-impl作为提供者。&lt;/p>
+&lt;p>验证方法：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">mvn dependency:build-classpath
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>可以查看实际构建的classpath顺序，确认slf4j-reload4j确实在前面。&lt;/p>
+&lt;h2 id="尾声技术世界的启示">尾声：技术世界的启示
+&lt;/h2>&lt;p>这个案例揭示了现代Java应用生态的复杂性。一个看似无害的传递依赖，通过微妙的类加载顺序和配置不匹配，导致了整个日志系统的静默失效。&lt;/p>
+&lt;p>&lt;strong>表象具有欺骗性&lt;/strong>。当我最初看到程序&amp;quot;卡住&amp;quot;时，直觉告诉我这是一个阻塞或死锁问题。但深入分析后发现，程序运行完全正常，问题出在一个完全不同的地方。&lt;/p>
+&lt;p>&lt;strong>工具是解决问题的关键&lt;/strong>。通过系统命令（ps、jstack）和分析工具，我能够透过现象看到本质，发现程序实际在正常运行。&lt;/p>
+&lt;p>&lt;strong>依赖管理的重要性&lt;/strong>。在现代Java项目中，传递依赖可能带来意想不到的问题。一个小小的jar包冲突，就能让整个应用的行为变得诡异。&lt;/p>
+&lt;p>&lt;strong>静默失败的双刃剑&lt;/strong>。Log4j的静默失败设计保护了业务逻辑，但也让问题变得更难发现。有时候，适当的&amp;quot;噪音&amp;quot;比安静的错误更有价值。&lt;/p>
+&lt;p>最重要的是：&lt;strong>不要被第一印象误导&lt;/strong>。技术问题往往比表面现象更复杂，也更有趣。当遇到无法理解的现象时，保持好奇心，深入挖掘，往往会发现令人惊喜的真相。&lt;/p>
+&lt;p>在复杂的技术世界里，最神秘的故障背后，可能隐藏着最简单的原理。&lt;/p></description></item></channel></rss>

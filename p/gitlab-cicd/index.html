@@ -1,0 +1,862 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="主要记录在开发低代码平台的时候使用的 Gitlab CI/CD 的一些基础功能"><title>GitLab CI/CD 简介文档</title>
+<link rel=canonical href=https://cyber-blog.github.io/p/gitlab-cicd/><link rel=stylesheet href=/scss/style.min.70a01615b5dd99826a360296920067f6e3896a41fe397d04d6b849efef75a174.css><meta property='og:title' content="GitLab CI/CD 简介文档"><meta property='og:description' content="主要记录在开发低代码平台的时候使用的 Gitlab CI/CD 的一些基础功能"><meta property='og:url' content='https://cyber-blog.github.io/p/gitlab-cicd/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='CI/CD'><meta property='article:published_time' content='2020-11-24T00:00:00+00:00'><meta property='article:modified_time' content='2020-11-24T00:00:00+00:00'><meta property='og:image' content='https://cyber-blog.github.io/p/gitlab-cicd/cover.png'><meta name=twitter:title content="GitLab CI/CD 简介文档"><meta name=twitter:description content="主要记录在开发低代码平台的时候使用的 Gitlab CI/CD 的一些基础功能"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://cyber-blog.github.io/p/gitlab-cicd/cover.png'><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/majiang213 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><ol><li><ol><li></li></ol></li></ol></li><li><a href=#基本-cicd-工作流程>基本 CI/CD 工作流程</a></li></ol><ol><li><a href=#gitlab-runner安装>GitLab Runner安装</a><ol><li><a href=#helm安装gitlab-runner>Helm安装GitLab Runner</a><ol><li><a href=#向gitlab-runner提供访问gitlab的自生成证书>向gitLab Runner提供访问gitLab的自生成证书</a></li></ol></li><li><a href=#使用helm-chart更新gitlab-runner>使用Helm Chart更新GitLab Runner</a></li><li><a href=#使用helm-chart删除gitlab-runner>使用Helm Chart删除GitLab Runner</a></li></ol></li><li><a href=#离线安装gitlab-runner>离线安装Gitlab-runner</a></li><li><a href=#gitlab-runner安装当中需要注意的问题>gitlab-runner安装当中需要注意的问题</a><ol><li><a href=#kubernetes集群有污点导致执行器无法启动的问题及解决办法>kubernetes集群有污点导致执行器无法启动的问题及解决办法</a><ol><li><a href=#解决方案>解决方案</a></li></ol></li><li><a href=#关于helm安装的gitlab-runner所启动的执行器经常因为could-not-resolve-hostgitdomaincom报错的问题>关于Helm安装的gitlab-runner所启动的执行器经常因为Could not resolve host:git.domain.com报错的问题</a></li><li><a href=#在容器中构建时使用docker>在容器中构建时使用docker</a></li><li><a href=#缓存相关配置>缓存相关配置</a></li><li><a href=#gitlab-runner-部署到k8s时报错deploymentextensions-demo-is-forbidden-user-systemserviceaccountgitlabdefault-cannot-get-resource-deployments-in-api-group-extensions-in-the-namespace-default>gitlab-runner 部署到k8s时报错:deployment.extensions demo is forbidden: user &ldquo;system:serviceaccount:gitlab:default&rdquo; cannot get resource deployments in api group extensions in the namespace default</a></li></ol></li><li><a href=#gitlab-cicd-的使用文档>GitLab CI/CD 的使用文档</a><ol><li><a href=#gitlab-ciyml>.gitlab-ci.yml</a><ol><li><a href=#job>job</a></li><li><a href=#stages>stages</a></li><li><a href=#stage>stage</a></li><li><a href=#variables>variables</a></li><li><a href=#workflow>workflow</a></li><li><a href=#cache>cache</a></li><li><a href=#include>include</a></li><li><a href=#image>image</a></li><li><a href=#services>services</a></li><li><a href=#trigger>trigger</a></li><li><a href=#environment>environment</a></li></ol></li><li><a href=#实战gitlab-cicd-自动化部署推送到harbor>实战:GitLab CI/CD 自动化部署推送到Harbor</a></li></ol></li></ol><ol><li><a href=#sonarqube的安装>SonarQube的安装</a></li><li><a href=#sonarqube整合gitlab-cicd-分析java代码>SonarQube整合gitlab CI/CD 分析Java代码</a></li><li><a href=#在gitlab-cicd使用当中遇到的问题>在gitlab CI/CD使用当中遇到的问题</a><ol><li><a href=#trigger触发器不能使用变量去定义>trigger触发器不能使用变量去定义</a></li><li><a href=#在同一个流水线当中的job之间变量无法传递>在同一个流水线当中的job之间变量无法传递</a></li></ol></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/p/gitlab-cicd/><img src=/p/gitlab-cicd/cover_hu18325665342398267168.png srcset="/p/gitlab-cicd/cover_hu18325665342398267168.png 800w, /p/gitlab-cicd/cover_hu7400773267739852289.png 1600w" width=800 height=420 loading=lazy alt="Featured image of post GitLab CI/CD 简介文档"></a></div><div class=article-details><header class=article-category><a href=/categories/tech/ style=background-color:#2a9d8f;color:#fff>技术博客</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/gitlab-cicd/>GitLab CI/CD 简介文档</a></h2><h3 class=article-subtitle>主要记录在开发低代码平台的时候使用的 Gitlab CI/CD 的一些基础功能</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Nov 24, 2020</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 21 分钟</time></div></footer></div></header><section class=article-content><p>GitLab CI/CD 是一个内置在GitLab中的工具，用于通过持续方法进行软件开发：</p><ul><li>Continuous Integration (CI) 持续集成</li><li>Continuous Delivery (CD) 持续交付</li><li>Continuous Deployment (CD) 持续部署</li></ul><p>持续集成的工作原理是将小的代码块推送到Git仓库中托管的应用程序代码库中，并且每次推送时，都要运行一系列脚本来构建、测试和验证代码更改，然后再将其合并到主分支中。</p><p>持续交付和部署相当于更进一步的CI，可以在每次推送到仓库默认分支的同时将应用程序部署到生产环境。</p><p>这些方法使得可以在开发周期的早期发现bugs和errors，从而确保部署到生产环境的所有代码都符合为应用程序建立的代码标准。</p><p>GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位于仓库的根目录下。文件中指定的脚本由GitLab Runner执行。</p><p>它涉及到在每次小的迭代中就不断地构建、测试和部署代码更改，从而减少了基于已经存在bug或失败的先前版本开发新代码的机会。</p><h6 id=continuous-integration持续集成>Continuous Integration（持续集成）</h6><p>假设一个应用程序，其代码存储在GitLab的Git仓库中。开发人员每天都要多次推送代码更改。对于每次向仓库的推送，你都可以创建一组脚本来自动构建和测试你的应用程序，从而减少了向应用程序引入错误的机会。这种做法称为持续集成，对于提交给应用程序（甚至是开发分支）的每项更改，它都会自动连续进行构建和测试，以确保所引入的更改通过你为应用程序建立的所有测试，准则和代码合规性标准。</p><h6 id=continuous-delivery持续交付>Continuous Delivery（持续交付）</h6><p>持续交付是超越持续集成的更进一步的操作。应用程序不仅会在推送到代码库的每次代码更改时进行构建和测试，而且，尽管部署是手动触发的，但作为一个附加步骤，它也可以连续部署。此方法可确保自动检查代码，但需要人工干预才能从策略上手动触发以必输此次变更。</p><h6 id=continuous-deployment持续部署>Continuous Deployment（持续部署）</h6><p>与持续交付类似，但不同之处在于，你无需将其手动部署，而是将其设置为自动部署。完全不需要人工干预即可部署你的应用程序。</p><h2 id=基本-cicd-工作流程>基本 CI/CD 工作流程</h2><p>一旦你将提交推送到远程仓库的分支上，那么你为该项目设置的CI/CD管道将会被触发。GitLab CI/CD 的执行步骤如下图所示：</p><p><img src=/p/gitlab-cicd/874963-20200203190921731-1402877301.png width=3420 height=1894 srcset="/p/gitlab-cicd/874963-20200203190921731-1402877301_hu12168210532367399422.png 480w, /p/gitlab-cicd/874963-20200203190921731-1402877301_hu5430032919100052470.png 1024w" loading=lazy class=gallery-image data-flex-grow=180 data-flex-basis=433px></p><p>通过GitLab UI所有的步骤都是可视化的。</p><p>深入研究基本工作流程，则可以在DevOps生命周期的每个阶段看到GitLab中可用的功能，如下图所示：</p><p><img src=/p/gitlab-cicd/874963-20200203191024392-1340530589.png width=1692 height=1068 srcset="/p/gitlab-cicd/874963-20200203191024392-1340530589_hu3260952447508086692.png 480w, /p/gitlab-cicd/874963-20200203191024392-1340530589_hu11559031171706186631.png 1024w" loading=lazy class=gallery-image data-flex-grow=158 data-flex-basis=380px></p><ol><li>Verify</li></ol><ul><li>通过持续集成自动构建和测试你的应用程序</li><li>使用GitLab代码质量（GitLab Code Quality）分析你的源代码质量</li><li>通过浏览器性能测试（Browser Performance Testing）确定代码更改对性能的影响</li><li>执行一系列测试，比如Container Scanning , Dependency Scanning , JUnit tests</li><li>用Review Apps部署更改，以预览每个分支上的应用程序更改</li></ul><ol start=2><li>Package</li></ol><ul><li>用Container Registry存储Docker镜像</li><li>用NPM Registry存储NPM包</li><li>用Maven Repository存储Maven artifacts</li><li>用Conan Repository存储Conan包</li></ul><ol start=3><li>Release</li></ol><ul><li>持续部署，自动将你的应用程序部署到生产环境</li><li>持续交付，手动点击以将你的应用程序部署到生产环境</li><li>用GitLab Pages部署静态网站</li><li>仅将功能部署到一个Pod上，并让一定比例的用户群通过Canary Deployments访问临时部署的功能（PS：即灰度发布）</li><li>在Feature Flags之后部署功能</li><li>用GitLab Releases将发布说明添加到任意Git tag</li><li>使用Deploy Boards查看在Kubernetes上运行的每个CI环境的当前运行状况和状态</li><li>使用Auto Deploy将应用程序部署到Kubernetes集群中的生产环境</li></ul><p>使用GitLab CI/CD，还可以：</p><ul><li>通过Auto DevOps轻松设置应用的整个生命周期</li><li>将应用程序部署到不同的环境</li><li>安装你自己的GitLab Runner</li><li>Schedule pipelines</li><li>使用安全测试报告（Security Test reports）检查应用程序漏洞</li></ul><h1 id=gitlab-runner>GitLab Runner</h1><ol><li>GitLab-CI
+ GitLab-CI就是一套配合GitLab使用的持续集成系统（当然，还有其它的持续集成系统，同样可以配合GitLab使用，比如Jenkins）。而且GitLab8.0以后的版本是默认集成了GitLab-CI并且默认启用的。</li><li>GitLab-Runner
+ GitLab-Runner是配合GitLab-CI进行使用的。GitLab里面的每一个工程都会定义一个属于这个工程的软件集成脚本，用来自动化地完成一些软件集成工作。当这个工程的仓库代码发生变动时，比如有人push了代码，GitLab就会将这个变动通知GitLab-CI。这时GitLab-CI会找出与这个工程相关联的Runner，并通知这些Runner把代码更新到本地并执行预定义好的执行脚本。
+ 所以，GitLab-Runner就是一个用来执行软件集成脚本的东西。你可以想象一下：Runner就像一个个的工人，而GitLab-CI就是这些工人的一个管理中心，所有工人都要在GitLab-CI里面登记注册，并且表明自己是为哪个工程服务的。当相应的工程发生变化时，GitLab-CI就会通知相应的工人执行软件集成脚本。如下图所示：</li></ol><p><img src=/p/gitlab-cicd/20190325191119620.png width=773 height=606 srcset="/p/gitlab-cicd/20190325191119620_hu9327950469716357547.png 480w, /p/gitlab-cicd/20190325191119620_hu11881963875153611974.png 1024w" loading=lazy class=gallery-image data-flex-grow=127 data-flex-basis=306px></p><p>​ GitLab-Runner可以分类三种类型：Shared （共享）、Group（组私有）、Specific （库私有）。
+   Shared：这种Runner是所有工程都能够用的。只有系统管理员能够创建Shared类型的Runner。</p><p>​ Group：指定组私有的runner，需要有组对应的权限。</p><p>   Specific：这种Runner只能为指定的工程服务。拥有该工程访问权限的人都能够为该工程创建Shared类型的runner。</p><h2 id=gitlab-runner安装>GitLab Runner安装</h2><p>一般来说，构建任务都会占用很多的系统资源 (如编译代码)，而 GitLab CI 又是 GitLab 的一部分，如果由 GitLab CI 来运行构建任务的话，在执行构建任务的时候，GitLab 的性能会大幅下降。</p><p>所以GitLab Runner可以安装到不同的机器上，所以在构建任务运行期间并不会影响到 GitLab 的性能。</p><p>关于GitLab Runner的安装基本上分为三种方式:</p><ul><li>直接安装在物理机当中</li><li>安装在Docker容器当中</li><li>通过Helm安装在Kubernetes集群当中</li></ul><h3 id=helm安装gitlab-runner>Helm安装GitLab Runner</h3><p>添加 GitLab Helm 存储库:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>helm repo add gitlab https://charts.gitlab.io
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>如果使用 Helm 2，你必须初始化 Helm:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>helm init
+</span></span></code></pre></td></tr></table></div></div></blockquote><p>配置GitLab Runner安装所需的配置文件<code>values.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c>## Specify a imagePullPolicy</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>imagePullPolicy</span><span class=p>:</span><span class=w> </span><span class=l>IfNotPresent</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## The GitLab Server URL (with protocol) that want to register the runner against</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## ref: https://docs.gitlab.com/runner/commands/README.html#gitlab-runner-register</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>gitlabUrl</span><span class=p>:</span><span class=w> </span><span class=l>https://gitlab.example.com/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## The registration token for adding new Runners to the GitLab server. This must</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## be retrieved from your GitLab instance.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## ref: https://docs.gitlab.com/ee/ci/runners/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>runnerRegistrationToken</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Set the certsSecretName in order to pass custom certificates for GitLab Runner to use</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Provide resource name for a Kubernetes Secret Object in the same namespace,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## this is used to populate the /etc/gitlab-runner/certs directory</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## ref: https://docs.gitlab.com/runner/configuration/tls-self-signed.html#supported-options-for-self-signed-certificates</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## 如果GitLab使用了自签名的ssl证书则需要指定secret，详情见下一小节</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>#certsSecretName:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Configure the maximum number of concurrent jobs</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>concurrent</span><span class=p>:</span><span class=w> </span><span class=m>10</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Defines in seconds how often to check GitLab for a new builds</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## ref: https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>checkInterval</span><span class=p>:</span><span class=w> </span><span class=m>30</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## For RBAC support:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## create 为false则不默认创建账户，推荐自动创建</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>rbac</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>create</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>serviceAccountName</span><span class=p>:</span><span class=w> </span><span class=l>your-service-account</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Run the gitlab-bastion container with the ability to deploy/manage containers of jobs</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## cluster-wide or only within namespace</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>clusterWideAccess</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## If RBAC is disabled in this Helm chart, use the following Kubernetes Service Account name.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c># serviceAccountName: default</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Configuration for the Pods that the runner launches for each new job</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>runners</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Default container image to use for builds when none is specified</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>ubuntu:20.04</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Configuration for the Pods that that the runner launches for each new job</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>config</span><span class=p>:</span><span class=w> </span><span class=p>|</span><span class=sd>
+</span></span></span><span class=line><span class=cl><span class=sd>      [[runners]]
+</span></span></span><span class=line><span class=cl><span class=sd>          pre_clone_script = &#34;echo &#39;10.10.10.224 git.netstar.com&#39; &gt;&gt; /etc/hosts&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>          [runners.kubernetes]
+</span></span></span><span class=line><span class=cl><span class=sd>            helper_image = &#34;harbor.wangxingcloud.com/system/gitlab-runner-helper:x86_64-e95f89a0&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>            image = &#34;ubuntu:20.04&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>            privileged = true
+</span></span></span><span class=line><span class=cl><span class=sd>          [[runners.kubernetes.volumes.empty_dir]]
+</span></span></span><span class=line><span class=cl><span class=sd>            name = &#34;docker-certs&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>            mount_path = &#34;/certs/client&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>            medium = &#34;Memory&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>          [[runners.kubernetes.volumes.host_path]]
+</span></span></span><span class=line><span class=cl><span class=sd>            name = &#34;docker&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>            mount_path = &#34;/var/run/docker.sock&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>            read_only = true
+</span></span></span><span class=line><span class=cl><span class=sd>            host_path = &#34;/var/run/docker.sock&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>            </span><span class=w>      
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Run all containers with the privileged flag enabled</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## This will allow the docker:stable-dind image to run if you need to run Docker</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## commands. Please read the docs before turning this on:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## ref: https://docs.gitlab.com/runner/executors/kubernetes.html#using-docker-dind</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>privileged</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Namespace to run Kubernetes jobs in (defaults to &#39;default&#39;)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c># namespace:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Build Container specific configuration</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>builds</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># cpuLimit: 200m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># memoryLimit: 256Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>cpuRequests</span><span class=p>:</span><span class=w> </span><span class=l>100m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>memoryRequests</span><span class=p>:</span><span class=w> </span><span class=l>128Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Service Container specific configuration</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># cpuLimit: 200m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># memoryLimit: 256Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>cpuRequests</span><span class=p>:</span><span class=w> </span><span class=l>100m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>memoryRequests</span><span class=p>:</span><span class=w> </span><span class=l>128Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>## Helper Container specific configuration</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>helpers</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># cpuLimit: 200m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># memoryLimit: 256Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>cpuRequests</span><span class=p>:</span><span class=w> </span><span class=l>100m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>memoryRequests</span><span class=p>:</span><span class=w> </span><span class=l>128Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Affinity for pod assignment</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## 主机调度-亲和性</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>affinity</span><span class=p>:</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=nt>nodeAffinity</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>requiredDuringSchedulingIgnoredDuringExecution</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>nodeSelectorTerms</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span>- <span class=nt>matchExpressions</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>     </span>- <span class=nt>key</span><span class=p>:</span><span class=w> </span><span class=l>kubernetes.io/os</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>       </span><span class=nt>operator</span><span class=p>:</span><span class=w> </span><span class=l>In</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>       </span><span class=nt>values</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>linux</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><blockquote><p>values.yaml全部配置参数详情查看:</p><p><a class=link href=https://gitlab.com/gitlab-org/charts/gitlab-runner/blob/master/values.yaml target=_blank rel=noopener>https://gitlab.com/gitlab-org/charts/gitlab-runner/blob/master/values.yaml</a></p></blockquote><p>配置文件保存后输入如下命令</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># For Helm 2</span>
+</span></span><span class=line><span class=cl>helm install --namespace &lt;NAMESPACE&gt; --name gitlab-runner -f &lt;CONFIG_VALUES_FILE&gt; gitlab/gitlab-runner
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># For Helm 3</span>
+</span></span><span class=line><span class=cl>helm install --namespace &lt;NAMESPACE&gt; gitlab-runner -f &lt;CONFIG_VALUES_FILE&gt; gitlab/gitlab-runner
+</span></span></code></pre></td></tr></table></div></div><blockquote><ul><li><p><code>&lt;NAMESPACE></code> 是你想要安装 GitLab Runner 的 Kubernetes 名称空间</p><ul><li>运行<code>kubectl create namespace &lt;NAMESPACE></code> 创建新的命名空间</li></ul></li><li><p><code>&lt;CONFIG_VALUES_FILE></code> 是包含自定义配置的值文件的路径。参见<a class=link href=https://docs.gitlab.com/runner/install/kubernetes.html#configuring-gitlab-runner-using-the-helm-chart target=_blank rel=noopener> 使用 Helm Chart 配置 GitLab Runner</a> 来创建它</p></li><li><p>值得注意的是配置文件的第三项，如果GitLab使用的是自生成的证书则需要配置<code>certsSecretName</code>的值，配置值为同一命名空间的Kubernetes secret的值</p></li><li><p>运行runner的时候报错<code>ERROR: Job failed (system failure): secrets is forbidden: User "system:serviceaccount:gitlab:default" cannot create resource "secrets" in API group "" in the namespace "gitlab"</code>原因是没有特别指定serviceaccount 那么将使用默认账户 system:serviceaccount:<namespace>:default
+最终的原因就是没有创建 对应 namespaces 的 集群角色绑定<code>clusterrolebinding</code>
+执行命令，创建<code>clusterrolebinding</code>解决</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl create clusterrolebinding gitlab-cluster-admin --clusterrole<span class=o>=</span>cluster-admin --group<span class=o>=</span>system:serviceaccounts --namespace<span class=o>=</span>&lt;NAMESPACE&gt;
+</span></span></code></pre></td></tr></table></div></div></li></ul></blockquote><h4 id=向gitlab-runner提供访问gitlab的自生成证书>向gitLab Runner提供访问gitLab的自生成证书</h4><p>需要向 GitLab Runner Helm Chart 配置文件提供一个 Kubernetes Secret，它将会挂载在容器的 <code>/etc/GitLab-Runner/certs</code>目录。</p><p>运行如下命令创建Kubernetes secret</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl
+</span></span><span class=line><span class=cl>  --namespace &lt;NAMESPACE&gt;
+</span></span><span class=line><span class=cl>  create secret generic &lt;SECRET_NAME&gt;
+</span></span><span class=line><span class=cl>  --from-file<span class=o>=</span>&lt;CERTIFICATE_FILENAME&gt;
+</span></span></code></pre></td></tr></table></div></div><blockquote><ul><li>使用<code>.crt</code>结尾的文件必须为<code>gitlab.your-domain.com.crt</code>的固定格式</li><li><code>SECRET_NAME</code> Kubernetes 的资源名称(例如:<code>gitlab-domain-cert</code>)</li><li><code>&lt;CERTIFICATE_FILENAME></code>.crt结尾的证书文件</li><li>如果源文件<code> &lt;CERTIFICATE_FILENAME></code> 不遵循 <code>&lt;gitlab-hostname.crt></code> 格式，那么有必要指定在目标文件中使用的文件名:</li></ul></blockquote><p>最后在<code>values.yaml</code>配置文件中配置secret的名称</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c>## Set the certsSecretName in order to pass custom certificates for GitLab Runner to use</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## Provide resource name for a Kubernetes Secret Object in the same namespace,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## this is used to populate the /etc/gitlab-runner/certs directory</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>## ref: https://docs.gitlab.com/runner/configuration/tls-self-signed.html#supported-options-for-self-signed-certificates</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c>##</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>certsSecretName</span><span class=p>:</span><span class=w> </span><span class=l>&lt;SECRET NAME&gt;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><blockquote><p>参考资料</p><p><a class=link href=https://docs.gitlab.com/runner/install/kubernetes.html#providing-a-custom-certificate-for-accessing-gitlab target=_blank rel=noopener>https://docs.gitlab.com/runner/install/kubernetes.html#providing-a-custom-certificate-for-accessing-gitlab</a></p></blockquote><h3 id=使用helm-chart更新gitlab-runner>使用Helm Chart更新GitLab Runner</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>helm upgrade --namespace &lt;NAMESPACE&gt; -f &lt;CONFIG_VALUES_FILE&gt; &lt;RELEASE-NAME&gt; gitlab/gitlab-runner
+</span></span></code></pre></td></tr></table></div></div><blockquote><ul><li><p><code>&lt;RELEASE-NAME></code>是你在安装GitLab Runner时给出的名字，参考<a class=link href=https://docs.gitlab.com/runner/install/kubernetes.html#installing-gitlab-runner-using-the-helm-chart target=_blank rel=noopener> 使用Helm安装 GitLab Runner</a> 时使用的是<code>gitlab-runner</code>。</p></li><li><p>如果你想更新到 GitLab Runner Helm Chart 的特定版本而不是最新的版本，在你的 Helm upgrade 命令中添加参数</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>-version &lt; Runner Helm Chart version &gt;
+</span></span></code></pre></td></tr></table></div></div></li></ul></blockquote><h3 id=使用helm-chart删除gitlab-runner>使用Helm Chart删除GitLab Runner</h3><p>要卸载 GitLab Runner Chart，请运行以下命令:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>helm delete --namespace &lt;NAMESPACE&gt; &lt;RELEASE-NAME&gt;
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>参考资料</p><p><a class=link href=https://docs.gitlab.com/runner/install/kubernetes.html#required-configuration target=_blank rel=noopener>https://docs.gitlab.com/runner/install/kubernetes.html#required-configuration</a></p></blockquote><h2 id=离线安装gitlab-runner>离线安装Gitlab-runner</h2><p>离线环境使用helm安装gitlab-runner。需要先将所需的docker镜像导入到离线环境的harbor中。</p><p>在有网络的环境，运行下面命令生成k8s资源的yml文件</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>helm template --namespace &lt;NAMESPACE&gt; gitlab-runner -f &lt;CONFIG_VALUES_FILE&gt; gitlab/gitlab-runner &gt; values.yaml
+</span></span></code></pre></td></tr></table></div></div><p>讲生成的yml文件复制到要离线安装的k8s环境后，运行<code>kubectl apply -f values.yaml</code>命令</p><blockquote><ul><li><p>目前生成的<code>template.yaml</code>文件中的所有资源没有命名空间的相关配置，需要手动添加</p></li><li><p>离线方式运行gitlab-runner需要重新指定执行器的gitlab-runner-helper镜像的位置 <code>image: gitlab/gitlab-runner:alpine-v13.4.1</code></p></li><li><p><code>serviceAccountName: your-service-account</code> 需要修改</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=line><span class=cl><span class=nx>bash</span>
+</span></span><span class=line><span class=cl><span class=p>[[</span><span class=nx>runners</span><span class=p>]]</span>
+</span></span><span class=line><span class=cl><span class=err>(</span><span class=p>...</span><span class=err>)</span>
+</span></span><span class=line><span class=cl><span class=nx>executor</span> <span class=p>=</span> <span class=s2>&#34;docker&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>[</span><span class=nx>runners</span><span class=p>.</span><span class=nx>kubernetes</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=err>(</span><span class=p>...</span><span class=err>)</span>
+</span></span><span class=line><span class=cl><span class=nx>helper_image</span> <span class=p>=</span> <span class=s2>&#34;my.registry.local/gitlab/gitlab-runner-helper:tag&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p>参考https://www.cnblogs.com/wu-wu/p/13269950.html</p></li></ul></blockquote><h2 id=gitlab-runner安装当中需要注意的问题>gitlab-runner安装当中需要注意的问题</h2><p>本章节记录介绍安装当中的坑以及解决办法</p><h3 id=kubernetes集群有污点导致执行器无法启动的问题及解决办法>kubernetes集群有污点导致执行器无法启动的问题及解决办法</h3><p>因为本次使用的kubernetes的机器中有污点<code>taint</code>并且无法删除。在无法删除的情况下，需要给执行器启动的pos添加默认配置的污点容忍。这个问题只能通过修改gitlab-runner的<code>config.toml</code>文件来解决,helm安装gitlab-runner的配置文件<code>values.yaml</code>无法进行相关配置，并且因为使用helm安装的gitlab-runner的配置文件<code>config.toml</code>是通过<code>values.yaml</code>自动生成的，导致无法挂载数据卷进行配置。</p><h4 id=解决方案>解决方案</h4><p>gitlab-runner 容器启动时会运行脚本<code>/bin/bash /scripts/entrypoint</code>。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span><span class=nb>set</span> -e
+</span></span><span class=line><span class=cl>mkdir -p /home/gitlab-runner/.gitlab-runner/
+</span></span><span class=line><span class=cl>cp /scripts/config.toml /home/gitlab-runner/.gitlab-runner/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Register the runner</span>
+</span></span><span class=line><span class=cl><span class=c1># 中间部分省略......</span>
+</span></span><span class=line><span class=cl><span class=c1># Run pre-entrypoint-script</span>
+</span></span><span class=line><span class=cl><span class=k>if</span> ! bash /scripts/pre-entrypoint-script<span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>  <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=c1># 增加hosts域名解析</span>
+</span></span><span class=line><span class=cl>sed -i <span class=s1>&#39;9r /scripts/hosts&#39;</span> /home/gitlab-runner/.gitlab-runner/config.toml
+</span></span><span class=line><span class=cl><span class=c1># 固定主机调度</span>
+</span></span><span class=line><span class=cl>sed -i <span class=s1>&#39;38r /scripts/affinity.txt&#39;</span> /home/gitlab-runner/.gitlab-runner/config.toml
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>cat &gt;&gt;/home/gitlab-runner/.gitlab-runner/config.toml <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>           [[runners.kubernetes.volumes.host_path]]
+</span></span></span><span class=line><span class=cl><span class=s>            name = &#34;gitlab-runner-cache&#34;
+</span></span></span><span class=line><span class=cl><span class=s>            mount_path = &#34;/opt/cache&#34;
+</span></span></span><span class=line><span class=cl><span class=s>            read_only = false
+</span></span></span><span class=line><span class=cl><span class=s>            host_path = &#34;/data/gitlab-runner/cache&#34;
+</span></span></span><span class=line><span class=cl><span class=s>            [[runners.kubernetes.volumes.host_path]]
+</span></span></span><span class=line><span class=cl><span class=s>              name = &#34;docker&#34;
+</span></span></span><span class=line><span class=cl><span class=s>              mount_path = &#34;/var/run/docker.sock&#34;
+</span></span></span><span class=line><span class=cl><span class=s>              read_only = true
+</span></span></span><span class=line><span class=cl><span class=s>              host_path = &#34;/var/run/docker.sock&#34;
+</span></span></span><span class=line><span class=cl><span class=s>           [runners.kubernetes.node_tolerations]
+</span></span></span><span class=line><span class=cl><span class=s>             &#34;cattle.io/os=linux&#34; = &#34;NoSchedule&#34;
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl><span class=c1># Start the runner</span>
+</span></span><span class=line><span class=cl><span class=nb>exec</span> /entrypoint run --user<span class=o>=</span>gitlab-runner <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  --working-directory<span class=o>=</span>/home/gitlab-runner
+</span></span></code></pre></td></tr></table></div></div><p>该脚本在gitlab-runner绑定的配置映射中进行配置。在该脚本的末尾追加以下内容</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=line><span class=cl><span class=p>[</span><span class=nx>runners</span><span class=p>.</span><span class=nx>kubernetes</span><span class=p>.</span><span class=nx>node_tolerations</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=s2>&#34;cattle.io/os=linux&#34;</span> <span class=p>=</span> <span class=s2>&#34;NoSchedule&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>参考资料</p><p><a class=link href=https://docs.gitlab.com/runner/executors/kubernetes.html#define-keywords-in-the-configuration-toml target=_blank rel=noopener>https://docs.gitlab.com/runner/executors/kubernetes.html#define-keywords-in-the-configuration-toml</a></p><p><a class=link href=https://gitlab.com/gitlab-org/gitlab-runner/-/issues/2578 target=_blank rel=noopener>https://gitlab.com/gitlab-org/gitlab-runner/-/issues/2578</a></p></blockquote><h3 id=关于helm安装的gitlab-runner所启动的执行器经常因为could-not-resolve-hostgitdomaincom报错的问题>关于Helm安装的gitlab-runner所启动的执行器经常因为Could not resolve host:git.domain.com报错的问题</h3><p>helm安装的gitlab-runner所启动的执行器为k8s中的pod。会有pod容器内无法解析gitlab所dns的域名的问题，并且是间歇性的，80%左右是会解析不到的。并且这些配置需要修改<code>config.toml</code>。helm安装的gitlab-runner目前无法修改配置文件。</p><p>目前解决办法同上，在配置映射的<code>entrypoint</code>脚本的末尾添加命令<code>sed -i '9r /scripts/hosts' /home/gitlab-runner/.gitlab-runner/config.toml</code></p><p>hosts的内容为</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=line><span class=cl><span class=nx>pre_clone_script</span> <span class=p>=</span> <span class=s2>&#34;echo &#39;10.10.0.18 git.wx.com&#39; &gt;&gt; /etc/hosts&#34;</span>	
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>参考资料</p><p><a class=link href=https://gitlab.com/gitlab-org/gitlab-runner/-/issues/4129 target=_blank rel=noopener>https://gitlab.com/gitlab-org/gitlab-runner/-/issues/4129</a></p><p><a class=link href=https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/265 target=_blank rel=noopener>https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/265</a></p></blockquote><h3 id=在容器中构建时使用docker>在容器中构建时使用docker</h3><p>在容器中进行构建时如果需要用到docker时，目前采用的是操纵宿主机docker的方式，需要给runner启动的执行器挂载数据卷，<code>config.toml</code>配置文件，在配置映射的<code>entrypoint</code>脚本的末尾追加</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=line><span class=cl><span class=p>[[</span><span class=nx>runners</span><span class=p>.</span><span class=nx>kubernetes</span><span class=p>.</span><span class=nx>volumes</span><span class=p>.</span><span class=nx>host_path</span><span class=p>]]</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span> <span class=p>=</span> <span class=s2>&#34;docker&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>mount_path</span> <span class=p>=</span> <span class=s2>&#34;/var/run/docker.sock&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>read_only</span> <span class=p>=</span> <span class=kc>true</span>
+</span></span><span class=line><span class=cl>  <span class=nx>host_path</span> <span class=p>=</span> <span class=s2>&#34;/var/run/docker.sock&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>参考资料</p><p><a class=link href=https://docs.gitlab.com/runner/executors/kubernetes.html#using-docker-in-your-builds target=_blank rel=noopener>https://docs.gitlab.com/runner/executors/kubernetes.html#using-docker-in-your-builds</a></p></blockquote><h3 id=缓存相关配置>缓存相关配置</h3><p>GitLab Runner对缓存方案的支持有限，目前采用挂载Volume的方式做缓存。安装GitLab Runner时默认使用<code>/opt/cache</code>目录作为缓存空间。挂载数据卷并且，配置主机调度至固定节点（以上操作需要修改配置映射中的<code>entrypoint</code>文件，<code>entrypoint</code>文件详情见上面）</p><p>配置固定主机节点</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=p>[</span><span class=l>runners.kubernetes.affinity.node_affinity]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>         </span><span class=p>[[</span><span class=l>runners.kubernetes.affinity.node_affinity.preferred_during_scheduling_ignored_during_execution]]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=l>weight = 100</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>[</span><span class=l>runners.kubernetes.affinity.node_affinity.preferred_during_scheduling_ignored_during_execution.preference]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=p>[[</span><span class=l>runners.kubernetes.affinity.node_affinity.preferred_during_scheduling_ignored_during_execution.preference.match_expressions]]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>               </span><span class=l>key = &#34;kubernetes.io/hostname&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>               </span><span class=l>operator = &#34;In&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>               </span><span class=l>values = [&#34;rancher-node2&#34;]</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>挂载数据卷</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=line><span class=cl><span class=p>[[</span><span class=nx>runners</span><span class=p>.</span><span class=nx>kubernetes</span><span class=p>.</span><span class=nx>volumes</span><span class=p>.</span><span class=nx>host_path</span><span class=p>]]</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span> <span class=p>=</span> <span class=s2>&#34;gitlab-runner-cache&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>mount_path</span> <span class=p>=</span> <span class=s2>&#34;/opt/cache&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>read_only</span> <span class=p>=</span> <span class=kc>false</span>
+</span></span><span class=line><span class=cl>  <span class=nx>host_path</span> <span class=p>=</span> <span class=s2>&#34;/data/gitlab-runner/cache&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>参考资料</p><p><a class=link href="https://help.aliyun.com/document_detail/106968.html?aly_as=b8lTvr8V" target=_blank rel=noopener>https://help.aliyun.com/document_detail/106968.html?aly_as=b8lTvr8V</a></p><p><a class=link href=https://blog.csdn.net/xichenguan/article/details/101439395 target=_blank rel=noopener>https://blog.csdn.net/xichenguan/article/details/101439395</a></p><p><a class=link href=https://www.cnblogs.com/5bug/p/12733755.html target=_blank rel=noopener>https://www.cnblogs.com/5bug/p/12733755.html</a></p></blockquote><h3 id=gitlab-runner-部署到k8s时报错deploymentextensions-demo-is-forbidden-user-systemserviceaccountgitlabdefault-cannot-get-resource-deployments-in-api-group-extensions-in-the-namespace-default>gitlab-runner 部署到k8s时报错:deployment.extensions demo is forbidden: user &ldquo;system:serviceaccount:gitlab:default&rdquo; cannot get resource deployments in api group extensions in the namespace default</h3><p>原因为：k8s使用的RBAC权限访问控制，当前对namespace default 没有操作权限。默认对每一个命名空间有一个默认的serviceaccount ：default
+<img src=https://img-blog.csdnimg.cn/2019092511311630.png loading=lazy alt=在这里插入图片描述>
+如果在CI里面没有特别指定serviceaccount 那么将使用默认账户 system:serviceaccount:gitlab:default
+最终的原因就是没有创建 对应 namespaces 的 集群角色绑定clusterrolebinding
+解决办法：
+执行一下命令，创建clusterrolebinding即可</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl create clusterrolebinding gitlab-cluster-admin --clusterrole<span class=o>=</span>cluster-admin --group<span class=o>=</span>system:serviceaccounts --namespace<span class=o>=</span>default
+</span></span></code></pre></td></tr></table></div></div><h2 id=gitlab-cicd-的使用文档>GitLab CI/CD 的使用文档</h2><p>为了使用GitLab CI/CD，你需要一个托管在GitLab上的应用程序代码库，并且在根目录中的<code>.gitlab-ci.yml</code>文件中指定构建、测试和部署的脚本。</p><p>在这个文件中，你可以定义要运行的脚本，定义包含的依赖项，选择要按顺序运行的命令和要并行运行的命令，定义要在何处部署应用程序，以及指定是否 要自动运行脚本或手动触发脚本。</p><p>为了可视化处理过程，假设添加到配置文件中的所有脚本与在计算机的终端上运行的命令相同。</p><p>一旦你已经添加了<code>.gitlab-ci.yml</code>到仓库中，GitLab将检测到该文件，并使用名为GitLab Runner的工具运行你的脚本。该工具的操作与终端类似。</p><p>这些脚本被分组到作业（jobs），它们共同组成一个流水线（pipeline）。流水线就是一次构建的完整的执行流程。</p><h3 id=gitlab-ciyml>.gitlab-ci.yml</h3><p>该文件规定了一个流水线(pipeline)，流水线中可以有多个作业（job），每个作业必须具有唯一的名称（不能使用关键字），每个作业时独立执行的。每个作业至少包含一个<code>script</code>。</p><h4 id=job>job</h4><h5 id=before_script>before_script</h5><p>定义shell脚本，该脚本在每个作业之前运行。该关键字也可以定义在文件的开头，作为全局默认执行。该关键字定义的脚本和<code>script</code>定义的脚本在一个shell当中串联执行，如果失败导致整个作业的失败，其他作业将不再执行。但是作业失败不会影响<code>after_script</code>运行。</p><h5 id=script>script</h5><p>指定运行的shell脚本，每个作业至少包含一个<code>script</code>。可以是一条命令也可以是多条命令</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>job</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>script</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>unname -a</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>bundle exec rspec</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p><code>script</code>命令将需要用单引号和双引号引起来。例如，包含冒号命令<code>:</code>需要加引号，以便被YAML解析器当作字符串来解析。而不是一个<code>key: value</code>。需要注意的特殊字符有:<code>:</code>,<code>{ }</code>,<code>[ ]</code>,<code>,</code>,<code>&</code>,<code>*</code>,<code>#</code>,<code>?</code>,<code>|</code>,<code>-</code>,<code>&lt; ></code>,<code>=</code>,<code>!</code>,<code>%</code>,<code>@</code></p><h5 id=after_script>after_script</h5><p>定义作业之后运行的命令（包括失败的作业），指定脚本在新的shell中执行，与<code>before_script</code>和<code>script</code>分开。</p><h5 id=tags>tags</h5><p>用于指定作业所运行的runner。（结合runner配置的标签来使用）</p><h5 id=allow_failure>allow_failure</h5><p>允许作业失败，默认值为<code>false</code>。</p><h5 id=when>when</h5><p>控制作业运行。</p><ul><li><code>on_success</code> 前面阶段中的所有作业都成功时才执行，默认值。</li><li><code>on_failure</code>前面的阶段出现失败时运行。</li><li><code>always</code>总是执行。</li><li><code>manual</code>手动执行。</li><li><code>delayed</code>延迟执行作业。<code>start_in</code>指定延迟时间（秒）。</li></ul><h5 id=timeout>timeout</h5><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>build</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>script</span><span class=p>:</span><span class=w> </span><span class=l>build.sh</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>timeout</span><span class=p>:</span><span class=w> </span><span class=m>3</span><span class=w> </span><span class=l>hours 30 minutes</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>test</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>script</span><span class=p>:</span><span class=w> </span><span class=l>rspec</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>timeout</span><span class=p>:</span><span class=w> </span><span class=l>3h 30m</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>作业级别的超时可以覆盖项目级别的超时，但不能超过runner特定的超时。</p><h5 id=onlyexcept>only&amp;except</h5><p>该关键字逐渐被<code>rules</code>替代</p><ul><li><code>only</code>定义构建哪些分支或标签的时会执行的作业。</li><li><code>except</code>定义构建哪些分支或标签的时不会执行的作业。</li></ul><h5 id=rules>rules</h5><p>构建规则，rules不能和<code>only</code>&<code>except</code>组合使用</p><p>可用规则</p><ul><li><p>if</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>variables</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>domain</span><span class=p>:</span><span class=w> </span><span class=l>example.com</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>condescan</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>codescan</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>tags</span><span class=p>:</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>build</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>script</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>echo &#34;codescan&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>sleep 5;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>rules</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>if</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;$domain == &#39;example.com&#39;&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>when</span><span class=p>:</span><span class=w> </span><span class=l>manual</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>when</span><span class=p>:</span><span class=w> </span><span class=l>on_success</span><span class=w> </span><span class=c>## 默认执行</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>如果domain的值匹配，则需要手动运行。</p><p>不匹配on_sucess。</p><p>条件判断从上到下，匹配成功则不会判断接下来的if。</p><p>多条件匹配可以使用 <code>&&</code> <code>||</code>。</p></li><li><p>changes （指定文件发生变化）</p><p>接收一个文件路径的数组（指定代码库根路径的相对路径）</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>rules</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>changes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>Jenkinsfile</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></li><li><p>exists (指定文件存在)</p></li></ul><h5 id=artifacts>artifacts</h5><p>编译时生成的文件统称为gitlab的制品，作业完成后制品将被发送到gitlab，可在gitlab ui中下载。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>release</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>script</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>mvn package -U</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>artifacts</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># 用于再和并请求 UI中公开作业制品，每个合并请求最多公开10个作业制品</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>expose_as</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;artifact 1&#39;</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># 通过name指定所创建的制品的名称。默认名称为artifacts</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># name: &#34;$CI_JOB_NAME&#34; # 作业名称</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;$CI_COMMIT_REF_NAME&#34;</span><span class=w> </span><span class=c># 分支名称</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># 保存时间，默认30天</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>expire_in</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;10&#39;</span><span class=w> </span><span class=c># 10秒</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># expire_in: &#39;3 week&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>paths</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>target/*.jar</span><span class=w> </span><span class=c>## 可以是文件也可以是目录。也可以是通配符</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h5 id=dependencies>dependencies</h5><p>获取制品，定义要获取制品的列表，只能从当前阶段之前的阶段获取。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=l>unittest</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>dependencies</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>build</span><span class=w> </span><span class=c># 定义作业名称</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h5 id=extends>extends</h5><p>继承引入配置文件的作业</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=nt>include</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>project</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;cidevops/cddevops-gitlabci-service&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ref</span><span class=p>:</span><span class=w> </span><span class=l>master</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>file</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;job/build.yml&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>build</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>build</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>extends</span><span class=p>:</span><span class=w> </span><span class=l>.build</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>.build 的内容</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=nt>build</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>build</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tags</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>build</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>script</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>$BUILD_SHELL</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>ls</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h4 id=stages>stages</h4><p>用于定义作业可以使用的阶段，并且是全局定义。同一阶段的作业并行运行，不同阶段的作业顺序执行。</p><h5 id=prepost><code>.pre</code>&<code>.post</code></h5><p><code>.pre</code>和<code>.post</code>无需定义默认存在的阶段，<code>.pre</code>始终是整个流水线的第一个运行阶段。<code>.post</code>始终是最后一个运行阶段。用户定义的阶段都在两者之间运行。</p><h4 id=stage>stage</h4><p>指定job所运行的阶段。依赖于全局定义的<code>stages</code>。并且同一个<code>stage</code>的作业可以并行执行。（同时运行需要注意runner配置的最大同时运行数）</p><h4 id=variables>variables</h4><p>定义变量，可以在全局定义。也可以在作业中定义。</p><blockquote><p>.gitlab-ci.yml 预设变量参考</p><p><a class=link href=https://blog.csdn.net/github_35631540/article/details/107864258 target=_blank rel=noopener>https://blog.csdn.net/github_35631540/article/details/107864258</a></p></blockquote><p>关于变量方面的坑和问题 <a class=link href=https://gitlab.com/gitlab-org/gitlab/-/issues/233289 target=_blank rel=noopener>https://gitlab.com/gitlab-org/gitlab/-/issues/233289</a></p><h4 id=workflow>workflow</h4><p>顶级关键字用于是否创建整个流水线</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>variables</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>domain</span><span class=p>:</span><span class=w> </span><span class=l>example.com</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>workflow</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>rules</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>if</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;$domain == &#39;example.com&#39;&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>when</span><span class=p>:</span><span class=w> </span><span class=l>always</span><span class=w> </span><span class=c>## 可以设置为always或never，默认值为always。</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>when</span><span class=p>:</span><span class=w> </span><span class=l>never</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h4 id=cache>cache</h4><p>存储编译项目所需的运行时依赖项，指定项目工作空间中需要在作业之间缓存的文或目录。</p><p>全局cache定义在作业之外，针对所有作业生效，作业中定义的cache优先级更高。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>cache</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>paths</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>my/files</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>build</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>script</span><span class=p>:</span><span class=w> </span><span class=l>echo &#34;hello&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>cache</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># 可以配置特定分支的缓存，为每个不同的作业配置cache:key时，会为每个作业分配独立的cache。key可以使用任何预定义的变量，默认为default。</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>key</span><span class=p>:</span><span class=w> </span><span class=l>build</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>paths</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>target/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c># 缓存策略，默认在执行作业开始时下载文件，并在结束时重新上传文件。</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>policy</span><span class=p>:</span><span class=w> </span><span class=l>pull</span><span class=w> </span><span class=c># 跳过下载步骤</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c># policy: push # 跳过上传步骤</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h4 id=include>include</h4><ul><li><p>local</p><p>引入外部yaml或yml文件。引入同一代码库的文件，使用相对于根目录的路径进行引入，需要与配置文件在同一分支上。 （如果引入的配置文件和原文件有重复的部分则重复的部分不会生效）</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=nt>include</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>local</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;ci/localci.yml&#39;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></li><li><p>file</p><p>引入其他项目某一分支的文件</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>include</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>project</span><span class=p>:</span><span class=w> </span><span class=l>demo/demo-java-service</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ref</span><span class=p>:</span><span class=w> </span><span class=l>master</span><span class=w> </span><span class=c># 分支</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>file</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;.gitlab-ci.yml&#34;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></li><li><p>template</p><p>引入官方提供的<a class=link href=https://gitlab.com/gitlab-org/gitlab/tree/master/lib/gitlab/ci/templates target=_blank rel=noopener>模板</a></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>include</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=l>template:Auto-DevOps.gitlab-ci.yml</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></li><li><p>remote</p><p>引入远程配置，通过http/https引入。引入的文件必须可以通过get请求公开访问，不支持身份验证</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=l>include：</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>remote</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;https://gitlab.com/awesome-project/raw/master.gitlab-ci-template.yml&#34;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></li></ul><blockquote><p>自定义CI配置文件路径</p><p>默认情况下会在项目的根目录查找<code>.gitlab-ci.yml</code>文件，可以指定目录，也包括项目外的位置</p><ul><li>.gitlab-ci.yml #default</li><li>.my/path/.gitlab-ci.yml</li><li><a class=link href=http://example.com/generate/ci/config.yml target=_blank rel=noopener>http://example.com/generate/ci/config.yml</a></li><li>.gitlab-ci.yml@mygroup/another-project # 文件名@项目名称</li></ul></blockquote><h4 id=image>image</h4><p>执行器为docker或k8s时，默认在注册runner的时候需要填写一个基础镜像。如果指定了全局image则所有作业使用此image创建容器并在其中运行。如果全局未指定，则会查看作业中是否有指定，如果有则此job按照指定镜像创建容器并运行，没有则使用默认镜像。</p><h4 id=services>services</h4><p>工作期间启动另一个docker容器，并link到image定义的docker容器。这样两个镜像会互通，服务镜像可以运行任何应用程序，但是最常见的是运行数据库，如mysql。</p><p>如果在运行单元测试时需要数据库则可以指定。</p><h4 id=trigger>trigger</h4><p>触发器。定义当前job执行完成后触发其他项目的流水线</p><p>注意，触发器不能使用变量</p><h4 id=environment>environment</h4><p>如果在作业中定义环境，则gitlab可以去追踪。可以在gitlab ui的运维-》环境中去查看，如果environment指定且不存在该名称下的环境，则将自动创建一个新环境。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=l>deploy：</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=l>stage： deploy</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>script</span><span class=p>:</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>echo &#34;deploy&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>environment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>production</span><span class=w> </span><span class=c># 环境名称</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>url</span><span class=p>:</span><span class=w> </span><span class=l>http://example.com 环境地址</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h3 id=实战gitlab-cicd-自动化部署推送到harbor>实战:GitLab CI/CD 自动化部署推送到Harbor</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>stages</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>package</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>docker_build</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c># maven打包</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>package</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>maven:3.6.3-openjdk-11</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>package</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>script</span><span class=p>:</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>${PACKAGE}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>cp target/demo-0.0.1-SNAPSHOT.jar /opt/cache/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>only</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>master</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c># 将jar包build为新的镜像并更新到k8s集群</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>docker_build</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=m>10.10.10.233</span><span class=l>/system/docker-kubectl:latest</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>docker_build</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>script</span><span class=p>:</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>FULL_IMAGE_NAME=10.10.10.233/test/demo:0.0.1-${CI_PIPELINE_ID}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>mkdir -p ${BUILD_DIR}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>echo ${FULL_IMAGE_NAME}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>cp /opt/cache/demo-0.0.1-SNAPSHOT.jar ${BUILD_DIR}/app.jar</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>cp Dockerfile ${BUILD_DIR}/Dockerfile</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>echo build $FULL_IMAGE_NAME</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>docker build -t $FULL_IMAGE_NAME ./${BUILD_DIR}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>docker login 10.10.10.233 -u${HARBOR_USERNAME} -p${HARBOR_PASSWORD}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>docker push $FULL_IMAGE_NAME</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>sh ./apply_deployment.sh ${FULL_IMAGE_NAME}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>only</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>master</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c># 定义变量</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>variables</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>PACKAGE</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;mvn clean package -Dmaven.repo.local=/opt/cache/.m2/repository&#39;</span><span class=w> </span><span class=c># 构建命令</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>BUILD_DIR</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;docker_build&#39;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Dockerfile</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-dockerfile data-lang=dockerfile><span class=line><span class=cl><span class=k>FROM</span><span class=s> 10.10.10.233/system/openjdk:11.0.5-jdk-stretch-tools-arthas</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>COPY</span> app.jar /opt/dubbo-app/app.jar<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>WORKDIR</span><span class=s> /opt/dubbo-app</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 20880</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>CMD</span> java -server <span class=si>${</span><span class=nv>JAVA_DEBUG_OPTS</span><span class=si>}</span> <span class=si>${</span><span class=nv>JAVA_OPTS</span><span class=si>}</span> <span class=si>${</span><span class=nv>JMX_OPTS</span><span class=si>}</span> <span class=si>${</span><span class=nv>JAVA_AGENT_OPTS</span><span class=si>}</span> -XX:+DisableExplicitGC -verbose:gc --add-opens<span class=o>=</span>java.base/java.lang<span class=o>=</span>ALL-UNNAMED --add-opens<span class=o>=</span>java.base/java.lang.invoke<span class=o>=</span>ALL-UNNAMED --add-opens<span class=o>=</span>java.base/java.math<span class=o>=</span>ALL-UNNAMED --add-opens<span class=o>=</span>java.base/java.math<span class=o>=</span>ALL-UNNAMED -Xlog:gc*:gc.log::filecount<span class=o>=</span>10,filesize<span class=o>=</span><span class=m>1048576</span> -jar app.jar<span class=err>
+</span></span></span></code></pre></td></tr></table></div></div><p>部署到k8s脚本</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>mkdir -p /etc/deploy
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s1>&#39;YXBpVmV....&#39;</span> <span class=p>|</span>base64 -d &gt; /etc/deploy/config <span class=c1># 字符串内容为kubeconfig文件的base64编码</span>
+</span></span><span class=line><span class=cl>kubectl -n default get Deployment demo
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=o>[[</span> <span class=nv>$?</span> -eq <span class=m>0</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl> <span class=nb>echo</span> <span class=s2>&#34;工作负载存在，更新负载镜像&#34;</span>
+</span></span><span class=line><span class=cl> kubectl <span class=nb>set</span> image --record<span class=o>=</span><span class=nb>true</span> Deployment/demo <span class=nv>demo</span><span class=o>=</span><span class=si>${</span><span class=nv>1</span><span class=si>}</span>
+</span></span><span class=line><span class=cl><span class=k>else</span>
+</span></span><span class=line><span class=cl> <span class=nb>echo</span> <span class=s2>&#34;工作负载不存在，创建新工作负载&#34;</span>
+</span></span><span class=line><span class=cl> kubectl apply -f Service.yml
+</span></span><span class=line><span class=cl> kubectl apply -f Deployment.yml
+</span></span><span class=line><span class=cl><span class=k>fi</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>在gitlab-runner的k8s执行器容器内如果要访问k8s集群时，如果直接挂载数据卷的方式指定使用之前安装k8s时生成的config配置文件会存在间歇性访问不到k8s集群的情况，原因未知。</p><p>以上访问方式是将config文件通过base64编码后再解码后访问的方式。</p><p>输入以下命令讲config文件编码<code>echo $(cat ~/.kube/config | base64) | tr -d " "</code></p><p>参考https://help.aliyun.com/document_detail/106968.html?aly_as=b8lTvr8V</p></blockquote><h1 id=gitlab-cicd集成-sonarqube质量平台>gitlab CI/CD集成 SonarQube质量平台</h1><p><strong>SonarQube</strong>（曾用名<strong>Sonar</strong>（声纳）[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-1 target=_blank rel=noopener>1]</a>）是一个<a class=link href=https://zh.wikipedia.org/wiki/%e5%bc%80%e6%ba%90 target=_blank rel=noopener>开源</a>的<a class=link href=https://zh.wikipedia.org/wiki/%e8%bd%af%e4%bb%b6%e8%b4%a8%e9%87%8f target=_blank rel=noopener>代码质量</a>管理系统。</p><ul><li>支持超过25种编程语言[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-2 target=_blank rel=noopener>2]</a>：<a class=link href=https://zh.wikipedia.org/wiki/Java target=_blank rel=noopener>Java</a>、<a class=link href=https://zh.wikipedia.org/wiki/C%e8%af%ad%e8%a8%80 target=_blank rel=noopener>C</a>/<a class=link href=https://zh.wikipedia.org/wiki/C%2B%2B target=_blank rel=noopener>C++</a>、<a class=link href=https://zh.wikipedia.org/wiki/C%e2%99%af target=_blank rel=noopener>C#</a>、<a class=link href=https://zh.wikipedia.org/wiki/PHP target=_blank rel=noopener>PHP</a>、<a class=link href=https://zh.wikipedia.org/wiki/Apache_Flex target=_blank rel=noopener>Flex</a>、<a class=link href=https://zh.wikipedia.org/wiki/Groovy target=_blank rel=noopener>Groovy</a>、<a class=link href=https://zh.wikipedia.org/wiki/JavaScript target=_blank rel=noopener>JavaScript</a>、<a class=link href=https://zh.wikipedia.org/wiki/Python target=_blank rel=noopener>Python</a>、<a class=link href=https://zh.wikipedia.org/wiki/PL/SQL target=_blank rel=noopener>PL/SQL</a>、<a class=link href=https://zh.wikipedia.org/wiki/COBOL target=_blank rel=noopener>COBOL</a>等。（不过有些是<a class=link href=https://zh.wikipedia.org/wiki/%e5%95%86%e4%b8%9a%e8%bd%af%e4%bb%b6 target=_blank rel=noopener>商业软件</a>插件）</li><li>可以在Android开发中使用</li><li>提供<a class=link href=https://zh.wikipedia.org/wiki/%e9%87%8d%e5%a4%8d%e4%bb%a3%e7%a0%81 target=_blank rel=noopener>重复代码</a>、<a class=link href=https://zh.wikipedia.org/wiki/%e4%bb%a3%e7%a0%81%e9%a3%8e%e6%a0%bc target=_blank rel=noopener>编码标准</a>、<a class=link href=https://zh.wikipedia.org/wiki/%e5%8d%95%e5%85%83%e6%b5%8b%e8%af%95 target=_blank rel=noopener>单元测试</a>、<a class=link href=https://zh.wikipedia.org/wiki/%e4%bb%a3%e7%a2%bc%e8%a6%86%e8%93%8b%e7%8e%87 target=_blank rel=noopener>代码覆盖率</a>、<a class=link href=https://zh.wikipedia.org/wiki/%e5%be%aa%e7%92%b0%e8%a4%87%e9%9b%9c%e5%ba%a6 target=_blank rel=noopener>代码复杂度</a>、<a class=link href=https://zh.wikipedia.org/wiki/%e9%98%b2%e5%be%a1%e6%80%a7%e7%bc%96%e7%a8%8b target=_blank rel=noopener>潜在Bug</a>、<a class=link href=https://zh.wikipedia.org/wiki/%e6%b3%a8%e9%87%8a_%28%e8%ae%a1%e7%ae%97%e6%9c%ba%e8%af%ad%e8%a8%80%29 target=_blank rel=noopener>注释</a>和<a class=link href=https://zh.wikipedia.org/wiki/%e8%bd%af%e4%bb%b6%e8%ae%be%e8%ae%a1 target=_blank rel=noopener>软件设计</a>报告[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-methodsandtools-3 target=_blank rel=noopener>3]</a>[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-sonarinaction-4 target=_blank rel=noopener>4]</a></li><li>提供了指标历史记录、计划图（“时间机器”）和微分查看</li><li>提供了完全自动化的分析：与<a class=link href=https://zh.wikipedia.org/wiki/Apache_Maven target=_blank rel=noopener>Maven</a>、<a class=link href=https://zh.wikipedia.org/wiki/Apache_Ant target=_blank rel=noopener>Ant</a>、<a class=link href=https://zh.wikipedia.org/wiki/Gradle target=_blank rel=noopener>Gradle</a>和<a class=link href=https://zh.wikipedia.org/wiki/%e6%8c%81%e7%bb%ad%e9%9b%86%e6%88%90 target=_blank rel=noopener>持续集成</a>工具（<a class=link href="https://zh.wikipedia.org/w/index.php?title=Atlassian_Bamboo&amp;action=edit&amp;redlink=1" target=_blank rel=noopener>Atlassian Bamboo</a>、<a class=link href=https://zh.wikipedia.org/wiki/Jenkins_%28%e8%bd%af%e4%bb%b6%29 target=_blank rel=noopener>Jenkins</a>、<a class=link href=https://zh.wikipedia.org/wiki/Hudson_%28%e8%bd%af%e4%bb%b6%29 target=_blank rel=noopener>Hudson</a>等）[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-jteam-5 target=_blank rel=noopener>5]</a>[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-g3global-6 target=_blank rel=noopener>6]</a>[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-slideshare-7 target=_blank rel=noopener>7]</a></li><li>与<a class=link href=https://zh.wikipedia.org/wiki/Eclipse target=_blank rel=noopener>Eclipse</a>开发环境集成</li><li>与<a class=link href=https://zh.wikipedia.org/wiki/JIRA target=_blank rel=noopener>JIRA</a>、<a class=link href=https://zh.wikipedia.org/wiki/Mantis target=_blank rel=noopener>Mantis</a>、<a class=link href=https://zh.wikipedia.org/wiki/LDAP target=_blank rel=noopener>LDAP</a>、<a class=link href="https://zh.wikipedia.org/w/index.php?title=Fortify&amp;action=edit&amp;redlink=1" target=_blank rel=noopener>Fortify</a>等外部工具集</li><li>支持扩展插件[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-zauber-8 target=_blank rel=noopener>8]</a>[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-infoq-9 target=_blank rel=noopener>9]</a></li><li>利用<a class=link href="https://zh.wikipedia.org/w/index.php?title=SQALE&amp;action=edit&amp;redlink=1" target=_blank rel=noopener>SQALE</a>计算<a class=link href=https://zh.wikipedia.org/wiki/%e6%8a%80%e6%9c%af%e5%80%ba%e5%8a%a1 target=_blank rel=noopener>技术债务</a>[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-10 target=_blank rel=noopener>10]</a></li><li>支持<a class=link href=https://zh.wikipedia.org/wiki/Apache_Tomcat target=_blank rel=noopener>Tomcat</a>。不过计划从SonarQube 4.1起终止对Tomcat的支持[<a class=link href=https://zh.wikipedia.org/wiki/SonarQube#cite_note-11 target=_blank rel=noopener>11]</a>。</li></ul><h2 id=sonarqube的安装>SonarQube的安装</h2><p>SonarQube需要依赖Postgresql数据库，都使用docker进行安装</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl><span class=c1># 创建数据卷相关的目录</span>
+</span></span><span class=line><span class=cl>mkdir -p /data/postgresql/data
+</span></span><span class=line><span class=cl>mkdir -p /var/lib/postgresql
+</span></span><span class=line><span class=cl>ln -s /data/postgresql/data/ /var/lib/postgresql/data
+</span></span><span class=line><span class=cl><span class=c1># 运行镜像</span>
+</span></span><span class=line><span class=cl>docker run --name postgresql -p 5432:5432 -e <span class=nv>POSTGRES_USER</span><span class=o>=</span>sonar -e <span class=nv>POSTGRES_PASSWORD</span><span class=o>=</span>sonar -e <span class=nv>POSTGRE_DB</span><span class=o>=</span>sonar -v /data/postgresql/data:/var/lib/postgresql/data -d postgres
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 创建数据卷相关的目录</span>
+</span></span><span class=line><span class=cl>mkdir -p /data/sonarqube/data
+</span></span><span class=line><span class=cl>mkdir -p /data/sonarqube/extensions
+</span></span><span class=line><span class=cl>mkdir -p /data/sonarqube/logs
+</span></span><span class=line><span class=cl>mkdir -p /opt/sonarqube/extensions/plugins
+</span></span><span class=line><span class=cl>chmod -R <span class=m>777</span> /data/sonarqube/
+</span></span><span class=line><span class=cl>chmod -R <span class=m>777</span> /opt/sonarqube/
+</span></span><span class=line><span class=cl>ln -s /data/sonarqube /opt/sonarqube
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 运行镜像</span>
+</span></span><span class=line><span class=cl>docker run --name sonarqube <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>--link postgresql <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-e <span class=nv>SONARQUBE_JDBC_URL</span><span class=o>=</span>jdbc:postgresql://postgresql:5432/sonar <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-e <span class=nv>SONAR_JDBC_USERNAME</span><span class=o>=</span>sonar <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-e <span class=nv>SONAR_JDBC_PASSWORD</span><span class=o>=</span>sonar <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-p 9000:9000 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-d <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-v /data/sonarqube/data:/opt/sonarqube/data <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-v /data/sonarqube/extensions:/opt/sonarqube/extensions <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-v /data/sonarqube/logs:/opt/sonarqube/logs <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>sonarqube
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>docker镜像启动报错：Elasticsearch: Max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]</p><p>在镜像启动的物理机运行如下命令</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>sysctl -w vm.max_map_count<span class=o>=</span><span class=m>262144</span>
+</span></span></code></pre></td></tr></table></div></div><p><a class=link href=https://stackoverflow.com/questions/51445846/elasticsearch-max-virtual-memory-areas-vm-max-map-count-65530-is-too-low-inc target=_blank rel=noopener>参考自StackOverflow</a></p></blockquote><h2 id=sonarqube整合gitlab-cicd-分析java代码>SonarQube整合gitlab CI/CD 分析Java代码</h2><p>该分析基于sonar-scanner的maven插件。</p><p><strong>全局配置</strong></p><p>首先修改maven的全局配置文件<code>settings.xml</code>，添加下图示例内容</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;settings&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;pluginGroups&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&lt;pluginGroup&gt;</span>org.sonarsource.scanner.maven<span class=nt>&lt;/pluginGroup&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;/pluginGroups&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;profiles&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&lt;profile&gt;</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&lt;id&gt;</span>sonar<span class=nt>&lt;/id&gt;</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&lt;activation&gt;</span>
+</span></span><span class=line><span class=cl>                <span class=nt>&lt;activeByDefault&gt;</span>true<span class=nt>&lt;/activeByDefault&gt;</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&lt;/activation&gt;</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&lt;properties&gt;</span>
+</span></span><span class=line><span class=cl>                <span class=c>&lt;!-- Optional URL to server. Default value is http://localhost:9000 --&gt;</span>
+</span></span><span class=line><span class=cl>                <span class=nt>&lt;sonar.host.url&gt;</span>
+</span></span><span class=line><span class=cl>                  http://myserver:9000
+</span></span><span class=line><span class=cl>                <span class=nt>&lt;/sonar.host.url&gt;</span>
+</span></span><span class=line><span class=cl>            <span class=nt>&lt;/properties&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&lt;/profile&gt;</span>
+</span></span><span class=line><span class=cl>     <span class=nt>&lt;/profiles&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/settings&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>分析</strong></p><p>需要在<code>.gitlab-ci.yml</code>添加如下<code>stage</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=nt>code_analysis</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>maven:3.6.3-openjdk-11</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>code_analysis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=nt>script</span><span class=p>:</span><span class=w> </span><span class=p>|</span><span class=sd>
+</span></span></span><span class=line><span class=cl><span class=sd>  mvn clean verify sonar:sonar \
+</span></span></span><span class=line><span class=cl><span class=sd>  -Dsonar.projectKey=${CI_PROJECT_NAME} \
+</span></span></span><span class=line><span class=cl><span class=sd>  -Dsonar.host.url=http://10.10.10.236:31548 \
+</span></span></span><span class=line><span class=cl><span class=sd>  -Dsonar.login=username \
+</span></span></span><span class=line><span class=cl><span class=sd>  -Dsonar.password=password \
+</span></span></span><span class=line><span class=cl><span class=sd>  -Dmaven.repo.local=/opt/cache/.m2/repository \
+</span></span></span><span class=line><span class=cl><span class=sd>  --settings /opt/cache/settings.xml</span><span class=w>  
+</span></span></span></code></pre></td></tr></table></div></div><p>参考自<a class=link href=https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-maven/ target=_blank rel=noopener>官方文档</a></p><h2 id=在gitlab-cicd使用当中遇到的问题>在gitlab CI/CD使用当中遇到的问题</h2><h3 id=trigger触发器不能使用变量去定义>trigger触发器不能使用变量去定义</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=c># 使用变量去填充是不行的，只能直接写死</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>server-deploy</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>	</span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>server-deploy</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>	</span><span class=nt>trigger</span><span class=p>:</span><span class=w> </span><span class=l>${TEST}/${TEST}-server</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>	</span><span class=nt>only</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>		</span><span class=l>master</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c># 直接写死才能正确触发</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>server-deploy</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>	</span><span class=nt>stage</span><span class=p>:</span><span class=w> </span><span class=l>server-deploy</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>	</span><span class=nt>trigger</span><span class=p>:</span><span class=w> </span><span class=l>ndp/foo-server</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>	</span><span class=nt>only</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>		</span><span class=l>master</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h3 id=在同一个流水线当中的job之间变量无法传递>在同一个流水线当中的job之间变量无法传递</h3><p>解决方法参考如下</p><p><a class=link href=https://gitlab.com/gitlab-org/gitlab/-/issues/233289 target=_blank rel=noopener>https://gitlab.com/gitlab-org/gitlab/-/issues/233289</a></p></section><footer class=article-footer><section class=article-tags><a href=/tags/ci/cd/>CI/CD</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Nov 24, 2020 00:00 UTC</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/jenkins-restful-api/><div class=article-details><h2 class=article-title>Jenkins REST API介绍</h2></div></a></article><article><a href=/p/spring-boot/><div class=article-details><h2 class=article-title>Spring Boot应用假死现象：SLF4J日志框架冲突深度分析</h2></div></a></article><article><a href=/p/database-index/><div class=article-details><h2 class=article-title>MySQL InnoDB 索引机制与优化</h2></div></a></article><article><a href=/p/jmm/><div class=article-details><h2 class=article-title>JMM</h2></div></a></article><article><a href=/p/consistent-hash/><div class=article-details><h2 class=article-title>一致性哈希的简单介绍</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2025 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

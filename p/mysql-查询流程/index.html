@@ -1,0 +1,137 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Mysql 查询流程，包括索引覆盖，索引下推，最左原则，回表等"><title>Mysql 查询流程</title>
+<link rel=canonical href=https://cyber-blog.github.io/p/mysql-%E6%9F%A5%E8%AF%A2%E6%B5%81%E7%A8%8B/><link rel=stylesheet href=/scss/style.min.70a01615b5dd99826a360296920067f6e3896a41fe397d04d6b849efef75a174.css><meta property='og:title' content="Mysql 查询流程"><meta property='og:description' content="Mysql 查询流程，包括索引覆盖，索引下推，最左原则，回表等"><meta property='og:url' content='https://cyber-blog.github.io/p/mysql-%E6%9F%A5%E8%AF%A2%E6%B5%81%E7%A8%8B/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='MYSQL'><meta property='article:published_time' content='2023-10-24T00:00:00+00:00'><meta property='article:modified_time' content='2023-10-24T00:00:00+00:00'><meta name=twitter:title content="Mysql 查询流程"><meta name=twitter:description content="Mysql 查询流程，包括索引覆盖，索引下推，最左原则，回表等"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/majiang213 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#一为什么-mysql-选择-b-树而非-b-树><strong>一、为什么 MySQL 选择 B+ 树而非 B 树？</strong></a><ol><li><a href=#1-b-树-vs-b-树-的结构差异><strong>1. B 树 vs B+ 树 的结构差异</strong></a></li><li><a href=#2-为什么-b-树更适合数据库索引><strong>2. 为什么 B+ 树更适合数据库索引？</strong></a></li></ol></li><li><a href=#二联合索引与最左匹配原则><strong>二、联合索引与最左匹配原则</strong></a><ol><li><a href=#1-什么是联合索引><strong>1. 什么是联合索引？</strong></a></li><li><a href=#2-为什么要遵循最左匹配原则><strong>2. 为什么要遵循最左匹配原则？</strong></a></li></ol></li><li><a href=#三联合索引查询执行流程含回表索引下推覆盖索引><strong>三、联合索引查询执行流程（含回表、索引下推、覆盖索引）</strong></a><ol><li><a href=#1-表结构与查询示例><strong>1. 表结构与查询示例</strong></a></li><li><a href=#2-执行流程含-server-层与-innodb-层分工><strong>2. 执行流程（含 Server 层与 InnoDB 层分工）</strong></a></li><li><a href=#3-术语解析><strong>3. 术语解析</strong></a></li></ol></li><li><a href=#四hash-索引对比补充适合极端等值查询><strong>四、Hash 索引对比补充：适合极端等值查询</strong></a><ol><li><a href=#1-hash-索引特点多用于-memory-引擎><strong>1. Hash 索引特点（多用于 Memory 引擎）</strong></a></li><li><a href=#2-innodb-的自适应哈希索引ahi><strong>2. InnoDB 的自适应哈希索引（AHI）</strong></a></li><li><a href=#五innodb-无主键表时会如何查询><strong>五、InnoDB 无主键表时会如何查询</strong></a></li></ol></li><li><a href=#五总结与优化建议><strong>五、总结与优化建议</strong></a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/tech/ style=background-color:#2a9d8f;color:#fff>技术博客</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/mysql-%E6%9F%A5%E8%AF%A2%E6%B5%81%E7%A8%8B/>Mysql 查询流程</a></h2><h3 class=article-subtitle>Mysql 查询流程，包括索引覆盖，索引下推，最左原则，回表等</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Oct 24, 2023</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 5 分钟</time></div></footer></div></header><section class=article-content><h1 id=mysql-索引结构与执行流程从-b-树到联合索引与索引下推全解析><strong>MySQL 索引结构与执行流程：从 B+ 树到联合索引与索引下推全解析</strong></h1><p>本篇文章从 MySQL 为什么选择 B+ 树索引开始，逐步引出联合索引的最左匹配原则、索引下推（ICP）、回表机制和覆盖索引等关键执行细节，帮助你从结构、原理到实际执行路径深入理解索引背后的逻辑。</p><hr><h2 id=一为什么-mysql-选择-b-树而非-b-树><strong>一、为什么 MySQL 选择 B+ 树而非 B 树？</strong></h2><p>MySQL 中使用最广泛的 InnoDB 存储引擎采用 <strong>B+ 树</strong> 作为索引结构，这种选择并非偶然。</p><h3 id=1-b-树-vs-b-树-的结构差异><strong>1. B 树 vs B+ 树 的结构差异</strong></h3><div class=table-wrapper><table><thead><tr><th><strong>特性</strong></th><th><strong>B 树</strong></th><th><strong>B+ 树</strong></th></tr></thead><tbody><tr><td>数据存储</td><td>所有节点都存数据</td><td>仅叶子节点存数据，内部节点只存键</td></tr><tr><td>查询路径</td><td>查询可能在中间节点结束</td><td>查询必须走到叶子节点</td></tr><tr><td>范围扫描</td><td>需要中序遍历整棵树</td><td>叶子节点通过链表串联，天然支持范围查询</td></tr></tbody></table></div><h3 id=2-为什么-b-树更适合数据库索引><strong>2. 为什么 B+ 树更适合数据库索引？</strong></h3><ul><li><p><strong>磁盘访问效率更高</strong>：非叶子节点更小，内存缓存命中率更高，减少磁盘 IO；</p></li><li><p><strong>范围查询更高效</strong>：链表串联叶子节点，直接顺序扫描即可；</p></li><li><p><strong>结构稳定、查询均衡</strong>：所有查找都走到叶子节点，路径统一，优化更容易；</p></li><li><p><strong>排序与全表扫描友好</strong>：天然有序，支持快速 ORDER BY；</p></li></ul><p>📌 <strong>总结：B+ 树对磁盘 I/O、范围查、缓存友好，全面优于 B 树，是关系型数据库的首选。</strong></p><hr><h2 id=二联合索引与最左匹配原则><strong>二、联合索引与最左匹配原则</strong></h2><h3 id=1-什么是联合索引><strong>1. 什么是联合索引？</strong></h3><p>联合索引是将多个字段作为一个整体创建的复合索引，例如：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>CREATE INDEX idx_abc ON user(a, b, c);
+</span></span></code></pre></td></tr></table></div></div><p>在使用联合索引 (a, b, c) 时，会把每一行的 a、b、c 作为组合键 (a, b, c) 排序成一棵 B+ 树，其比较顺序就是字典序。它在 B+ 树的叶子节点上，按照 a -> b -> c 的顺序排列。</p><p>B+树索引示例</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>                     Root Node
+</span></span><span class=line><span class=cl>                 +-----------------+
+</span></span><span class=line><span class=cl>                 |   (2,1,1)       |
+</span></span><span class=line><span class=cl>                 +-----------------+
+</span></span><span class=line><span class=cl>                    /          \
+</span></span><span class=line><span class=cl>                   /            \
+</span></span><span class=line><span class=cl>      +------------------+   +------------------+      ← 中间节点
+</span></span><span class=line><span class=cl>      |   (1,2,1)        |   |   (2,2,1)        |
+</span></span><span class=line><span class=cl>      +------------------+   +------------------+
+</span></span><span class=line><span class=cl>          /      \              /       \
+</span></span><span class=line><span class=cl>         /        \            /         \
+</span></span><span class=line><span class=cl>   Leaf1          Leaf2     Leaf3       Leaf4      ← 叶子节点（有序链表）
+</span></span><span class=line><span class=cl>+----------+   +----------+ +----------+ +----------+
+</span></span><span class=line><span class=cl>|1,1,1     | → |1,1,2     | →|1,2,1     | →|2,1,1     |
+</span></span><span class=line><span class=cl>+----------+   +----------+ +----------+ +----------+
+</span></span><span class=line><span class=cl>                                                   ↓
+</span></span><span class=line><span class=cl>                                             +----------+
+</span></span><span class=line><span class=cl>                                             |2,2,1     | → (尾部 null)
+</span></span><span class=line><span class=cl>                                             +----------+
+</span></span></code></pre></td></tr></table></div></div><h3 id=2-为什么要遵循最左匹配原则><strong>2. 为什么要遵循最左匹配原则？</strong></h3><p>只有<strong>从最左侧字段开始连续使用</strong>，索引才能被利用。例如：</p><div class=table-wrapper><table><thead><tr><th><strong>WHERE 条件</strong></th><th><strong>是否命中 idx_abc</strong></th></tr></thead><tbody><tr><td>WHERE a = 1</td><td>✅ 使用 a</td></tr><tr><td>WHERE a = 1 AND b = 2</td><td>✅ 使用 a、b</td></tr><tr><td>WHERE b = 2</td><td>❌ 不使用联合索引</td></tr><tr><td>WHERE a = 1 AND c = 3</td><td>✅ 使用 a，但 c 不触发</td></tr></tbody></table></div><blockquote><p>联合索引中的比较（如 &lt; (2,1,1)）是基于联合键的<strong>字典序</strong>，而最左前缀原则则是限制你<strong>必须从前往后匹配字段</strong>，否则 B+ 树无法正确判断搜索路径。</p></blockquote><hr><h2 id=三联合索引查询执行流程含回表索引下推覆盖索引><strong>三、联合索引查询执行流程（含回表、索引下推、覆盖索引）</strong></h2><p>我们通过一个实际查询来讲解完整的执行流程：</p><h3 id=1-表结构与查询示例><strong>1. 表结构与查询示例</strong></h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>CREATE TABLE user (
+</span></span><span class=line><span class=cl>  id INT PRIMARY KEY,
+</span></span><span class=line><span class=cl>  a INT,
+</span></span><span class=line><span class=cl>  b INT,
+</span></span><span class=line><span class=cl>  c INT,
+</span></span><span class=line><span class=cl>  d VARCHAR(100),
+</span></span><span class=line><span class=cl>  KEY idx_abc (a, b, c)
+</span></span><span class=line><span class=cl>);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SELECT c FROM user WHERE a = 1 AND b = 2 AND c &gt; 3;
+</span></span></code></pre></td></tr></table></div></div><h3 id=2-执行流程含-server-层与-innodb-层分工><strong>2. 执行流程（含 Server 层与 InnoDB 层分工）</strong></h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>【1】客户端发送 SQL 查询：
+</span></span><span class=line><span class=cl>     SELECT d FROM t WHERE a = 1 AND c = 2;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>【2】Server 层：
+</span></span><span class=line><span class=cl>  ├─ 解析 SQL，生成执行计划
+</span></span><span class=line><span class=cl>  ├─ 确认可以使用联合索引 idx_a_b_c（a 是最左字段）
+</span></span><span class=line><span class=cl>  ├─ 判断：c 不满足最左前缀 → 不能用于定位
+</span></span><span class=line><span class=cl>  └─ 但是 ✅ 可以使用 Index Condition Pushdown（ICP）
+</span></span><span class=line><span class=cl>         ↓
+</span></span><span class=line><span class=cl>【3】Server 层下发执行计划 + 下推过滤条件 (c=2) 到 InnoDB
+</span></span><span class=line><span class=cl>         ↓
+</span></span><span class=line><span class=cl>【4】InnoDB 二级索引扫描 idx_a_b_c：
+</span></span><span class=line><span class=cl>  ├─ 根据 a=1 扫描对应索引区间
+</span></span><span class=line><span class=cl>  ├─ 对每一个记录，**在扫描索引的同时检查 c=2**
+</span></span><span class=line><span class=cl>  └─ ✅ 满足 c=2 的主键 id 被保留，其他跳过（减少回表）
+</span></span><span class=line><span class=cl>         ↓
+</span></span><span class=line><span class=cl>【5】返回匹配的主键 id（如 id=123、id=456）给 Server
+</span></span><span class=line><span class=cl>         ↓
+</span></span><span class=line><span class=cl>【6】Server 层判断：
+</span></span><span class=line><span class=cl>  └─ 字段 d 不在索引中 ❌ → 必须回表
+</span></span><span class=line><span class=cl>         ↓
+</span></span><span class=line><span class=cl>【7】InnoDB 根据主键 ID 回表：
+</span></span><span class=line><span class=cl>  ├─ 检查主键页是否在 Buffer Pool（缓存）
+</span></span><span class=line><span class=cl>  │     └─ ✅ 在内存 → 直接读取
+</span></span><span class=line><span class=cl>  │     └─ ❌ 不在内存 → 触发磁盘 IO
+</span></span><span class=line><span class=cl>  └─ 返回完整行数据（含 d 字段）
+</span></span><span class=line><span class=cl>         ↓
+</span></span><span class=line><span class=cl>【8】Server 层组装最终结果，返回给客户端
+</span></span></code></pre></td></tr></table></div></div><h3 id=3-术语解析><strong>3. 术语解析</strong></h3><ul><li><p>✅ <strong>索引下推（ICP）</strong>：将 c > 3 的判断提前到 InnoDB 层，在遍历索引时就过滤不符合的行，避免大量无效回表；</p></li><li><p>✅ <strong>覆盖索引</strong>：查询字段 c 已经在索引 idx_abc 中，直接从叶子节点读取，无需访问主键页（聚簇索引），提高效率；</p></li><li><p>❌ <strong>回表</strong>：如果 SELECT 中包含非索引字段（如 d），则需根据主键 id 再去聚簇索引中查找整行数据，增加开销；</p></li></ul><hr><h2 id=四hash-索引对比补充适合极端等值查询><strong>四、Hash 索引对比补充：适合极端等值查询</strong></h2><h3 id=1-hash-索引特点多用于-memory-引擎><strong>1. Hash 索引特点（多用于 Memory 引擎）</strong></h3><div class=table-wrapper><table><thead><tr><th><strong>特性</strong></th><th><strong>Hash 索引</strong></th><th><strong>B+ 树索引</strong></th></tr></thead><tbody><tr><td>查找效率</td><td>✅ 等值查询最快</td><td>✅ 稍慢但功能更全</td></tr><tr><td>范围查询</td><td>❌ 不支持</td><td>✅ 支持</td></tr><tr><td>排序</td><td>❌ 不支持</td><td>✅ 支持（叶子链表）</td></tr><tr><td>支持引擎</td><td>仅 Memory，或自适应哈希</td><td>InnoDB、MyISAM、Memory 等</td></tr></tbody></table></div><h3 id=2-innodb-的自适应哈希索引ahi><strong>2. InnoDB 的自适应哈希索引（AHI）</strong></h3><p>InnoDB 会自动监控某些 B+ 树热点页，自动为其建立 Hash 索引以优化等值查询，这对开发者透明、不可控制。</p><hr><h3 id=五innodb-无主键表时会如何查询><strong>五、InnoDB 无主键表时会如何查询</strong></h3><ol><li><p><strong>自动生成隐藏主键</strong>：</p><p>若表无显式主键或唯一非空索引，InnoDB 会自动添加一个 <strong>6字节隐藏 RowID</strong>，作为聚簇索引的 key。</p></li><li><p><strong>二级索引指向 RowID</strong>：</p><p>所有二级索引将指向这个隐藏 RowID，而不是显式主键。</p></li><li><p><strong>查询过程与回表</strong>：</p><ul><li><p>查询时先通过二级索引查出 RowID；</p></li><li><p>然后根据 RowID 去聚簇索引中“回表”获取整行数据；</p></li><li><p>返回所需字段。</p></li></ul></li><li><p><strong>性能与维护影响</strong>：</p><ul><li><p>无法控制 RowID 排序与结构；</p></li><li><p>查询效率和调优难度高于有主键表；</p></li><li><p>不利于数据管理和故障排查。</p></li></ul></li></ol><p>六、Mysql 深分页的查询优化总结</p><h2 id=五总结与优化建议><strong>五、总结与优化建议</strong></h2><ul><li><p>✅ B+ 树索引是数据库查询的核心结构，范围查、排序查都依赖它；</p></li><li><p>✅ 联合索引需注意“最左前缀”匹配，字段顺序设计极关键；</p></li><li><p>✅ ICP（索引下推）可减少回表成本，提高查询效率；</p></li><li><p>✅ 覆盖索引是查询最优形态，能避免访问主键页；</p></li><li><p>✅ Hash 索引虽快，但仅适合极简等值查找场景。</p></li></ul><p>📌 <strong>优化索引设计的核心策略：</strong></p><blockquote><p>通过合理设计联合索引顺序 + 使用覆盖索引 + 启用 ICP</p></blockquote><p>从根源上减少回表次数，才是提升 MySQL 查询性能的核心。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/mysql/>MYSQL</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Oct 24, 2023 00:00 UTC</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/database-index/><div class=article-details><h2 class=article-title>MySQL InnoDB 索引机制与优化</h2></div></a></article><article><a href=/p/mvcc%E6%80%BB%E7%BB%93/><div class=article-details><h2 class=article-title>MVCC总结</h2></div></a></article><article><a href=/p/spring-boot/><div class=article-details><h2 class=article-title>Spring Boot应用假死现象：SLF4J日志框架冲突深度分析</h2></div></a></article><article><a href=/p/jmm/><div class=article-details><h2 class=article-title>JMM</h2></div></a></article><article><a href=/p/consistent-hash/><div class=article-details><h2 class=article-title>一致性哈希的简单介绍</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2025 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

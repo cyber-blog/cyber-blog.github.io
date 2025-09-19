@@ -1,0 +1,136 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="安装好的 Rancher （K8s）在需要添加新的节点时，应该怎么搞？"><title>已有Rancher集群添加节点</title>
+<link rel=canonical href=https://cyber-blog.github.io/p/rancher-add-node/><link rel=stylesheet href=/scss/style.min.70a01615b5dd99826a360296920067f6e3896a41fe397d04d6b849efef75a174.css><meta property='og:title' content="已有Rancher集群添加节点"><meta property='og:description' content="安装好的 Rancher （K8s）在需要添加新的节点时，应该怎么搞？"><meta property='og:url' content='https://cyber-blog.github.io/p/rancher-add-node/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Kubernetes'><meta property='article:published_time' content='2020-12-04T00:00:00+00:00'><meta property='article:modified_time' content='2020-12-04T00:00:00+00:00'><meta name=twitter:title content="已有Rancher集群添加节点"><meta name=twitter:description content="安装好的 Rancher （K8s）在需要添加新的节点时，应该怎么搞？"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/majiang213 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/tech/ style=background-color:#2a9d8f;color:#fff>技术博客</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/rancher-add-node/>已有Rancher集群添加节点</a></h2><h3 class=article-subtitle>安装好的 Rancher （K8s）在需要添加新的节点时，应该怎么搞？</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Dec 04, 2020</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><ol><li><p>新增节点如果有磁盘则需要挂载磁盘</p></li><li><p>将k8s的master节点的公钥复制出来在新增的节点</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># 查看公钥</span>
+</span></span><span class=line><span class=cl>cat /root/.ssh/id_rsa.pub
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 以下命令在新增节点执行</span>
+</span></span><span class=line><span class=cl><span class=c1># 创建 rancher 用户</span>
+</span></span><span class=line><span class=cl>$ useradd rancher
+</span></span><span class=line><span class=cl><span class=c1># 添加到 docker 组</span>
+</span></span><span class=line><span class=cl>$ usermod -aG docker rancher
+</span></span><span class=line><span class=cl><span class=c1># 切换到前面创建的用户</span>
+</span></span><span class=line><span class=cl>$ su rancher
+</span></span><span class=line><span class=cl><span class=c1># 进入自己的 home 目录</span>
+</span></span><span class=line><span class=cl>$ <span class=nb>cd</span> ~
+</span></span><span class=line><span class=cl><span class=c1># 创建 .ssh 目录</span>
+</span></span><span class=line><span class=cl>$ mkdir .ssh
+</span></span><span class=line><span class=cl><span class=c1># 写入3个服务的公钥</span>
+</span></span><span class=line><span class=cl>$ <span class=nb>echo</span> <span class=s2>&#34;master节点公钥&#34;</span> &gt;&gt; .ssh/authorized_keys
+</span></span><span class=line><span class=cl><span class=c1># 设置权限</span>
+</span></span><span class=line><span class=cl>$ chmod <span class=m>700</span> .ssh
+</span></span><span class=line><span class=cl>$ chmod <span class=m>644</span> .ssh/authorized_keys
+</span></span></code></pre></td></tr></table></div></div><p>执行完以上操作后可以用master节点连接进行测试</p></li><li><p>安装集群相同版本的docker</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># 预先设置环境变量VERSION可以指定版本的前缀，如VERSION=18.06 将下载18.06.*的最新版本</span>
+</span></span><span class=line><span class=cl><span class=nv>VERSION</span><span class=o>=</span>18.06
+</span></span><span class=line><span class=cl>curl -fsSL https://get.docker.com <span class=p>|</span> bash -s docker --mirror Aliyun
+</span></span></code></pre></td></tr></table></div></div></li><li><p>没有启动过 docker 的情况下，配置目录还不存在，先创建 <code>mkdir -p /etc/docker </code>，然后在 <code>/data</code>
+下面创建一个 docker 目录（命令：<code>mkdir /data/docker</code>），然后编辑配置文件 <code>vi /etc/docker/daemon.json</code> 添加如下配置：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl><span class=nt>&#34;registry-mirrors&#34;</span><span class=p>:</span> <span class=p>[</span>
+</span></span><span class=line><span class=cl><span class=s2>&#34;https://dockerhub.azk8s.cn&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=s2>&#34;https://reg-mirror.qiniu.com&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>],</span>
+</span></span><span class=line><span class=cl><span class=nt>&#34;graph&#34;</span><span class=p>:</span> <span class=s2>&#34;/data/docker&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>然后启动 docker</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># 开机启动</span>
+</span></span><span class=line><span class=cl>systemctl <span class=nb>enable</span> docker
+</span></span><span class=line><span class=cl><span class=c1># 启动服务</span>
+</span></span><span class=line><span class=cl>systemctl start docker
+</span></span></code></pre></td></tr></table></div></div></li><li><p>在master节点当中导出rancher相关镜像</p></li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># 导出镜像</span>
+</span></span><span class=line><span class=cl>docker save <span class=k>$(</span>docker images <span class=p>|</span> grep rancher <span class=p>|</span> awk <span class=s1>&#39;{print $1&#34;:&#34;$2}&#39;</span><span class=k>)</span> &gt; rancher20201204.tar
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 导入镜像</span>
+</span></span><span class=line><span class=cl>docker load -i rancher20201204.tar
+</span></span></code></pre></td></tr></table></div></div><ol start=5><li><p>编辑rancher-cluster.yml文件</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>nodes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span>- <span class=nt>address</span><span class=p>:</span><span class=w> </span><span class=m>165.227.114.63</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>user</span><span class=p>:</span><span class=w> </span><span class=l>rancher</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=l>controlplane,worker,etcd]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span>- <span class=nt>address</span><span class=p>:</span><span class=w> </span><span class=m>165.227.116.167</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>user</span><span class=p>:</span><span class=w> </span><span class=l>rancher</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=l>worker]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span>- <span class=nt>address</span><span class=p>:</span><span class=w> </span><span class=m>165.227.127.226</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>user</span><span class=p>:</span><span class=w> </span><span class=l>rancher</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=l>worker]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span>- <span class=nt>address</span><span class=p>:</span><span class=w> </span><span class=l>新节点ip</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>user</span><span class=p>:</span><span class=w> </span><span class=l>rancher</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=l>worker]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=nt>etcd</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>snapshot</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>creation</span><span class=p>:</span><span class=w> </span><span class=l>6h</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>retention</span><span class=p>:</span><span class=w> </span><span class=l>24h</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></li><li><p>在master节点运行</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>rke up --update-only --config ./rancher-cluster.yml
+</span></span></code></pre></td></tr></table></div></div></li></ol></section><footer class=article-footer><section class=article-tags><a href=/tags/kubernetes/>Kubernetes</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Dec 04, 2020 00:00 UTC</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/p/ca-manage/><div class=article-image><img src=/p/ca-manage/cover.fed8c5cff871e05ff1bedac9017c7f8a_hu6981690047644056025.png width=250 height=150 loading=lazy alt="Featured image of post 内部 CA 证书管理" data-key=ca-manage data-hash="md5-/tjFz/hx4F/xvtrJAXx/ig=="></div><div class=article-details><h2 class=article-title>内部 CA 证书管理</h2></div></a></article><article class=has-image><a href=/p/ranchar-install/><div class=article-image><img src=/p/ranchar-install/cover.2464691c8d3496e0cceb1ddab27987a0_hu6202948024876475272.png width=250 height=150 loading=lazy alt="Featured image of post Ranchar CentOS 安装指南" data-key=ranchar-install data-hash="md5-JGRpHI00luDM6x3asnmHoA=="></div><div class=article-details><h2 class=article-title>Ranchar CentOS 安装指南</h2></div></a></article><article><a href=/p/spring-boot/><div class=article-details><h2 class=article-title>Spring Boot应用假死现象：SLF4J日志框架冲突深度分析</h2></div></a></article><article><a href=/p/database-index/><div class=article-details><h2 class=article-title>MySQL InnoDB 索引机制与优化</h2></div></a></article><article><a href=/p/jmm/><div class=article-details><h2 class=article-title>JMM</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2025 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

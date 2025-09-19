@@ -1,0 +1,210 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="初次微调模型排坑纪实"><title>基于 MMS 模型的印尼语微调</title>
+<link rel=canonical href=https://cyber-blog.github.io/p/finetune-vits-mms-id/><link rel=stylesheet href=/scss/style.min.70a01615b5dd99826a360296920067f6e3896a41fe397d04d6b849efef75a174.css><meta property='og:title' content="基于 MMS 模型的印尼语微调"><meta property='og:description' content="初次微调模型排坑纪实"><meta property='og:url' content='https://cyber-blog.github.io/p/finetune-vits-mms-id/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Python'><meta property='article:tag' content='AIGC'><meta property='article:published_time' content='2024-07-12T00:00:00+00:00'><meta property='article:modified_time' content='2024-07-12T00:00:00+00:00'><meta property='og:image' content='https://cyber-blog.github.io/p/finetune-vits-mms-id/cover.png'><meta name=twitter:title content="基于 MMS 模型的印尼语微调"><meta name=twitter:description content="初次微调模型排坑纪实"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://cyber-blog.github.io/p/finetune-vits-mms-id/cover.png'><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/majiang213 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><ol><li><ol><li><a href=#安装-requirements>安装 requirements</a></li><li><a href=#选择模型>选择模型</a></li><li><a href=#微调>微调</a></li><li><a href=#推理>推理</a></li><li><a href=#问题>问题</a></li><li><a href=#ps>PS</a></li></ol></li></ol></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/p/finetune-vits-mms-id/><img src=/p/finetune-vits-mms-id/cover_hu4281538629766574440.png srcset="/p/finetune-vits-mms-id/cover_hu4281538629766574440.png 800w, /p/finetune-vits-mms-id/cover_hu608864468168585603.png 1600w" width=800 height=420 loading=lazy alt="Featured image of post 基于 MMS 模型的印尼语微调"></a></div><div class=article-details><header class=article-category><a href=/categories/tech/ style=background-color:#2a9d8f;color:#fff>技术博客</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/finetune-vits-mms-id/>基于 MMS 模型的印尼语微调</a></h2><h3 class=article-subtitle>初次微调模型排坑纪实</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Jul 12, 2024</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 5 分钟</time></div></footer></div></header><section class=article-content><p>VITS 是一种用于英语文本转语音 （TTS） 的轻量级、低延迟模型。
+大规模多语言语音 （MMS） 是 VITS 的多语言 TTS 扩展，支持 1100 多种语言。</p><p>两者都使用相同的底层 VITS 架构，由一个鉴别器和一个用于基于 GAN 的训练的生成器组成。它们的标记器不同：VITS 标记器将英语输入文本转换为音素，而 MMS 标记器将输入文本转换为基于字符的标记。</p><p>如果要使用宽松的英语 TTS 模型，则应微调基于 VITS 的 checkpoint，并针对所有其他情况微调基于 MMS 的检查点。
+针对印尼语的训练选择 <a class=link href=https://huggingface.co/fadhilamri/mms-tts-ind-train target=_blank rel=noopener>mms-tts-ind-train</a>checkpoint</p><p>结合正确的数据和以下训练方法，您可以在 20 分钟内获得每个 VITS/MMS 检查点的出色微调版本，只需 80 到 150 个样本。</p><p>微调 VITS 或 MMS 需要按连续顺序完成多个阶段：</p><ol><li><a class=link href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#1-requirements" target=_blank rel=noopener>Install requirements</a></li><li><a class=link href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#2-model-selection" target=_blank rel=noopener>Choose or create the initial model</a></li><li><a class=link href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#3-finetuning" target=_blank rel=noopener>Finetune the model</a> </li><li><a class=link href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#4-inference" target=_blank rel=noopener>Optional - how to use the finetuned model</a></li></ol><h4 id=安装-requirements>安装 requirements</h4><ol start=0><li>克隆仓库并 install，确保<code>python >= 3.10</code></li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=n>git</span> <span class=n>clone</span> <span class=n>git</span><span class=nd>@github.com</span><span class=p>:</span><span class=n>ylacombe</span><span class=o>/</span><span class=n>finetune</span><span class=o>-</span><span class=n>hf</span><span class=o>-</span><span class=n>vits</span><span class=o>.</span><span class=n>git</span>
+</span></span><span class=line><span class=cl><span class=n>cd</span> <span class=n>finetune</span><span class=o>-</span><span class=n>hf</span><span class=o>-</span><span class=n>vits</span>
+</span></span><span class=line><span class=cl><span class=n>pip</span> <span class=n>install</span> <span class=o>-</span><span class=n>r</span> <span class=n>requirements</span><span class=o>.</span><span class=n>txt</span>
+</span></span></code></pre></td></tr></table></div></div><ol><li>链接您的 Hugging Face 帐户，以便您可以在 Hub 上拉取/推送模型仓库。这将使您能够在 Hub 上保存微调的权重，以便您可以与社区共享它们并轻松重复使用它们。运行以下命令：</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>git config --global credential.helper store
+</span></span><span class=line><span class=cl>huggingface-cli login
+</span></span></code></pre></td></tr></table></div></div><ol start=2><li><p>然后输入 <a class=link href=https://huggingface.co/settings/tokens target=_blank rel=noopener>https://huggingface.co/settings/tokens</a> 的身份验证令牌。如果还没有令牌，请创建一个新令牌。您应确保此令牌具有“写入”权限。</p></li><li><p>使用 Cython 构建<code>monotonic alignment search function</code>。这是绝对必要的，因为 Python 原生版本非常慢。</p></li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl><span class=c1># Cython-version Monotonoic Alignment Search</span>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> monotonic_align
+</span></span><span class=line><span class=cl>mkdir monotonic_align
+</span></span><span class=line><span class=cl>python setup.py build_ext --inplace
+</span></span><span class=line><span class=cl><span class=nb>cd</span> ..
+</span></span></code></pre></td></tr></table></div></div><ol start=4><li>（可选）如果您使用的是原始 VITS 检查点，而不是 MMS 检查点，请安装<code>phonemizer</code>。
+按照<a class=link href=https://bootphon.github.io/phonemizer/install.html target=_blank rel=noopener>此处</a>指示的步骤操作。
+例如，如果你在 Debian/Unbuntu 上：</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl><span class=c1># Install dependencies</span>
+</span></span><span class=line><span class=cl>sudo apt-get install festival espeak-ng mbrola
+</span></span><span class=line><span class=cl><span class=c1># Install phonemizer</span>
+</span></span><span class=line><span class=cl>pip install phonemizer
+</span></span></code></pre></td></tr></table></div></div><pre><code>更多细节
+某些语言要求在将文本提供给 `VitsTokenizer` 之前使用 `uroman`，因为目前分词器本身不支持执行预处理。
+为此，您需要将 uroman 仓库克隆到本地计算机，并将 bash 变量 UROMAN 设置为本地路径：
+</code></pre><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>git clone https://github.com/isi-nlp/uroman.git
+</span></span><span class=line><span class=cl><span class=nb>cd</span> uroman
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>UROMAN</span><span class=o>=</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span>
+</span></span></code></pre></td></tr></table></div></div><pre><code>剩下的就是由训练脚本来处理了。
+</code></pre><h4 id=选择模型>选择模型</h4><p>如果需要的 <code>checkpoint</code> 已经存在。</p><p>目前一些<code>checkpoint</code>已经可用，参照如下列表可以在 Hugging Face 搜索
+可以列表</p><ul><li>English<ul><li><code>ylacombe/vits-ljs-with-discriminator</code> (确保 <a class=link href=https://bootphon.github.io/phonemizer/install.html target=_blank rel=noopener>phonemizer</a>已安装) - 非常适合单一声音微调</li><li><code>ylacombe/vits-vctk-with-discriminator</code> (确保 <a class=link href=https://bootphon.github.io/phonemizer/install.html target=_blank rel=noopener>phonemizer</a>已安装) - 适用于多声音英语微调。</li><li><code>ylacombe/mms-tts-eng-train</code> - 如果您想避免使用 <code>phonemizer</code> 包。</li></ul></li><li>Spanish - <code>ylacombe/mms-tts-spa-train</code> 西班牙语</li><li>Korean - <code>ylacombe/mms-tts-kor-train</code> 韩语</li><li>Marathi - <code>ylacombe/mms-tts-mar-train</code> 马拉地语</li><li>Tamil - <code>ylacombe/mms-tts-tam-train</code> 泰米尔语</li><li>Gujarati - <code>ylacombe/mms-tts-guj-train</code> 古吉拉特语
+在这种情况下，您找到了正确的检查点，记下存储库名称并直接传递到下一步🤗。
+在这里我选择了 <code>fadhilamri/mms-tts-ind-train</code>🥳。</li></ul><p>如果需要的需要微调的语言 <code>checkpoint</code> 不存在，请参考<a class=link href=https://huggingface.co/dhavalgala/mms-tts-ind-train target=_blank rel=noopener>这里</a>创建对应语言的<code>checkpoint</code>。</p><h4 id=微调>微调</h4><p>使用 json 配置文件可以运行微调脚本，两种方法都使用命令行。请注意，您只需要一个 GPU 即可微调 VITS/MMS，因为模型非常轻巧（83M 参数）,根据数据集的大小对显存的需求有较大变化，我的数据集大小是<code>602MB</code>、需要 21GB 显存左右。</p><blockquote><p>Note
+使用配置文件是使用微调脚本的首选方式，因为它包含要考虑的最重要的参数。有关参数的完整列表，请运行 <code>python run_vits_finetuning.py --help</code>。请注意，训练脚本不会忽略某些参数。</p></blockquote><p><a class=link href=https://github.com/ylacombe/finetune-hf-vits/blob/main/training_config_examples target=_blank rel=noopener>training_config_examples</a>文件夹包含配置文件的示例。一旦对您的配置文件感到满意，您就可以微调模型。</p><p>要考虑的重要参数：</p><ul><li>与工件相关的所有内容：<code>project_name</code> 和输出目录 （<code>hub_model_id</code>， <code>output_dir</code>），用于跟踪模型。</li><li>需要微调的模型：<code>model_name_or_path</code>。<ul><li>这里，填写需要进行微调的模型（<code>checkpoint</code>）。</li><li>例如，如果选择已存在的检查点：<code>ylacombe/vits-ljs-with-discriminator</code>，或者转换了自己的检查点：<code>&lt;repo-id-you-want></code> 或 <code>&lt;local-folder></code>。</li></ul></li><li>数据集使用的 <code>dataset_name</code> 及其详细信息：<code>dataset_config_name</code>、列名等。<ul><li>如果有多个声音，而您只想保留一个声音，请注意 <code>speaker_id_column_name</code>、<code>override_speaker_embeddings</code> 和 <code>filter_on_speaker_id</code>。后者允许只保留一个声音，但您也可以使用多个声音进行训练。</li><li>例如，<a class=link href=https://github.com/ylacombe/finetune-hf-vits/blob/main/training_config_examples/finetune_english.json target=_blank rel=noopener><code>finetune_english.json</code></a> 中默认使用的数据集是 British Isles accents 数据集的子集，使用 <code>welsh_female</code> 配置的单个威尔士女声，由 <code>speaker_id=5223</code> 标识。</li><li>如何打包本地数据到上传到 HuggingFace 的 Datasets 请参考我写的上一篇<a class=link href=https://cyber-blog.github.io/p/dataset-upload2hugginface/ target=_blank rel=noopener>博客</a></li></ul></li><li>超级重要的 <code>hyperparameters</code>‼<ul><li><code>learning_rate</code></li><li><code>batch_size</code></li><li>各种损失权重：<code>weight_duration</code>、<code>weight_kl</code>、<code>weight_mel</code>、<code>weight_disc</code>、<code>weight_gen</code> 、<code>weight_fmaps</code></li></ul></li></ul><p>可以参考我进行微调的配置文件</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;project_name&#34;</span><span class=p>:</span> <span class=s2>&#34;vits_finetuned_ind_female&#34;</span><span class=p>,</span> 
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;push_to_hub&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;hub_model_id&#34;</span><span class=p>:</span> <span class=s2>&#34;dhavalgala/mms-tts-ind-train&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;overwrite_output_dir&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;output_dir&#34;</span><span class=p>:</span> <span class=s2>&#34;./tmp/vits_finetuned_ind_female&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;dataset_name&#34;</span><span class=p>:</span> <span class=s2>&#34;Majiang213/ind_famal&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;dataset_config_name&#34;</span><span class=p>:</span> <span class=s2>&#34;data&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;audio_column_name&#34;</span><span class=p>:</span> <span class=s2>&#34;audio&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;text_column_name&#34;</span><span class=p>:</span> <span class=s2>&#34;text&#34;</span><span class=p>,</span> 
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;train_split_name&#34;</span><span class=p>:</span> <span class=s2>&#34;train&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;eval_split_name&#34;</span><span class=p>:</span> <span class=s2>&#34;train&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;speaker_id_column_name&#34;</span><span class=p>:</span> <span class=s2>&#34;speaker_id&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;override_speaker_embeddings&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;filter_on_speaker_id&#34;</span><span class=p>:</span> <span class=s2>&#34;12&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;max_duration_in_seconds&#34;</span><span class=p>:</span> <span class=mi>50</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;min_duration_in_seconds&#34;</span><span class=p>:</span> <span class=mf>1.0</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;max_tokens_length&#34;</span><span class=p>:</span> <span class=mi>5000</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;model_name_or_path&#34;</span><span class=p>:</span> <span class=s2>&#34;dhavalgala/mms-tts-ind-train&#34;</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;preprocessing_num_workers&#34;</span><span class=p>:</span> <span class=mi>4</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;do_train&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;num_train_epochs&#34;</span><span class=p>:</span> <span class=mi>200</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;gradient_accumulation_steps&#34;</span><span class=p>:</span> <span class=mi>1</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;gradient_checkpointing&#34;</span><span class=p>:</span> <span class=kc>false</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;per_device_train_batch_size&#34;</span><span class=p>:</span> <span class=mi>16</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;learning_rate&#34;</span><span class=p>:</span> <span class=mf>2e-5</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;adam_beta1&#34;</span><span class=p>:</span> <span class=mf>0.8</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;adam_beta2&#34;</span><span class=p>:</span> <span class=mf>0.99</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;warmup_ratio&#34;</span><span class=p>:</span> <span class=mf>0.01</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;group_by_length&#34;</span><span class=p>:</span> <span class=kc>false</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;do_eval&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>   
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;eval_steps&#34;</span><span class=p>:</span> <span class=mi>50</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;per_device_eval_batch_size&#34;</span><span class=p>:</span> <span class=mi>16</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;do_step_schedule_per_epoch&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;weight_disc&#34;</span><span class=p>:</span> <span class=mi>3</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;weight_fmaps&#34;</span><span class=p>:</span> <span class=mi>1</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;weight_gen&#34;</span><span class=p>:</span> <span class=mi>1</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;weight_kl&#34;</span><span class=p>:</span> <span class=mf>1.5</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;weight_duration&#34;</span><span class=p>:</span> <span class=mi>1</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;weight_mel&#34;</span><span class=p>:</span> <span class=mi>35</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;fp16&#34;</span><span class=p>:</span> <span class=kc>true</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=nt>&#34;seed&#34;</span><span class=p>:</span> <span class=mi>456</span>  
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=推理>推理</h4><p>只需几行代码，即可通过文本转语音 （TTS） 管道使用微调的模型！只需将 <code>ylacombe/vits_ljs_welsh_female_monospeaker_2</code> 替换为您自己的模型 ID （<code>hub_model_id</code>） 或模型的路径 （<code>output_dir</code>）。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>from</span> <span class=nn>transformers</span> <span class=kn>import</span> <span class=n>pipeline</span>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=nn>scipy</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>model_id</span> <span class=o>=</span> <span class=s2>&#34;ylacombe/vits_ljs_welsh_female_monospeaker_2&#34;</span>
+</span></span><span class=line><span class=cl><span class=n>synthesiser</span> <span class=o>=</span> <span class=n>pipeline</span><span class=p>(</span><span class=s2>&#34;text-to-speech&#34;</span><span class=p>,</span> <span class=n>model_id</span><span class=p>)</span> <span class=c1># add device=0 if you want to use a GPU</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>speech</span> <span class=o>=</span> <span class=n>synthesiser</span><span class=p>(</span><span class=s2>&#34;Hello, my dog is cooler than you!&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>scipy</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>wavfile</span><span class=o>.</span><span class=n>write</span><span class=p>(</span><span class=s2>&#34;finetuned_output.wav&#34;</span><span class=p>,</span> <span class=n>rate</span><span class=o>=</span><span class=n>speech</span><span class=p>[</span><span class=s2>&#34;sampling_rate&#34;</span><span class=p>],</span> <span class=n>data</span><span class=o>=</span><span class=n>speech</span><span class=p>[</span><span class=s2>&#34;audio&#34;</span><span class=p>][</span><span class=mi>0</span><span class=p>])</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=问题>问题</h4><p>目前在推理时有一个关于 <code>speaker_id</code>的代码兼容性问题，需要将<code>run_vits_finetuning.py</code>文件里的所有 <code>speaker_id=batch["speaker_id"]</code> 代码注释掉。
+注释后参考</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=n>model_outputs_train</span> <span class=o>=</span> <span class=n>model</span><span class=p>(</span>  
+</span></span><span class=line><span class=cl>    <span class=n>input_ids</span><span class=o>=</span><span class=n>batch</span><span class=p>[</span><span class=s2>&#34;input_ids&#34;</span><span class=p>],</span>  
+</span></span><span class=line><span class=cl>    <span class=n>attention_mask</span><span class=o>=</span><span class=n>batch</span><span class=p>[</span><span class=s2>&#34;attention_mask&#34;</span><span class=p>],</span>  
+</span></span><span class=line><span class=cl>    <span class=n>labels</span><span class=o>=</span><span class=n>batch</span><span class=p>[</span><span class=s2>&#34;labels&#34;</span><span class=p>],</span>  
+</span></span><span class=line><span class=cl>    <span class=n>labels_attention_mask</span><span class=o>=</span><span class=n>batch</span><span class=p>[</span><span class=s2>&#34;labels_attention_mask&#34;</span><span class=p>],</span>  
+</span></span><span class=line><span class=cl>    <span class=c1># speaker_id=batch[&#34;speaker_id&#34;],  </span>
+</span></span><span class=line><span class=cl>    <span class=n>return_dict</span><span class=o>=</span><span class=kc>True</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl>    <span class=n>monotonic_alignment_function</span><span class=o>=</span><span class=n>maximum_path</span><span class=p>,</span>  
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=ps>PS</h4><ul><li>MMS 是由 Vineel Pratap、Andros Tjandra、Bowen Shi 等人在《 <a class=link href=https://arxiv.org/abs/2305.13516 target=_blank rel=noopener>Scaling Speech Technology to 1,000+ Languages</a>》中提出的。您可以在<a class=link href=https://dl.fbaipublicfiles.com/mms/misc/language_coverage_mms.html target=_blank rel=noopener>MMS Language Coverage Overview</a>中找到有关受支持语言及其 ISO 639-3 代码的更多详细信息，并在 Hugging Face Hub 上查看所有 MMS-TTS 检查点：<a class=link href="https://huggingface.co/models?sort=trending&amp;search=facebook%2Fmms-tts" target=_blank rel=noopener>facebook/mms-tts</a>。</li><li><a class=link href=https://huggingface.co/docs/transformers/index target=_blank rel=noopener>Hugging Face 🤗 Transformers</a> 用于模型集成，<a class=link href=https://huggingface.co/docs/accelerate/index target=_blank rel=noopener>Hugging Face 🤗 Accelerate</a> 用于分布式代码，<a class=link href=https://huggingface.co/docs/datasets/index target=_blank rel=noopener>Hugging Face 🤗 datasets</a>用于方便数据集访问。</li></ul></section><footer class=article-footer><section class=article-tags><a href=/tags/python/>Python</a>
+<a href=/tags/aigc/>AIGC</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/dataset-upload2hugginface/><div class=article-details><h2 class=article-title>音频文件打包 Dataset 上传 HugginFace</h2></div></a></article><article><a href=/p/practicaldeeplearning-pdl-part1-gettingstarted/><div class=article-details><h2 class=article-title>实用深度学习 Part1-1.入门</h2></div></a></article><article><a href=/p/spring-boot/><div class=article-details><h2 class=article-title>Spring Boot应用假死现象：SLF4J日志框架冲突深度分析</h2></div></a></article><article><a href=/p/database-index/><div class=article-details><h2 class=article-title>MySQL InnoDB 索引机制与优化</h2></div></a></article><article><a href=/p/jmm/><div class=article-details><h2 class=article-title>JMM</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2025 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

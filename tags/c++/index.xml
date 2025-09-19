@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>C++ on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/c++/</link><description>Recent content in C++ on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Fri, 25 Oct 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/c++/index.xml" rel="self" type="application/rss+xml"/><item><title>记一次C++内存泄漏的排查经过</title><link>https://cyber-blog.github.io/p/cpp-memoryleak/</link><pubDate>Fri, 25 Oct 2024 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/cpp-memoryleak/</guid><description>&lt;img src="https://cyber-blog.github.io/p/cpp-memoryleak/cover.png" alt="Featured image of post 记一次C++内存泄漏的排查经过" />&lt;h2 id="背景">背景
+&lt;/h2>&lt;p>公司的一台 Freeswitch 软交换机在之前开发了一个自定义的基于 Websocket 的 ASR 模块。&lt;/p>
+&lt;p>这个模块会在每次拨打机器人外呼时运行，监听电话的语音流，通过 Websocket 发送给 ASR 接口。并同时监听 WebSocket 的返回，如果有返回则通过 Freeswitch 的 ASR 模块扩展接口触发 Lua 的回调函数，Lua 回调会发送 Event 事件通知 Java 服务。&lt;/p>
+&lt;p>这个模块在运行一段时间之后发现 Freeswitch 就会崩溃。通过 Zabbix 发现机器的可用内存会持续降低。&lt;/p>
+&lt;p>&lt;img src="https://cyber-blog.github.io/p/cpp-memoryleak/image-20241024173838000.png"
+width="915"
+height="342"
+srcset="https://cyber-blog.github.io/p/cpp-memoryleak/image-20241024173838000_hu7282111965098412615.png 480w, https://cyber-blog.github.io/p/cpp-memoryleak/image-20241024173838000_hu2811108713500254615.png 1024w"
+loading="lazy"
+alt="image-20241024173838000"
+class="gallery-image"
+data-flex-grow="267"
+data-flex-basis="642px"
+>&lt;/p>
+&lt;p>并且排查系统日志，看到相同时间 Freeswitch 被系统 Kill 掉。可以确认是因为 Freeswitch内存泄漏导致的。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>root@wyn-fs-02 ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># dmesg | grep -i &amp;#34;kill&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.056478&lt;span class="o">]&lt;/span> in:imjournal invoked oom-killer: &lt;span class="nv">gfp_mask&lt;/span>&lt;span class="o">=&lt;/span>0x201da, &lt;span class="nv">order&lt;/span>&lt;span class="o">=&lt;/span>0, &lt;span class="nv">oom_score_adj&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.060698&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49cd3c5&amp;gt;&lt;span class="o">]&lt;/span> oom_kill_process+0x2d5/0x4a0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.061095&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49ccd8d&amp;gt;&lt;span class="o">]&lt;/span> ? oom_unkillable_task+0xcd/0x120
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.132781&lt;span class="o">]&lt;/span> Out of memory: Kill process &lt;span class="m">1705&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span> score &lt;span class="m">482&lt;/span> or sacrifice child
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.133635&lt;span class="o">]&lt;/span> Killed process &lt;span class="m">1705&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span>, UID 0, total-vm:3770896kB, anon-rss:1925484kB, file-rss:0kB, shmem-rss:0kB
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.140076&lt;span class="o">]&lt;/span> in:imjournal invoked oom-killer: &lt;span class="nv">gfp_mask&lt;/span>&lt;span class="o">=&lt;/span>0x201da, &lt;span class="nv">order&lt;/span>&lt;span class="o">=&lt;/span>0, &lt;span class="nv">oom_score_adj&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.147021&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49cd3c5&amp;gt;&lt;span class="o">]&lt;/span> oom_kill_process+0x2d5/0x4a0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.147658&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49ccd8d&amp;gt;&lt;span class="o">]&lt;/span> ? oom_unkillable_task+0xcd/0x120
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.236909&lt;span class="o">]&lt;/span> Out of memory: Kill process &lt;span class="m">1727&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span> score &lt;span class="m">483&lt;/span> or sacrifice child
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>87068.237622&lt;span class="o">]&lt;/span> Killed process &lt;span class="m">1727&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span>, UID 0, total-vm:3770896kB, anon-rss:1928716kB, file-rss:0kB, shmem-rss:0kB
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>100910.662047&lt;span class="o">]&lt;/span> gmain invoked oom-killer: &lt;span class="nv">gfp_mask&lt;/span>&lt;span class="o">=&lt;/span>0x201da, &lt;span class="nv">order&lt;/span>&lt;span class="o">=&lt;/span>0, &lt;span class="nv">oom_score_adj&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>100910.668484&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49cd3c5&amp;gt;&lt;span class="o">]&lt;/span> oom_kill_process+0x2d5/0x4a0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>100910.669139&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49ccd8d&amp;gt;&lt;span class="o">]&lt;/span> ? oom_unkillable_task+0xcd/0x120
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>100910.782806&lt;span class="o">]&lt;/span> Out of memory: Kill process &lt;span class="m">6691&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span> score &lt;span class="m">489&lt;/span> or sacrifice child
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>100910.784072&lt;span class="o">]&lt;/span> Killed process &lt;span class="m">6691&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span>, UID 0, total-vm:3826532kB, anon-rss:1952492kB, file-rss:0kB, shmem-rss:0kB
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>203440.310492&lt;span class="o">]&lt;/span> in:imjournal invoked oom-killer: &lt;span class="nv">gfp_mask&lt;/span>&lt;span class="o">=&lt;/span>0x201da, &lt;span class="nv">order&lt;/span>&lt;span class="o">=&lt;/span>0, &lt;span class="nv">oom_score_adj&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>203440.316740&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49cd3c5&amp;gt;&lt;span class="o">]&lt;/span> oom_kill_process+0x2d5/0x4a0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>203440.317352&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>&amp;lt;ffffffffa49ccd8d&amp;gt;&lt;span class="o">]&lt;/span> ? oom_unkillable_task+0xcd/0x120
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>203440.390917&lt;span class="o">]&lt;/span> Out of memory: Kill process &lt;span class="m">16512&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span> score &lt;span class="m">476&lt;/span> or sacrifice child
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>203440.391793&lt;span class="o">]&lt;/span> Killed process &lt;span class="m">16512&lt;/span> &lt;span class="o">(&lt;/span>freeswitch&lt;span class="o">)&lt;/span>, UID 0, total-vm:3896204kB, anon-rss:1902280kB, file-rss:0kB, shmem-rss:0kB
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>并且用 htop 监控 Freeswitch 的进程发现只要一开启 ASR 模块，内存占用就开始往上涨并且不会下降。&lt;/p>
+&lt;h2 id="解决过程">解决过程
+&lt;/h2>&lt;p>看到上述问题，初步怀疑是模块使用的 Websocket 库 &lt;a class="link" href="https://github.com/zaphoyd/websocketpp" target="_blank" rel="noopener"
+>Websocketpp&lt;/a> 的相关对象等可能没有手动回收内存。开始着手检查。&lt;/p>
+&lt;h3 id="问题1-链接关闭时没有销毁相关的消息列表">问题1 链接关闭时没有销毁相关的消息列表
+&lt;/h3>&lt;p>经过检查，发现Websocket 库的 Client 及相关链接对象都是使用的C++11的&lt;code>shared_ptr&lt;/code>或 &lt;code>weak_ptr&lt;/code>等智能指针标准库进行管理。&lt;/p>
+&lt;p>不过，在 Websocket Client 对象当中有一个自定义属性&lt;code>std::vector&amp;lt;std::string&amp;gt; m_messages;&lt;/code> 这个队列记录了接收到的所有消息，但是在链接关闭时没有清空，需要手动清空。在重启 Freeswitch 后发现内存还是会一直增长，但是会有一些回收，虽然造成了一些内存泄漏，但是不是主要原因。这个问题也比较容易发现，可以直接查找代码发现。&lt;/p>
+&lt;h3 id="问题2-cjson-的-cjson_print-方法转换的字符串需要手动清除">问题2 CJSON 的 CJSON_Print 方法转换的字符串需要手动清除
+&lt;/h3>&lt;p>在发现还有问题后，检查了一遍代码，感觉只是看代码是检查不出来了。通过调研，先是使用的valgrind来查内存泄漏。&lt;/p>
+&lt;blockquote>
+&lt;p>Valgrind 是一款综合性的程序分析工具，主要用于内存管理的调试、内存泄漏检测、并发错误检测和性能分析。它适用于 C、C++、Fortran 等语言编写的程序，帮助开发者发现程序中的各种隐蔽问题。Valgrind 本质上是一个虚拟化的执行环境，它将你的程序加载进一个动态二进制翻译器中执行，并对内存的使用情况进行监控。&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="valgrind">valgrind
+&lt;/h4>&lt;p>Contenos直接使用&lt;code>yum install valgrind&lt;/code>进行安装。&lt;/p>
+&lt;p>安转完成后，运行下面的指令检查&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">valgrind --leak-check&lt;span class="o">=&lt;/span>full freeswitch
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>检查结果&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> Memcheck, a memory error &lt;span class="nv">detector&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> Copyright &lt;span class="o">(&lt;/span>C&lt;span class="o">)&lt;/span> 2002-2017, and GNU GPL&lt;span class="err">&amp;#39;&lt;/span>d, by Julian Seward et al.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> Using Valgrind-3.15.0 and LibVEX&lt;span class="p">;&lt;/span> rerun with -h &lt;span class="k">for&lt;/span> copyright &lt;span class="nv">info&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> Command: &lt;span class="nv">freeswitch&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Cannot lock pid file /usr/local/freeswitch/run/freeswitch.pid.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> HEAP SUMMARY:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> in use at exit: 46,272 bytes in &lt;span class="m">25&lt;/span> &lt;span class="nv">blocks&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> total heap usage: &lt;span class="m">29&lt;/span> allocs, &lt;span class="m">4&lt;/span> frees, 120,232 bytes &lt;span class="nv">allocated&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> LEAK SUMMARY:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> definitely lost: &lt;span class="m">0&lt;/span> bytes in &lt;span class="m">0&lt;/span> &lt;span class="nv">blocks&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> indirectly lost: &lt;span class="m">0&lt;/span> bytes in &lt;span class="m">0&lt;/span> &lt;span class="nv">blocks&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> possibly lost: 24,576 bytes in &lt;span class="m">3&lt;/span> &lt;span class="nv">blocks&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> still reachable: 21,696 bytes in &lt;span class="m">22&lt;/span> &lt;span class="nv">blocks&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> suppressed: &lt;span class="m">0&lt;/span> bytes in &lt;span class="m">0&lt;/span> &lt;span class="nv">blocks&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> Rerun with --leak-check&lt;span class="o">=&lt;/span>full to see details of leaked &lt;span class="nv">memory&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> For lists of detected and suppressed errors, rerun with: -s
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">==&lt;/span>&lt;span class="nv">11979&lt;/span>&lt;span class="o">==&lt;/span> ERROR SUMMARY: &lt;span class="m">0&lt;/span> errors from &lt;span class="m">0&lt;/span> contexts &lt;span class="o">(&lt;/span>suppressed: &lt;span class="m">0&lt;/span> from 0&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>可以看到没有检测出来 &lt;code>definitely&lt;/code> 的明确内存泄漏，都是一些“一次性”的泄漏。。所以猜测是一些“still reachable”的内存越来越多导致的，“still reachable”指的是能被引用的内存，内存泄漏是内存无法被引用到，但是能被引用的内存不一定是还在使用的内存，比如不断向一个链表里面写数据而没有删除动作，那么这个链表就会一直增大，虽然可能只有最新的10个数据有在用，但是没有把旧的数据释放，这个虽然不是严格的内存泄漏，但也会造成了内存不断增大。&lt;/p>
+&lt;p>目前来看就是借助其他办法分析现在 Freeswitch 的内存分布。&lt;/p>
+&lt;h4 id="jemalloc">jemalloc
+&lt;/h4>&lt;p>Google 了一番，找到一个C++内存分析工具 &lt;a class="link" href="https://github.com/jemalloc/jemalloc" target="_blank" rel="noopener"
+>jemalloc&lt;/a>。该工具能分析 C++程序的内存分布，帮助检查哪个环节分配了过多的内存。&lt;/p>
+&lt;blockquote>
+&lt;p>jemalloc 是一个高效的内存分配库，设计用于提升系统性能、减少内存碎片和优化多线程程序的内存管理。最初由 Facebook 开发，jemalloc 被广泛应用于需要高性能和高并发支持的环境，如数据库系统、Web 服务器和缓存服务。以下是 jemalloc 的一些关键特点：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>内存碎片优化&lt;/strong>：jemalloc 使用分级分配策略和延迟归还内存技术，以有效减少内存碎片问题，特别是在需要频繁分配和释放内存的应用中，表现出更稳定的内存使用率。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>多线程优化&lt;/strong>：jemalloc 针对多线程环境进行了深度优化，通过线程本地缓存（thread-local caching）技术大幅减少了内存锁竞争，提升了多线程程序的并发性能。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>分配效率高&lt;/strong>：jemalloc 使用多级分配池（arenas）和分级桶（bins）来高效管理不同大小的内存分配需求，减少了内存分配器的开销。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>诊断工具支持&lt;/strong>：jemalloc 提供了丰富的调试和诊断功能，可以生成内存分配日志和统计数据，帮助开发人员分析内存分配情况和优化程序内存使用。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>与 glibc 兼容&lt;/strong>：在 Linux 系统上，jemalloc 可作为 glibc 的替代内存分配器使用，应用程序只需简单配置即可使用 jemalloc 而无需代码修改。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;h5 id="安装步骤">安装步骤
+&lt;/h5>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">bzip2 -d jemalloc-5.3.0.tar.bz2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tar -xf jemalloc-5.3.0.tar
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> jemalloc-5.3.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">./autogen.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">./configure --prefix&lt;span class="o">=&lt;/span>/usr/local --enable-prof
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">make install
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>内存分布接转出 PDF 需要依赖这两个工具，直接通过&lt;code>yum&lt;/code>安装。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">yum install graphviz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">yum install ghostscript
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h5 id="使用">使用
+&lt;/h5>&lt;p>要在应用中使用 jemalloc，一般可以通过 LD_PRELOAD 将其加载，或在编译阶段直接链接 jemalloc 库。例如，在 Linux 上可以使用以下命令强制应用使用 jemalloc：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="nv">MALLOC_CONF&lt;/span>&lt;span class="o">=&lt;/span>prof:true,lg_prof_interval:27 &lt;span class="nv">LD_PRELOAD&lt;/span>&lt;span class="o">=&lt;/span>/usr/local/lib/libjemalloc.so.2 freeswitch
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;p>命令详解&lt;/p>
+&lt;p>&lt;strong>1. MALLOC_CONF 环境变量&lt;/strong>&lt;/p>
+&lt;p>jemalloc 支持通过 MALLOC_CONF 环境变量传递配置选项，这里使用了以下参数：&lt;/p>
+&lt;p>​ •prof:true：开启内存分配分析（profiling）功能，帮助检测和分析应用中的内存使用情况。&lt;/p>
+&lt;p>​ •lg_prof_interval:27：设置内存分配采样间隔的对数值。27 表示间隔为 2^27 字节，即每分配 128MB 内存进行一次采样。&lt;/p>
+&lt;p>&lt;strong>2. LD_PRELOAD 环境变量&lt;/strong>&lt;/p>
+&lt;p>​ •LD_PRELOAD=/usr/local/lib/libjemalloc.so.2：指定在程序启动时预加载 jemalloc 库，以替换默认的内存分配函数 (malloc、free 等)。/usr/local/lib/libjemalloc.so.2 是 jemalloc 库的路径。&lt;/p>
+&lt;p>&lt;strong>3. freeswitch&lt;/strong>&lt;/p>
+&lt;p>​ •freeswitch：启动 Freeswitch 应用程序，应用上述 jemalloc 设置。&lt;/p>
+&lt;/blockquote>
+&lt;p>运行下面的命令可以把单次采样文件转换为 PDF 内存报告&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">jeprof --show_bytes --pdf /usr/local/freeswitch/bin/freeswitch jeprof.1842.42.i42.heap &amp;gt; output1.pdf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>注意这里有一个坑，可执行文件的路径必须是执行文件的绝对路径，不能是 bin 目录下的软连接。&lt;/p>
+&lt;h5 id="报告">报告
+&lt;/h5>&lt;p>下面是报告的完整截图，可以看到每个方法分配的内存大小还有层级调用关系。&lt;/p>
+&lt;img src="SCR-20241025-pgqm.png" alt="报告截图" style="zoom:500%;" />
+&lt;p>可以看到 &lt;code>Print(inline) &lt;/code>方法分配了 86% 的内存。该方法的调用栈是 &lt;code>cJson_Print&lt;/code> -&amp;gt; &lt;code>asr_feed&lt;/code>。&lt;code>asr_feed&lt;/code>方法会通过 Websocket 发送所有音频数据，每帧音频都是通过使用 JSON 格式发送，通过&lt;code>cJSON_Print &lt;/code>将 JSON 数据结构转换为一个字符串，并返回一个动态分配的字符串指针。但是由于这个返回的字符串是通过 &lt;code>malloc&lt;/code> 或 &lt;code>realloc&lt;/code> 直接分配在堆上，所以必须使用 &lt;code>free()&lt;/code> 函数手动释放，否则，这部分内存将会造成内存泄露。&lt;/p>
+&lt;p>即使 &lt;code>cJSON_Print&lt;/code> 的指针是局部变量，并且已经销毁了这个指针，内存仍然会保留在堆上，并且依然是标记为“可达到的”（reachable）状态。这就是内存泄露的主要原因。&lt;/p>
+&lt;h5 id="可达到内存">可达到内存
+&lt;/h5>&lt;p>“&lt;strong>Reachable（可达到）&lt;/strong>” 是内存的概念，通常出现在内存泄漏检查工具（例如 Valgrind）的报告中，表示虽然程序不再需要使用这部分内存，或者已经没有明确的指针指向它，但从技术上讲，内存管理系统仍然可以找到它并访问它。&lt;/p>
+&lt;p>要理解这个问题，我们可以从内存管理和指针的生命周期两个方面来分析：&lt;/p>
+&lt;p>&lt;strong>1. 堆内存的分配和释放&lt;/strong>&lt;/p>
+&lt;p>在调用 &lt;code>cJSON_Print()&lt;/code> 时，它返回一个动态分配的字符串，内存分配是在 &lt;strong>堆&lt;/strong> 上完成的。这意味着，程序员必须手动释放这块内存（通过 free()）。即使局部变量指针已经销毁，这块堆内存仍然会存在，直到被明确释放或程序结束。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// json_str 是局部变量，指向堆上的内存
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kt">char&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">json_str&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nf">cJSON_Print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">json_data&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">// 堆内存分配
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>当你离开这个函数或作用域时，json_str 指针本身可能会被销毁或失效，但堆上的内存依然存在。这就是为什么它仍然会被视为&lt;strong>reachable&lt;/strong>：因为堆上分配的内存没有释放，操作系统或内存管理器可以通过堆的内存结构访问它。&lt;/p>
+&lt;p>&lt;strong>2. 可达到 vs 不可达到&lt;/strong>&lt;/p>
+&lt;p>​ •&lt;strong>可达到 (reachable)&lt;/strong>：指分配的内存块在程序中&lt;strong>尚未被释放&lt;/strong>，并且从技术上，内存管理器仍然可以通过某些方式找到它们，尽管它们可能不再被局部变量或指针直接引用。&lt;/p>
+&lt;p>​ •&lt;strong>不可达到 (unreachable)&lt;/strong>：如果没有任何指针或引用指向这块内存，而且你无法通过正常的编程手段找到这块内存，那么这部分内存就变成“不可达到”的了。此时，它会被标记为未使用内存，等到程序结束时才会回收。&lt;/p></description></item></channel></rss>

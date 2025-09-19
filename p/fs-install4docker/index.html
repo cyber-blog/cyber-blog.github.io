@@ -1,0 +1,273 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="简要叙述 FreeSWITCH 打包成 Docker 镜像并启动的过程"><title>Docker 构建 FreeSWITCH 并部署</title>
+<link rel=canonical href=https://cyber-blog.github.io/p/fs-install4docker/><link rel=stylesheet href=/scss/style.min.70a01615b5dd99826a360296920067f6e3896a41fe397d04d6b849efef75a174.css><meta property='og:title' content="Docker 构建 FreeSWITCH 并部署"><meta property='og:description' content="简要叙述 FreeSWITCH 打包成 Docker 镜像并启动的过程"><meta property='og:url' content='https://cyber-blog.github.io/p/fs-install4docker/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='FreeSWITCH'><meta property='article:published_time' content='2022-10-09T00:00:00+00:00'><meta property='article:modified_time' content='2022-10-09T00:00:00+00:00'><meta property='og:image' content='https://cyber-blog.github.io/p/fs-install4docker/cover.jpg'><meta name=twitter:title content="Docker 构建 FreeSWITCH 并部署"><meta name=twitter:description content="简要叙述 FreeSWITCH 打包成 Docker 镜像并启动的过程"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://cyber-blog.github.io/p/fs-install4docker/cover.jpg'><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/majiang213 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#构建镜像>构建镜像</a></li><li><a href=#配置文件修改>配置文件修改</a></li><li><a href=#启动容器>启动容器</a></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/p/fs-install4docker/><img src=/p/fs-install4docker/cover_hu13459586684579990428.jpg srcset="/p/fs-install4docker/cover_hu13459586684579990428.jpg 800w, /p/fs-install4docker/cover_hu3425483315149503896.jpg 1600w" width=800 height=534 loading=lazy alt="Featured image of post Docker 构建 FreeSWITCH 并部署"></a></div><div class=article-details><header class=article-category><a href=/categories/tech/ style=background-color:#2a9d8f;color:#fff>技术博客</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/fs-install4docker/>Docker 构建 FreeSWITCH 并部署</a></h2><h3 class=article-subtitle>简要叙述 FreeSWITCH 打包成 Docker 镜像并启动的过程</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Oct 09, 2022</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 3 分钟</time></div></footer></div></header><section class=article-content><p>随着生产环境ubuntu系统的更新。<code>FreeSWITC</code>1.6版本的安装和部署所依赖的一些库已经不兼容或不存在，导致安装会出现一些问题。为解决这些问题<code>FreeSWITC</code>的版本也需要升级。并且使用Docker的方式部署和安装。</p><h2 id=构建镜像>构建镜像</h2><ol><li><p>clone freeswitch repository</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>git clone https://github.com/signalwire/freeswitch.git
+</span></span></code></pre></td></tr></table></div></div></li><li><p>进入<code>freeswitch</code>官网申请账号并获取自己账号的<code>TOKEN</code>。参考<a class=link href=https://freeswitch.org/confluence/display/FREESWITCH/HOWTO+Create+a+SignalWire+Personal+Access+Token target=_blank rel=noopener>官方文档</a></p></li><li><p>修改<code>Dockerfile</code>。包括修改<code>TOKEN</code>和添加<code>apt-get</code>国内源等。参考如下</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-dockerfile data-lang=dockerfile><span class=line><span class=cl><span class=c># vim:set ft=dockerfile:</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>ARG</span> <span class=nv>DEBIAN_VERSION</span><span class=o>=</span>buster
+</span></span><span class=line><span class=cl><span class=k>FROM</span><span class=s> debian:${DEBIAN_VERSION}</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>ARG</span> <span class=nv>TOKEN</span><span class=o>=</span>YOU_TOKEN
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c># Source Dockerfile:</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># https://github.com/docker-library/postgres/blob/master/9.4/Dockerfile</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># explicitly set user/group IDs</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> groupadd -r freeswitch --gid<span class=o>=</span><span class=m>999</span> <span class=o>&amp;&amp;</span> useradd -r -g freeswitch --uid<span class=o>=</span><span class=m>999</span> freeswitch<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> apt-get update <span class=o>&amp;&amp;</span> apt-get install -y ca-certificates <span class=o>&amp;&amp;</span> sed -i <span class=s1>&#39;s#http://deb.debian.org#https://mirrors.163.com#g&#39;</span> /etc/apt/sources.list <span class=o>&amp;&amp;</span> apt-get clean<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># grab gosu for easy step-down from root</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> apt-get update <span class=o>&amp;&amp;</span> apt-get install -y --no-install-recommends dirmngr gnupg2 wget <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> gpg2 --keyserver hkp://keyserver.ubuntu.com --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> gpg2 --keyserver hkp://keyserver.ubuntu.com --recv-keys 655DA1341B5207915210AFE936B4249FA7B0FB03 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> gpg2 --output /usr/share/keyrings/signalwire-freeswitch-repo.gpg --export 655DA1341B5207915210AFE936B4249FA7B0FB03 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> rm -rf /var/lib/apt/lists/* <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> wget -O /usr/local/bin/gosu <span class=s2>&#34;https://github.com/tianon/gosu/releases/download/1.2/gosu-</span><span class=k>$(</span>dpkg --print-architecture<span class=k>)</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> wget -O /usr/local/bin/gosu.asc <span class=s2>&#34;https://github.com/tianon/gosu/releases/download/1.2/gosu-</span><span class=k>$(</span>dpkg --print-architecture<span class=k>)</span><span class=s2>.asc&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> gpg --verify /usr/local/bin/gosu.asc <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> rm /usr/local/bin/gosu.asc <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> chmod +x /usr/local/bin/gosu <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> apt-get purge -y --auto-remove wget dirmngr gnupg2<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># make the &#34;en_US.UTF-8&#34; locale so freeswitch will be utf-8 enabled by default</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> apt-get update <span class=o>&amp;&amp;</span> apt-get install -y locales <span class=o>&amp;&amp;</span> rm -rf /var/lib/apt/lists/* <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>ENV</span> LANG en_US.utf8<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># https://freeswitch.org/confluence/display/FREESWITCH/Debian</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> apt-get update <span class=o>&amp;&amp;</span> apt-get install lsb-release -y --no-install-recommends <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> <span class=nb>echo</span> <span class=s2>&#34;machine freeswitch.signalwire.com login signalwire password </span><span class=si>${</span><span class=nv>TOKEN</span><span class=si>}</span><span class=s2>&#34;</span> &gt; /etc/apt/auth.conf <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> <span class=nb>echo</span> <span class=s2>&#34;deb [signed-by=/usr/share/keyrings/signalwire-freeswitch-repo.gpg] https://freeswitch.signalwire.com/repo/deb/debian-release/ `lsb_release -sc` main&#34;</span> &gt; /etc/apt/sources.list.d/freeswitch.list <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> apt-get update <span class=o>&amp;&amp;</span> apt-get install -y freeswitch-all <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> apt-get purge -y --auto-remove ca-certificates lsb-release <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> apt-get clean <span class=o>&amp;&amp;</span> rm -rf /var/lib/apt/lists/*<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>COPY</span> docker-entrypoint.sh /<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Add anything else here</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c>## Ports</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Open the container up to the world.</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c>### 8021 fs_cli, 5060 5061 5080 5081 sip and sips, 64535-65535 rtp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 8021/tcp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 5060/tcp 5060/udp 5080/tcp 5080/udp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 5061/tcp 5061/udp 5081/tcp 5081/udp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 7443/tcp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 5070/udp 5070/tcp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 64535-65535/udp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 16384-32768/udp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Volumes</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c>## Freeswitch Configuration</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>VOLUME</span> <span class=p>[</span><span class=s2>&#34;/etc/freeswitch&#34;</span><span class=p>]</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c>## Tmp so we can get core dumps out</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>VOLUME</span> <span class=p>[</span><span class=s2>&#34;/tmp&#34;</span><span class=p>]</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Limits Configuration</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>COPY</span>    build/freeswitch.limits.conf /etc/security/limits.d/<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=c># Healthcheck to make sure the service is running</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>SHELL</span>       <span class=p>[</span><span class=s2>&#34;/bin/bash&#34;</span><span class=p>]</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>HEALTHCHECK --interval=15s --timeout=5s \
+</span></span></span><span class=line><span class=cl><span class=err>    </span><span class=k>CMD</span>  fs_cli -x status <span class=p>|</span> grep -q ^UP <span class=o>||</span> <span class=nb>exit</span> <span class=m>1</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>ENTRYPOINT</span> <span class=p>[</span><span class=s2>&#34;/docker-entrypoint.sh&#34;</span><span class=p>]</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>CMD</span> <span class=p>[</span><span class=s2>&#34;freeswitch&#34;</span><span class=p>]</span><span class=err>
+</span></span></span></code></pre></td></tr></table></div></div></li><li><p>进入<code>docker/master</code>目录执行构建命令</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>docker build -t freeswitch .
+</span></span></code></pre></td></tr></table></div></div></li></ol><h2 id=配置文件修改>配置文件修改</h2><ol><li><p>修改启动映射的端口号</p></li><li><p>修改日志输出位置</p></li><li><p>修改ESL监听映射配置</p><p>修改<code>event_socket.conf</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;configuration</span> <span class=na>name=</span><span class=s>&#34;event_socket.conf&#34;</span> <span class=na>description=</span><span class=s>&#34;Socket Client&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;settings&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;param</span> <span class=na>name=</span><span class=s>&#34;nat-map&#34;</span> <span class=na>value=</span><span class=s>&#34;false&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=c>&lt;!-- 配置为0.0.0.0代表指定IPV4的所有IP地址链接  --&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;param</span> <span class=na>name=</span><span class=s>&#34;listen-ip&#34;</span> <span class=na>value=</span><span class=s>&#34;0.0.0.0&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;param</span> <span class=na>name=</span><span class=s>&#34;listen-port&#34;</span> <span class=na>value=</span><span class=s>&#34;8021&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;param</span> <span class=na>name=</span><span class=s>&#34;password&#34;</span> <span class=na>value=</span><span class=s>&#34;ClueCon&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=c>&lt;!-- 表示使用acl名称为lan的集合进行IP校验 --&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;param</span> <span class=na>name=</span><span class=s>&#34;apply-inbound-acl&#34;</span> <span class=na>value=</span><span class=s>&#34;lan&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=c>&lt;!--&lt;param name=&#34;stop-on-bind-error&#34; value=&#34;true&#34;/&gt;--&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;/settings&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/configuration&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><p>修改<code>acl.conf.xml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;configuration</span> <span class=na>name=</span><span class=s>&#34;acl.conf&#34;</span> <span class=na>description=</span><span class=s>&#34;Network Lists&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;network-lists&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=c>&lt;!--
+</span></span></span><span class=line><span class=cl><span class=c>	 These ACL&#39;s are automatically created on startup.
+</span></span></span><span class=line><span class=cl><span class=c>
+</span></span></span><span class=line><span class=cl><span class=c>	 rfc1918.auto  - RFC1918 Space
+</span></span></span><span class=line><span class=cl><span class=c>	 nat.auto      - RFC1918 Excluding your local lan.
+</span></span></span><span class=line><span class=cl><span class=c>	 localnet.auto - ACL for your local lan.
+</span></span></span><span class=line><span class=cl><span class=c>	 loopback.auto - ACL for your local lan.
+</span></span></span><span class=line><span class=cl><span class=c>    --&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;list</span> <span class=na>name=</span><span class=s>&#34;lan&#34;</span> <span class=na>default=</span><span class=s>&#34;allow&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;node</span> <span class=na>type=</span><span class=s>&#34;deny&#34;</span> <span class=na>cidr=</span><span class=s>&#34;192.168.42.0/24&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;node</span> <span class=na>type=</span><span class=s>&#34;allow&#34;</span> <span class=na>cidr=</span><span class=s>&#34;192.168.42.42/32&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;node</span> <span class=na>type=</span><span class=s>&#34;allow&#34;</span> <span class=na>cidr=</span><span class=s>&#34;121.28.78.50/32&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;/list&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c>&lt;!--
+</span></span></span><span class=line><span class=cl><span class=c>	This will traverse the directory adding all users
+</span></span></span><span class=line><span class=cl><span class=c>	with the cidr= tag to this ACL, when this ACL matches
+</span></span></span><span class=line><span class=cl><span class=c>	the users variables and params apply as if they
+</span></span></span><span class=line><span class=cl><span class=c>	digest authenticated.
+</span></span></span><span class=line><span class=cl><span class=c>    --&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;list</span> <span class=na>name=</span><span class=s>&#34;domains&#34;</span> <span class=na>default=</span><span class=s>&#34;deny&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=c>&lt;!-- domain= is special it scans the domain from the directory to build the ACL --&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;node</span> <span class=na>type=</span><span class=s>&#34;allow&#34;</span> <span class=na>domain=</span><span class=s>&#34;$${domain}&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=c>&lt;!-- use cidr= if you wish to allow ip ranges to this domains acl. --&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=c>&lt;!-- &lt;node type=&#34;allow&#34; cidr=&#34;192.168.0.0/24&#34;/&gt; --&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;/list&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;/network-lists&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/configuration&gt;</span>
+</span></span></code></pre></td></tr></table></div></div></li></ol><h2 id=启动容器>启动容器</h2><p>运行命令。注意端口和数据卷的映射</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl><span class=c1># 一部分RTP端口的映射需要占用大量的启动时间。直接使用--net=host参数</span>
+</span></span><span class=line><span class=cl>docker run -it --name freeswitch <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>           -v /data/freeswitch/configuration:/etc/freeswitch <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>           -v /data/freeswitch/tmp:/tmp <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>           -v /data/freeswitch/log:/log <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>           --net host <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>           majiang213/freeswitch
+</span></span></code></pre></td></tr></table></div></div></section><footer class=article-footer><section class=article-tags><a href=/tags/freeswitch/>FreeSWITCH</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Oct 09, 2022 00:00 UTC</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/p/fs-asr-api-connection/><div class=article-image><img src=/p/fs-asr-api-connection/cover.51700a71dc198343428b190aa2424791_hu12013842174450703421.png width=250 height=150 loading=lazy alt="Featured image of post FreeSWITCH ASR 接口对接" data-key=fs-asr-api-connection data-hash="md5-UXAKcdwZg0NCixkKokJHkQ=="></div><div class=article-details><h2 class=article-title>FreeSWITCH ASR 接口对接</h2></div></a></article><article><a href=/p/spring-boot/><div class=article-details><h2 class=article-title>Spring Boot应用假死现象：SLF4J日志框架冲突深度分析</h2></div></a></article><article><a href=/p/database-index/><div class=article-details><h2 class=article-title>MySQL InnoDB 索引机制与优化</h2></div></a></article><article><a href=/p/jmm/><div class=article-details><h2 class=article-title>JMM</h2></div></a></article><article><a href=/p/consistent-hash/><div class=article-details><h2 class=article-title>一致性哈希的简单介绍</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2025 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
