@@ -3,7 +3,6 @@ title: 一个端到端加密工具的设计与实现
 description: 端到端加密的一些原理
 slug: cipher
 date: 2025-11-05 00:00:00+0800
-image: cover.png
 categories:
     - tech
 tags:
