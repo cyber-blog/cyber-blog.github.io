@@ -951,7 +951,7 @@ deepspeed --num_gpus=2 train.py --deepspeed deepspeed_config.json
 
 ### 标准项目结构
 
-推荐采用标准的 `src` 布局来组织代码，这种结构更利于包管理和测试。结合 `uv` 的最佳实践，推荐结构如下：
+推荐采用标准的 UV 项目布局来组织代码，这种结构更利于包管理和测试。在运行`uv init`命令后即可创建如下项目结构：
 
 ```text
 lora-project/
@@ -973,11 +973,9 @@ lora-project/
 └── README.md               # ✅ 项目说明
 ```
 
-### 依赖包安装 (使用 uv)
+### 依赖包安装
 
 **1. 初始化项目**
-
-使用 `uv init --lib` 可以直接创建包含 `src` 目录的库结构：
 
 ```bash
 # 1. 创建并初始化项目 (使用 lib 模式生成 src 结构)
@@ -992,24 +990,56 @@ mkdir data
 # tests/ 目录已由 init 自动生成
 ```
 
-**2. 安装 PyTorch**
+**2. 配置依赖 (pyproject.toml)**
 
-使用 `uv add` 并指定 `--index-url` 来安装适配具体 CUDA 版本的 PyTorch：
+直接在项目根目录编辑 `pyproject.toml` 文件，声明项目所需的所有依赖。这种方式比手动 `add` 更清晰，也便于版本管理。
 
-```bash
-# 以 CUDA 12.1 为例
-uv add torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```toml
+[project]
+name = "lora-finetune"
+version = "0.1.0"
+description = "LoRA fine-tuning project"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch",
+    "torchvision",
+    "transformers",
+    "peft",
+    "datasets",
+    "accelerate",
+    "bitsandbytes",
+    "scipy",
+    "scikit-learn",
+    "tensorboard",
+    "sentencepiece",
+    "protobuf",
+    "modelscope",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "ruff",
+]
+
+# 如需指定特定 CUDA 版本（如 12.1），请取消以下注释：
+# [[tool.uv.index]]
+# name = "pytorch-cu121"
+# url = "https://download.pytorch.org/whl/cu121"
+# explicit = true
+#
+# [tool.uv.sources]
+# torch = { index = "pytorch-cu121" }
+# torchvision = { index = "pytorch-cu121" }
 ```
 
-**3. 安装核心依赖**
+**3. 一键安装依赖**
+
+配置完成后，运行以下命令即可自动创建虚拟环境并安装所有依赖：
 
 ```bash
-# 安装 Transformer 生态及微调库
-uv add transformers peft datasets accelerate bitsandbytes
-
-# 安装辅助工具 (包括 pytest 用于测试)
-uv add --dev pytest ruff
-uv add scipy scikit-learn tensorboard sentencepiece protobuf modelscope
+uv sync
 ```
 
 **4. 验证环境**
