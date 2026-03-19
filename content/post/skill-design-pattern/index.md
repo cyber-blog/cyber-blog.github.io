@@ -37,7 +37,7 @@ This article covers each one with working ADK code:
 - Pipeline: Enforce a strict multi-step workflow with checkpoints
   流水线：通过检查点强制执行严格的多步骤工作流程
 
-![HDoDgs6XAAYtw04](/Users/majiang/Downloads/HDoDgs6XAAYtw04.jpg)
+![HDoDgs6XAAYtw04](HDoDgs6XAAYtw04.jpg)
 
 ## Pattern 1: The Tool Wrapper 模式 1：工具包装
 
