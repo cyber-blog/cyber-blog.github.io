@@ -52,7 +52,7 @@ It is the simplest pattern to implement. The 𝚂𝙺𝙸𝙻𝙻.𝚖𝚍 file 
 Here is an example of a Tool Wrapper that teaches an agent how to write FastAPI code. Notice how the instructions explicitly tell the agent to load the 𝚌𝚘𝚗𝚟𝚎𝚗𝚝𝚒𝚘𝚗𝚜.𝚖𝚍 file only when it starts reviewing or writing code:
 以下是一个工具包装器的示例，它教会代理如何编写 FastAPI 代码。请注意，指令明确地告诉代理，只有在开始审查或编写代码时才加载 𝚌𝚘𝚗𝚟𝚎𝚗𝚝𝚒𝚘𝚗𝚜.𝚖𝚍 文件：
 
-```text
+```markdown
 # skills/api-expert/SKILL.md
 ---
 name: api-expert
@@ -93,7 +93,7 @@ It leverages two optional directories: 𝚊𝚜𝚜𝚎𝚝𝚜/ holds your outp
 In this technical report generator example, the skill file does not contain the actual layout or the grammar rules. It simply coordinates the retrieval of those assets and forces the agent to execute them step by step:
 在这个技术报告生成器示例中，技能文件不包含实际的布局或语法规则。它只是协调这些资源的检索，并强制代理逐步执行它们：
 
-```text
+```markdown
 # skills/report-generator/SKILL.md
 ---
 name: report-generator
@@ -132,7 +132,7 @@ When a user submits code, the agent loads this checklist and methodically scores
 The following code reviewer skill demonstrates this separation. The instructions remain static, but the agent dynamically loads the specific review criteria from an external checklist and forces a structured, severity-based output:
 以下代码审查员技能展示了这种分离。指令保持不变，但代理会从外部清单动态加载具体的审查标准，并强制生成结构化的、基于严重性的输出：
 
-```text
+```markdown
 # skills/code-reviewer/SKILL.md
 ---
 name: code-reviewer
@@ -174,7 +174,7 @@ Inversion relies on explicit, non-negotiable gating instructions (like "DO NOT s
 To see this in action, look at this project planner skill. The crucial element here is the strict phasing and the explicit gatekeeping prompt that stops the agent from synthesizing the final plan until all user answers are collected:
 要了解具体操作，请查看此项目规划器技能。关键在于严格的阶段划分和明确的把关提示，这些提示会阻止代理在收集到所有用户答案之前生成最终计划：
 
-```text
+```markdown
 # skills/project-planner/SKILL.md
 ---
 name: project-planner
@@ -225,7 +225,7 @@ This pattern utilizes all optional directories, pulling in different reference f
 In this documentation pipeline example, notice the explicit gate conditions. The agent is explicitly forbidden from moving to the assembly phase until the user confirms the generated docstrings in the previous step:
 在这个文档流水线示例中，请注意明确的门控条件。在用户确认上一步生成的文档字符串之前，代理程序被明确禁止进入组装阶段：
 
-```text
+```markdown
 # skills/doc-pipeline/SKILL.md
 ---
 name: doc-pipeline
