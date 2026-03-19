@@ -1,0 +1,1011 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>JavaScript on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/javascript/</link><description>Recent content in JavaScript on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Wed, 05 Nov 2025 00:00:00 +0800</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/javascript/index.xml" rel="self" type="application/rss+xml"/><item><title>一个端到端加密工具的设计与实现</title><link>https://cyber-blog.github.io/p/cipher/</link><pubDate>Wed, 05 Nov 2025 00:00:00 +0800</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/cipher/</guid><description>&lt;h1 id="端到端加密的一些原理">端到端加密的一些原理
+&lt;/h1>&lt;h2 id="为什么研究这个项目">为什么研究这个项目
+&lt;/h2>&lt;p>我主要是想学习加密相关的知识。之前只知道&lt;strong>对称加密&lt;/strong>、&lt;strong>非对称加密&lt;/strong>这些概念，但没真正动手实现过。看文档和自己写一遍完全是两回事。&lt;/p>
+&lt;p>前段时间看到朋友在微信群里发比特币钱包的&lt;strong>助记词&lt;/strong>，有人提醒他赶紧撤回，但已经晚了。助记词就是一串单词，有了它就能控制钱包里所有的钱。这东西发到微信上，就等于把钱包直接交给腾讯了。&lt;/p>
+&lt;p>后来在 GitHub 上发现了一个项目 &lt;a class="link" href="https://github.com/wifi504/translate-ha-jimi" target="_blank" rel="noopener"
+>translate-ha-jimi&lt;/a>（哈基密语），正好解决这个问题：一个简单的加密工具，可以在微信上安全传输敏感信息。我觉得这是个很好的学习案例。&lt;/p>
+&lt;p>这个项目的设计思路很清晰：所有加密都在&lt;strong>本地完成&lt;/strong>，不依赖服务器。密文可以通过微信、QQ、邮件随便发。还把密文编码成中文，看起来不那么像加密内容。正好符合我想学习的需求。&lt;/p>
+&lt;p>受到这个项目的启发，我实现了自己的版本（千字密语），主要是想把加密的各个环节都摸一遍：怎么生成密钥、怎么交换密钥、怎么加密解密、怎么防止被篡改。至于一些高级功能比如&lt;strong>前向安全&lt;/strong>什么的，暂时没做。但作为学习项目来说够了。&lt;/p>
+&lt;p>代码在：https://github.com/majiang213/translate-ha-jimi&lt;/p>
+&lt;hr>
+&lt;h2 id="加密原理">加密原理
+&lt;/h2>&lt;p>发现这个项目之后，我开始研究它的实现。在此之前，我对加密的理解就是&amp;quot;对称加密&amp;quot;和&amp;quot;非对称加密&amp;quot;这两个概念。对称加密就是加密和解密用同一把钥匙，非对称加密是用公钥加密、私钥解密。但具体怎么用、怎么结合，完全没概念。&lt;/p>
+&lt;h3 id="混合加密对称非对称">混合加密：对称+非对称
+&lt;/h3>&lt;p>后来看了一些资料才发现，实际应用中很少单独用某一种加密方式。通常是&lt;strong>混合使用&lt;/strong>：用非对称加密来交换密钥，然后用对称加密来加密实际内容。为什么？因为对称加密快，但密钥不好传输。非对称加密解决了密钥传输问题，但速度太慢。&lt;/p>
+&lt;p>举个例子。假设我要给你发一段加密消息。如果用对称加密，我们得先约定一个密钥。但这个密钥怎么给你？在微信上直接发？那不就暴露了吗。如果用非对称加密，我用你的公钥加密，你用私钥解密。这样密钥不用传输，但问题是非对称加密很慢，加密一篇文章可能要好几秒。&lt;/p>
+&lt;p>所以最佳方案是：我随机生成一个对称密钥（比如 256 位的随机数），用你的公钥加密这个对称密钥，发给你。你用私钥解密，得到这个对称密钥。然后我们就可以用这个对称密钥来快速加密、解密消息了。&lt;/p>
+&lt;h3 id="密钥交换dh-协议">密钥交换：DH 协议
+&lt;/h3>&lt;p>混合加密听起来不错，但这里还有个问题：我怎么得到你的公钥？你发给我？万一有人在中间把你的公钥替换成他自己的公钥呢？这样我就是在和中间人通信，而不是和你通信。这就是经典的**&amp;ldquo;中间人攻击&amp;rdquo;**。&lt;/p>
+&lt;p>研究了一下发现有个协议叫 &lt;strong>Diffie-Hellman（DH）&lt;/strong>，专门解决这个问题。它的巧妙之处在于：双方各自生成一对密钥，然后交换公钥。通过一些数学运算，双方能各自算出一个相同的**&amp;ldquo;共享密钥&amp;rdquo;**。最神奇的是，即使有人窃听到了双方交换的公钥，他也算不出这个共享密钥。&lt;/p>
+&lt;p>具体的数学原理涉及到&lt;strong>离散对数问题&lt;/strong>，我也没完全搞懂。但大概的流程是这样的：&lt;/p>
+&lt;ol>
+&lt;li>我生成一对密钥：我的私钥 a，我的公钥 A&lt;/li>
+&lt;li>你生成一对密钥：你的私钥 b，你的公钥 B&lt;/li>
+&lt;li>我们交换公钥（A 和 B）&lt;/li>
+&lt;li>我用我的私钥 a 和你的公钥 B 进行运算，得到共享密钥 K&lt;/li>
+&lt;li>你用你的私钥 b 和我的公钥 A 进行运算，得到的也是 K&lt;/li>
+&lt;/ol>
+&lt;p>窃听者只能看到 A 和 B，但算不出 K。这就是 DH 协议的核心思想。&lt;/p>
+&lt;p>千字密语用的是 &lt;strong>ECDH（椭圆曲线 DH）&lt;/strong>，原理类似，但基于椭圆曲线算法，密钥更短但安全性更高。具体用的是 &lt;strong>X25519&lt;/strong>，密钥只有 32 字节。&lt;/p>
+&lt;h3 id="防中间人攻击数字签名">防中间人攻击：数字签名
+&lt;/h3>&lt;p>到这里我以为问题解决了，但仔细想想，DH 还有个问题没解决：虽然窃听者算不出共享密钥，但中间人可以分别和双方做 DH。比如中间人和我做一次 DH，得到密钥 K1；和你做一次 DH，得到密钥 K2。这样他就能解密我发的消息，用 K2 重新加密发给你。我和你都以为在和对方通信，实际上是在和中间人通信。&lt;/p>
+&lt;p>这就需要&lt;strong>数字签名&lt;/strong>了。简单说就是每个人再生成一对&amp;quot;签名密钥对&amp;quot;，用私钥对自己的公钥签名。发公钥的时候连同签名一起发。对方收到后先验证签名，确认这个公钥确实是你发的，没有被篡改。&lt;/p>
+&lt;p>千字密语用的是 &lt;strong>Ed25519&lt;/strong> 签名算法，和 X25519 是配套的（都基于 Curve25519）。&lt;/p>
+&lt;h3 id="三层保护">三层保护
+&lt;/h3>&lt;p>理清楚原理之后，这个项目的加密架构就清晰了。千字密语用了三层保护：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>ECDH（X25519）&lt;/strong>：交换密钥，窃听者算不出共享密钥&lt;/li>
+&lt;li>&lt;strong>数字签名（Ed25519）&lt;/strong>：防止中间人攻击，确保公钥来自真人&lt;/li>
+&lt;li>&lt;strong>对称加密（ChaCha20）&lt;/strong>：用共享密钥快速加密消息内容&lt;/li>
+&lt;/ol>
+&lt;p>这个架构基本上就是现代端到端加密的标准做法。Signal、TLS 都是这么干的。原作者选择了成熟的方案，没有自己造轮子。&lt;/p>
+&lt;hr>
+&lt;h2 id="实现细节">实现细节
+&lt;/h2>&lt;p>看懂原理之后，再看代码就清楚多了。这部分记录一下实际实现中的细节。&lt;/p>
+&lt;h3 id="密钥生成和交换">密钥生成和交换
+&lt;/h3>&lt;p>启动的时候要生成两对密钥：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">Ed25519 签名密钥对 → 证明&amp;#34;我是我&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X25519 加密密钥对 → 用来协商共享密钥
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>一开始我不理解为什么要两对。后来发现这是职责分离。签名密钥对管身份认证，加密密钥对管密钥交换。两个密钥独立，万一哪个泄露了，影响范围小一些。而且虽然都基于 Curve25519，但 Ed25519 和 X25519 的数学运算不一样，不能混用。&lt;/p>
+&lt;h3 id="邀请码的生成">邀请码的生成
+&lt;/h3>&lt;p>这部分花了我不少时间理解。邀请码就是把自己的两个公钥发给对方，但不能直接发，要经过签名、压缩、编码等步骤。&lt;/p>
+&lt;p>&lt;strong>第一步：生成密钥对&lt;/strong>&lt;/p>
+&lt;p>libsodium 帮我们生成两对密钥：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">Ed25519 签名密钥对
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> - 公钥：32 字节
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> - 私钥：64 字节（实际上是 32 字节种子 + 32 字节公钥）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X25519 加密密钥对
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> - 公钥：32 字节
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> - 私钥：32 字节
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这四个密钥都存在本地，永远不会传输。只有公钥会发给对方。&lt;/p>
+&lt;p>&lt;strong>第二步：签名 DH 公钥&lt;/strong>&lt;/p>
+&lt;p>为什么要签名？防止中间人攻击。如果我直接把 X25519 公钥发给你，中间人可以替换成他自己的公钥。所以我用 Ed25519 私钥对 X25519 公钥签名，生成一个 64 字节的签名。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">签名 = Ed25519.sign(X25519公钥, Ed25519私钥)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> = 64 字节
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这个签名证明：&amp;ldquo;这个 X25519 公钥确实是我生成的&amp;rdquo;。&lt;/p>
+&lt;p>&lt;strong>第三步：打包数据&lt;/strong>&lt;/p>
+&lt;p>现在我有三个东西要发给对方：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">1. X25519 公钥（32 字节）→ 用来协商共享密钥
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2. 签名（64 字节）→ 证明公钥没被篡改
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">3. Ed25519 公钥（32 字节）→ 用来验证签名
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>代码里先把这三个 Uint8Array 转成十六进制字符串，然后打包成 JSON 数组：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-javascript" data-lang="javascript">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Uint8Array → Hex 字符串
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">dhPublicKey&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;a1b2c3...&amp;#34;&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">64&lt;/span>&lt;span class="nx">个字符&lt;/span>&lt;span class="err">，&lt;/span>&lt;span class="mi">32&lt;/span>&lt;span class="nx">字节的hex&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">dhSignature&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;d4e5f6...&amp;#34;&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">128&lt;/span>&lt;span class="nx">个字符&lt;/span>&lt;span class="err">，&lt;/span>&lt;span class="mi">64&lt;/span>&lt;span class="nx">字节的hex&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">ed25519PublicKey&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s2">&amp;#34;789abc...&amp;#34;&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">64&lt;/span>&lt;span class="nx">个字符&lt;/span>&lt;span class="err">，&lt;/span>&lt;span class="mi">32&lt;/span>&lt;span class="nx">字节的hex&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 打包成 JSON
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;a1b2c3...&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;d4e5f6...&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;789abc...&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>JSON 字符串长度大概 260 个字符左右。&lt;/p>
+&lt;p>&lt;strong>第四步：压缩&lt;/strong>&lt;/p>
+&lt;p>用 zlib（pako 库）压缩 JSON 字符串。压缩后大概 180-200 字节，压缩率不高，因为十六进制字符串熵比较大。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">JSON 字符串（~260 字符）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓ zlib 压缩
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Uint8Array（~190 字节）
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>第五步：千字文编码&lt;/strong>&lt;/p>
+&lt;p>压缩后的二进制数据，每个字节映射到一个汉字：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">190 字节 → 190 个汉字
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">例如：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">0x3A → &amp;#34;闰&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">0xB7 → &amp;#34;岁&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">0x2F → &amp;#34;成&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>现在邀请码变成了 190 个汉字。&lt;/p>
+&lt;p>&lt;strong>第六步：添加装饰&lt;/strong>&lt;/p>
+&lt;p>最后加上前缀和装饰词：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">&amp;#34;千字密钥&amp;#34; + 装饰词 + 编码内容 + 装饰词 + ...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">最终效果：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">千字密钥天地玄黄闰余成岁律吕调阳日月盈昃...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>装饰词是随机插入的千字文名句，让邀请码看起来更自然。最终长度大概 250-300 个汉字。&lt;/p>
+&lt;p>&lt;strong>对方如何解析&lt;/strong>&lt;/p>
+&lt;p>收到邀请码后，反向操作：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">1. 检查是否以&amp;#34;千字密钥&amp;#34;开头
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2. 去掉装饰词（过滤&amp;#34;千字密钥语&amp;#34;和装饰词中的字符）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">3. 千字文解码 → 二进制数据
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">4. zlib 解压 → JSON 字符串
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">5. JSON 解析 → [dhPublicKey, dhSignature, ed25519PublicKey]
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">6. Hex 转 Uint8Array
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">7. 验证签名：Ed25519.verify(dhPublicKey, dhSignature, ed25519PublicKey)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">8. 签名通过，用 dhPublicKey 和自己的私钥计算共享密钥
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>为什么这么复杂？&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>签名&lt;/strong>：防中间人攻击&lt;/li>
+&lt;li>&lt;strong>压缩&lt;/strong>：减少邀请码长度（虽然效果不明显）&lt;/li>
+&lt;li>&lt;strong>编码&lt;/strong>：避免 Base64 太显眼&lt;/li>
+&lt;li>&lt;strong>装饰&lt;/strong>：让邀请码看起来像正常中文&lt;/li>
+&lt;/ul>
+&lt;p>整个过程虽然看起来绕，但每一步都有明确的安全目的。&lt;/p>
+&lt;p>&lt;strong>共享密钥的计算&lt;/strong>&lt;/p>
+&lt;p>双方都有了对方的 X25519 公钥之后，各自计算共享密钥：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">我这边：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 共享密钥 = ECDH(我的X25519私钥, 对方的X25519公钥)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">对方那边：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> 共享密钥 = ECDH(对方的X25519私钥, 我的X25519公钥)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">神奇的是：两边算出来的共享密钥是一样的！
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这个共享密钥（32 字节）只存在本地，从不传输。窃听者即使拿到了双方的公钥，也推不出私钥，算不出共享密钥。这就是 ECDH 的数学魔法。&lt;/p>
+&lt;h3 id="消息加密">消息加密
+&lt;/h3>&lt;p>有了共享密钥，就可以加密消息了。每次加密的流程：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">明文
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">判断要不要压缩（代码里会试两种，选短的）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">ChaCha20-Poly1305 加密
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> • 随机生成 12 字节 nonce
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> • 输出：nonce + ciphertext（含 MAC）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">千字文编码
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> • nonce 和 ciphertext 分别编码成汉字
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> ↓
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">加前缀 + 装饰
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> • 千字密语 → 未压缩
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> • 千字密密语 → 已压缩
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> • 随机插入千字文名句
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>关于压缩&lt;/strong>：项目会同时尝试压缩和不压缩，对比长度，选短的。因为短文本压缩可能反而变长。&lt;/p>
+&lt;p>&lt;strong>关于 nonce&lt;/strong>：这个必须每次随机生成。如果重复使用 nonce，相同明文会产生相同密文，容易被分析。nonce 不需要保密，直接附在密文前面。&lt;/p>
+&lt;p>&lt;strong>关于 ChaCha20-Poly1305&lt;/strong>：这是 libsodium 推荐的组合。ChaCha20 负责加密，Poly1305 生成 MAC 防篡改。如果有人改了密文，解密时 MAC 验证会失败。&lt;/p>
+&lt;h3 id="千字文编码">千字文编码
+&lt;/h3>&lt;p>这是让我觉得有意思的地方。&lt;/p>
+&lt;p>一般加密工具输出 Base64 或 PGP 格式，一眼就看出是密文。这个项目用中文编码，看起来不那么显眼。&lt;/p>
+&lt;p>&lt;strong>实现&lt;/strong>（&lt;code>src/utils/QianziCodec.ts&lt;/code>）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">BASE_WORDS&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;闰余成岁律吕调阳云腾致雨露结为霜...&amp;#39;&lt;/span> &lt;span class="c1">// 256个字符
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">export&lt;/span> &lt;span class="kr">class&lt;/span> &lt;span class="nx">QianziCodec&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">static&lt;/span> &lt;span class="nx">charToIndexMap&lt;/span>: &lt;span class="kt">Map&lt;/span>&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">string&lt;/span>&lt;span class="err">,&lt;/span> &lt;span class="na">number&lt;/span>&lt;span class="p">&amp;gt;&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">Map&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">BASE_WORDS&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">split&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">map&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="nx">ch&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="nx">ch&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">i&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// 编码：字节数组 → 千字文字符串
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="kr">static&lt;/span> &lt;span class="nx">encode&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">bytes&lt;/span>: &lt;span class="kt">Uint8Array&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nb">Array&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="kr">from&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">bytes&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">map&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">b&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="nx">BASE_WORDS&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="nx">b&lt;/span>&lt;span class="p">]).&lt;/span>&lt;span class="nx">join&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// 解码：千字文字符串 → 字节数组
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="kr">static&lt;/span> &lt;span class="nx">decode&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">text&lt;/span>: &lt;span class="kt">string&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">Uint8Array&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">arr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">text&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">split&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">map&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">ch&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">index&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">this&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">charToIndexMap&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="kr">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">ch&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">index&lt;/span> &lt;span class="o">===&lt;/span> &lt;span class="kc">undefined&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nb">Error&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sb">`未知字符: &lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">ch&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">`&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nx">index&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">})&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">Uint8Array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">arr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>256 个编码字符（从千字文里选的，避开了&amp;quot;天地玄黄&amp;quot;等最出名的）&lt;/li>
+&lt;li>一个字节（0x00-0xFF）对应一个汉字&lt;/li>
+&lt;li>用 &lt;code>Map&lt;/code> 加速查找（O(1) 而非 &lt;code>indexOf&lt;/code> 的 O(n)）&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>装饰词&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>用千字文名句（宇宙洪荒、金生丽水玉出昆冈&amp;hellip;）&lt;/li>
+&lt;li>随机插在密文开头、中间（间隔 5-15 字符）、结尾&lt;/li>
+&lt;li>解密时自动过滤掉（装饰词字符不在编码字典中）&lt;/li>
+&lt;/ul>
+&lt;p>效果就是密文看起来像一堆古文，不像 Base64 那么显眼。&lt;/p>
+&lt;p>当然这不是完美伪装。编码字典里每个字出现概率都是 1/256，但正常中文有高频字（的了是）和低频字（生僻字）。如果用工具分析字频，能发现异常。但人工看的话，不会觉得是加密内容。&lt;/p>
+&lt;h3 id="一些实现细节">一些实现细节
+&lt;/h3>&lt;p>&lt;strong>为什么 nonce 是 12 字节？&lt;/strong> libsodium 的 &lt;code>crypto_aead_chacha20poly1305_ietf&lt;/code> 要求 12 字节（96 位）。这个长度足够大，随机生成几乎不会重复。&lt;/p>
+&lt;p>&lt;strong>装饰词怎么插入？&lt;/strong> 代码是每隔 5-15 个字符随机插一个名句。开头和结尾也插。这样密文看起来更自然。&lt;/p>
+&lt;p>&lt;strong>字典冲突检查&lt;/strong>：编码字典、装饰词、固定前缀（千字密钥语）三者不能有重复字符，否则解密时会过滤错。代码里做了检查。&lt;/p>
+&lt;p>&lt;strong>图标转换&lt;/strong>：实现时还写了个自动化脚本处理应用图标。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-javascript" data-lang="javascript">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// scripts/convert-icon.mjs
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">import&lt;/span> &lt;span class="nx">sharp&lt;/span> &lt;span class="nx">from&lt;/span> &lt;span class="s1">&amp;#39;sharp&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">async&lt;/span> &lt;span class="kd">function&lt;/span> &lt;span class="nx">convertIcon&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">svgBuffer&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">fs&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">readFileSync&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;electron/assets/icon.svg&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">await&lt;/span> &lt;span class="nx">sharp&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">svgBuffer&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="nx">resize&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1024&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">1024&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="nx">png&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="nx">toFile&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;electron/assets/icon.png&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>维护一个 SVG 源文件，需要更新图标时运行 &lt;code>pnpm convert-icon&lt;/code>。electron-builder 会自动把 PNG 转换成各平台需要的格式（macOS 的 ICNS、Windows 的 ICO）。&lt;/p>
+&lt;p>&lt;strong>技术栈&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>Electron 38 + Vue 3 + TypeScript（桌面应用）&lt;/li>
+&lt;li>libsodium-wrappers（WebAssembly 版本，加密库）&lt;/li>
+&lt;li>@stablelib/chacha（ChaCha20-Poly1305 实现）&lt;/li>
+&lt;li>better-sqlite3（存联系人信息，密钥加密存储）&lt;/li>
+&lt;li>pako（zlib 压缩）&lt;/li>
+&lt;li>sharp（图标格式转换）&lt;/li>
+&lt;/ul>
+&lt;p>原项目：https://github.com/wifi504/translate-ha-jimi&lt;/p>
+&lt;p>我的版本：https://github.com/majiang213/translate-ha-jimi&lt;/p>
+&lt;hr>
+&lt;h2 id="安全性分析">安全性分析
+&lt;/h2>&lt;p>研究完实现，需要客观评估这个项目的安全性。既要说清楚能做到什么，也要承认做不到什么。&lt;/p>
+&lt;h3 id="加密强度算法层面">加密强度：算法层面
+&lt;/h3>&lt;p>&lt;strong>ChaCha20-Poly1305&lt;/strong>：&lt;/p>
+&lt;p>这是 Google 推荐的加密方案，也是 TLS 1.3 的标准算法之一。核心参数：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">密钥长度：256-bit（2^256 = 1.15 × 10^77 种可能）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">nonce 长度：96-bit（每次随机生成）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">MAC 长度：128-bit（Poly1305 认证码）
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>暴力破解需要尝试的次数：假设每秒尝试 10 亿次（现代 GPU 的速度），破解一个 256-bit 密钥需要：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">2^256 / (10^9 × 60 × 60 × 24 × 365) ≈ 3.67 × 10^60 年
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>宇宙年龄才 138 亿年（1.38 × 10^10）。所以暴力破解在理论上不可行。&lt;/p>
+&lt;p>&lt;strong>X25519 密钥交换&lt;/strong>：&lt;/p>
+&lt;p>基于椭圆曲线 Curve25519，提供 128-bit 安全强度。为什么是 128-bit 而不是 256-bit？因为椭圆曲线算法有个特性：n-bit 密钥提供 n/2 的安全强度。但 128-bit 已经足够了（2^128 ≈ 3.4 × 10^38）。&lt;/p>
+&lt;p>目前已知最快的破解方法是**&amp;ldquo;婴儿步-巨人步&amp;quot;算法**，复杂度 O(√n)，对 256-bit 密钥需要 2^128 次运算。这在当前技术下仍然不可行。&lt;/p>
+&lt;p>&lt;strong>Ed25519 签名&lt;/strong>：&lt;/p>
+&lt;p>同样基于 Curve25519，提供 128-bit 安全强度。相比 RSA-2048，Ed25519 的优势：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">密钥长度：32 字节 vs 256 字节（RSA）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">签名长度：64 字节 vs 256 字节（RSA）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">签名速度：快约 20 倍
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">验证速度：快约 5 倍
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="能做到什么">能做到什么
+&lt;/h3>&lt;h4 id="1-防窃听">1. 防窃听
+&lt;/h4>&lt;p>&lt;strong>攻击场景&lt;/strong>：黑客在网络中间截获你和朋友的所有通信。&lt;/p>
+&lt;p>&lt;strong>防护措施&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>密文用 ChaCha20 加密，黑客只能看到一堆乱码（或者千字文编码后的汉字）&lt;/li>
+&lt;li>没有共享密钥，无法解密&lt;/li>
+&lt;li>即使截获了密钥交换过程（邀请码），也无法推导出共享密钥（ECDH 的数学保证）&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>实际效果&lt;/strong>：黑客能看到你在发消息，但看不到内容。&lt;/p>
+&lt;h4 id="2-防篡改">2. 防篡改
+&lt;/h4>&lt;p>&lt;strong>攻击场景&lt;/strong>：黑客截获密文，修改其中几个字节，再转发给接收方。&lt;/p>
+&lt;p>&lt;strong>防护措施&lt;/strong>：&lt;/p>
+&lt;p>ChaCha20-Poly1305 是&lt;strong>认证加密&lt;/strong>（AEAD），每次加密都会生成一个 MAC（消息认证码）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 加密时
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">encrypted&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">crypto_secretbox_easy&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">plaintext&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">nonce&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">key&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// encrypted = ciphertext + MAC(16字节)
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 解密时
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">try&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">decrypted&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">crypto_secretbox_open_easy&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">encrypted&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">nonce&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">key&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span> &lt;span class="k">catch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">e&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// MAC 验证失败，说明密文被篡改了
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nb">Error&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;密文被篡改&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>MAC 是用密钥和密文计算出来的，黑客改了密文，但不知道密钥，算不出新的 MAC。解密时 MAC 验证会失败。&lt;/p>
+&lt;p>&lt;strong>实际效果&lt;/strong>：任何对密文的修改都会被立即发现，解密会失败。&lt;/p>
+&lt;h4 id="3-防中间人攻击">3. 防中间人攻击
+&lt;/h4>&lt;p>&lt;strong>攻击场景&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">你 ←→ 黑客（伪装成朋友）←→ 朋友
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">你以为在和朋友通信，实际上是在和黑客通信。
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">黑客解密你的消息，再用朋友的密钥重新加密转发。
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>防护措施&lt;/strong>：&lt;/p>
+&lt;p>邀请码包含 Ed25519 数字签名：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">邀请码 = [X25519公钥 | Ed25519公钥 | 签名]
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">签名 = Sign(Ed25519私钥, X25519公钥 + Ed25519公钥)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>朋友收到邀请码后，会验证签名：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">isValid&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">crypto_sign_verify_detached&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">signature&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">X25519PublicKey&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="nx">Ed25519PublicKey&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">Ed25519PublicKey&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="nx">isValid&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">throw&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nb">Error&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;签名验证失败，可能是中间人攻击&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>黑客可以生成自己的密钥对，但他无法用你的 Ed25519 私钥签名（因为他没有）。如果他用自己的私钥签名，验证会失败。&lt;/p>
+&lt;p>&lt;strong>但有个问题&lt;/strong>：首次交换时，你怎么知道收到的邀请码真的是朋友发的？这就需要&lt;strong>带外验证&lt;/strong>（见下面&amp;quot;做不到的&amp;quot;部分）。&lt;/p>
+&lt;h4 id="4-防重放攻击">4. 防重放攻击
+&lt;/h4>&lt;p>&lt;strong>攻击场景&lt;/strong>：黑客截获一条密文&amp;quot;转账 1000 元&amp;rdquo;，过几天再发一次，让你重复转账。&lt;/p>
+&lt;p>&lt;strong>防护措施&lt;/strong>：&lt;/p>
+&lt;p>每次加密都用随机 nonce：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">nonce&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">sodium&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">randombytes_buf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">24&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 192-bit 随机数
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>相同明文 + 不同 nonce = 完全不同的密文。黑客重放旧密文，内容虽然能解密，但应用层可以检测到这是旧消息（比如时间戳）。&lt;/p>
+&lt;p>更重要的是，千字密语主要用于&lt;strong>非实时通信&lt;/strong>（复制密文到微信发送），天然就有时间差。用户看到重复的内容会察觉。&lt;/p>
+&lt;h3 id="做不到什么">做不到什么
+&lt;/h3>&lt;h4 id="1-前向安全forward-secrecy">1. 前向安全（Forward Secrecy）
+&lt;/h4>&lt;p>&lt;strong>问题&lt;/strong>：&lt;/p>
+&lt;p>千字密语用的是&lt;strong>静态密钥对&lt;/strong>。一旦生成，除非删除联系人，否则共享密钥永远不变。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">第 1 条消息：用共享密钥 K 加密
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">第 2 条消息：用共享密钥 K 加密
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">第 100 条消息：还是用共享密钥 K 加密
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如果某天你的私钥泄露了（比如电脑被黑、硬盘被偷），黑客拿到私钥后，可以：&lt;/p>
+&lt;ol>
+&lt;li>用你的私钥 + 对方的公钥 → 计算出共享密钥 K&lt;/li>
+&lt;li>解密所有历史消息（如果黑客之前截获并保存了密文）&lt;/li>
+&lt;/ol>
+&lt;p>&lt;strong>Signal 的解决方案&lt;/strong>：&lt;/p>
+&lt;p>Signal 用的是&lt;strong>双棘轮算法&lt;/strong>（Double Ratchet）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">第 1 条消息：生成临时密钥 K1，加密后立即销毁
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">第 2 条消息：生成新的临时密钥 K2，加密后立即销毁
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">第 3 条消息：生成新的临时密钥 K3，加密后立即销毁
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>每条消息用不同的密钥，用完就销毁。即使今天的私钥泄露，也无法解密昨天的消息（因为昨天的密钥已经销毁了）。&lt;/p>
+&lt;p>&lt;strong>为什么不实现&lt;/strong>：&lt;/p>
+&lt;p>双棘轮算法需要维护复杂的密钥链状态，适合实时通信。千字密语是&lt;strong>异步通信&lt;/strong>（复制密文到微信），实现双棘轮会复杂很多。而且作为学习项目，先把基础做扎实更重要。&lt;/p>
+&lt;h4 id="2-元数据保护">2. 元数据保护
+&lt;/h4>&lt;p>&lt;strong>问题&lt;/strong>：&lt;/p>
+&lt;p>千字密语只加密&lt;strong>内容&lt;/strong>，不加密&lt;strong>元数据&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">微信/QQ 能看到：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 你和谁在聊（联系人）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 什么时候聊（时间戳）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 聊了多少条（消息数量）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 消息长度（字符数）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">微信/QQ 看不到：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 具体内容
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>攻击场景&lt;/strong>：&lt;/p>
+&lt;p>即使内容加密了，光看元数据也能推断很多信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">分析 1：你每天晚上 10 点和同一个人聊天，持续一个月
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> → 推测：可能是恋人关系
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">分析 2：你突然给 20 个人发了同样长度的消息
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> → 推测：可能是群发通知
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">分析 3：你和某人的消息突然从每天 50 条降到 0 条
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> → 推测：可能关系破裂
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>Tor/VPN 的解决方案&lt;/strong>：&lt;/p>
+&lt;p>Tor 通过&lt;strong>洋葱路由&lt;/strong>隐藏通信关系：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">你 → 节点 A → 节点 B → 节点 C → 对方
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">节点 A 知道：你在发消息，但不知道发给谁
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">节点 B 知道：有人在转发，但不知道是谁发的、发给谁
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">节点 C 知道：要转发给对方，但不知道是谁发的
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>但 Tor 需要网络基础设施，不适合&amp;quot;复制密文到微信&amp;quot;的使用场景。&lt;/p>
+&lt;h4 id="3-首次密钥交换的信任问题">3. 首次密钥交换的信任问题
+&lt;/h4>&lt;p>&lt;strong>问题&lt;/strong>：&lt;/p>
+&lt;p>第一次交换密钥时，你怎么确认邀请码真的是朋友发的，而不是黑客伪造的？&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">场景：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">1. 朋友生成邀请码，发到微信
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">2. 黑客截获，替换成自己的邀请码
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">3. 你收到黑客的邀请码，以为是朋友的
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">4. 密钥交换成功，但你实际上是在和黑客通信
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>虽然有 Ed25519 签名，但签名只能证明&amp;quot;邀请码没被篡改&amp;quot;，不能证明&amp;quot;邀请码是朋友生成的&amp;quot;。&lt;/p>
+&lt;p>&lt;strong>业界解决方案&lt;/strong>：&lt;/p>
+&lt;p>&lt;strong>公钥指纹（Fingerprint）&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 生成指纹（公钥的哈希）
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">function&lt;/span> &lt;span class="nx">generateFingerprint&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">publicKey&lt;/span>: &lt;span class="kt">Uint8Array&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="kt">string&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">hash&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">crypto&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">createHash&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;sha256&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">update&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">publicKey&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">digest&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nx">hash&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">toString&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;hex&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">toUpperCase&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="nx">match&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sr">/.{4}/g&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">join&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39; &amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 输出示例：
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// A3B2 C4D1 E5F6 G7H8 I9J0 K1L2 M3N4 O5P6
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>朋友生成邀请码后，通过&lt;strong>其他渠道&lt;/strong>（面对面、电话）告诉你指纹的前几位。你收到邀请码后，计算指纹，对比前几位是否一致。&lt;/p>
+&lt;p>Signal 的做法：双方扫描对方的 QR 码，QR 码里包含公钥指纹。&lt;/p>
+&lt;p>&lt;strong>千字密语的现状&lt;/strong>：&lt;/p>
+&lt;p>目前没有实现指纹验证，靠用户自己通过可信渠道（面对面）交换邀请码。这是个明显的安全短板，后续会加上。&lt;/p>
+&lt;h4 id="4-数据库未加密">4. 数据库未加密
+&lt;/h4>&lt;p>&lt;strong>问题&lt;/strong>：&lt;/p>
+&lt;p>联系人信息存在 SQLite 数据库里，文件位置：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">macOS: ~/Library/Application Support/千字密语/database.db
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这个数据库&lt;strong>没有加密&lt;/strong>，直接用 SQLite 工具就能打开，看到：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sql" data-lang="sql">&lt;span class="line">&lt;span class="cl">&lt;span class="k">SELECT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">*&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">FROM&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">contacts&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">-- 结果：所有联系人的名字、公钥、创建时间
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>虽然私钥本身是加密存储的（用 libsodium 加密），但联系人列表是明文的。&lt;/p>
+&lt;p>&lt;strong>风险&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>电脑被偷，盗贼能看到你的联系人列表&lt;/li>
+&lt;li>恶意软件能扫描数据库文件，获取联系人信息&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>解决方案&lt;/strong>：&lt;/p>
+&lt;p>用 &lt;strong>SQLCipher&lt;/strong> 加密整个数据库：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-typescript" data-lang="typescript">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">import&lt;/span> &lt;span class="nx">Database&lt;/span> &lt;span class="kr">from&lt;/span> &lt;span class="s1">&amp;#39;better-sqlite3&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">db&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">Database&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;database.db&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">db&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">pragma&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;key = &amp;#34;用户密码&amp;#34;&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 设置加密密钥
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">db&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">pragma&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;cipher = &amp;#34;aes-256-cbc&amp;#34;&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>但这需要用户设置主密码，增加了使用复杂度。目前优先保证核心加密功能，数据库加密留到后续版本。&lt;/p>
+&lt;h3 id="千字文编码的安全性">千字文编码的安全性
+&lt;/h3>&lt;p>&lt;strong>不是加密算法&lt;/strong>：&lt;/p>
+&lt;p>重要的是理解千字文编码只是&lt;strong>编码&lt;/strong>（Encoding），不是&lt;strong>加密&lt;/strong>（Encryption）。它的作用是：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">Base64: SGVsbG8gV29ybGQ= ← 一眼看出是编码
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">千字文: 闰余成岁律吕调阳 ← 看起来像古文
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>防护效果&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>✅ 避免被微信自动检测为&amp;quot;加密内容&amp;quot;&lt;/li>
+&lt;li>✅ 人工审查时不那么显眼&lt;/li>
+&lt;li>❌ 不增加破解难度（知道字典就能解码）&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>统计分析的弱点&lt;/strong>：&lt;/p>
+&lt;p>正常中文有明显的字频分布：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">高频字：的(7.9%)、一(3.1%)、是(2.4%)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">低频字：生僻字(&amp;lt; 0.01%)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>千字文编码的字频是均匀的（每个字出现概率 1/256 = 0.39%）。如果有人用工具分析字频，能发现异常：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 伪代码&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">text&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;闰余成岁律吕调阳云腾致雨...&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">freq&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">calculate_frequency&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">text&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="n">is_uniform_distribution&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">freq&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;这不是正常中文，可能是编码&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>但微信不太可能做这种深度分析（成本太高）。而且即使发现了，最多也就是&amp;quot;疑似加密内容&amp;quot;，仍然看不到明文。&lt;/p>
+&lt;h3 id="量子计算的威胁">量子计算的威胁
+&lt;/h3>&lt;p>&lt;strong>当前状态&lt;/strong>：千字密语用的算法（ChaCha20、X25519、Ed25519）在传统计算机上是安全的。&lt;/p>
+&lt;p>&lt;strong>量子威胁&lt;/strong>：&lt;/p>
+&lt;p>量子计算机对&lt;strong>非对称加密&lt;/strong>有颠覆性影响：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">Shor 算法（1994 年提出）：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 可以在多项式时间内分解大整数（破解 RSA）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 可以在多项式时间内求解离散对数（破解 ECDH、ECDSA）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Grover 算法（1996 年提出）：
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">- 可以在 O(√N) 时间内搜索（对对称加密影响较小）
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>具体到千字密语：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">X25519 密钥交换：❌ 量子计算机可以破解（Shor 算法）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Ed25519 签名：❌ 量子计算机可以伪造签名（Shor 算法）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">ChaCha20 加密：⚠️ 安全强度降低一半（256-bit → 128-bit）
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>时间线&lt;/strong>：&lt;/p>
+&lt;p>目前最大的量子计算机（2024 年）只有几百个量子比特，破解 256-bit ECC 需要数千个&lt;strong>稳定&lt;/strong>量子比特。专家估计：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">乐观估计：10-15 年内实现
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">保守估计：20-30 年内实现
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>后量子方案&lt;/strong>：&lt;/p>
+&lt;p>NIST 已经标准化了几个后量子算法：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">密钥交换：CRYSTALS-Kyber（基于格密码）
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">数字签名：CRYSTALS-Dilithium（基于格密码）
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>但这些算法：&lt;/p>
+&lt;ul>
+&lt;li>密钥长度更大（1-2KB vs 32 字节）&lt;/li>
+&lt;li>性能较慢（慢 2-10 倍）&lt;/li>
+&lt;li>还在测试阶段&lt;/li>
+&lt;/ul>
+&lt;p>等这些算法成熟后，可以升级千字密语。&lt;/p>
+&lt;h3 id="实用安全建议">实用安全建议
+&lt;/h3>&lt;p>基于以上分析，给用户的建议：&lt;/p>
+&lt;p>&lt;strong>✅ 适合用千字密语的场景&lt;/strong>：&lt;/p>
+&lt;ol>
+&lt;li>在微信/QQ 上发送比特币助记词、私钥&lt;/li>
+&lt;li>临时分享密码、API Key&lt;/li>
+&lt;li>发送敏感文档的加密版本&lt;/li>
+&lt;li>不希望聊天记录被平台分析的私密对话&lt;/li>
+&lt;/ol>
+&lt;p>&lt;strong>❌ 不适合的场景&lt;/strong>：&lt;/p>
+&lt;ol>
+&lt;li>长期、高频的通信（没有前向安全）&lt;/li>
+&lt;li>需要隐藏通信关系的场景（没有元数据保护）&lt;/li>
+&lt;li>需要抗国家级攻击的场景（用 Signal + Tor）&lt;/li>
+&lt;/ol>
+&lt;p>&lt;strong>安全实践&lt;/strong>：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>首次密钥交换&lt;/strong>：通过可信渠道（面对面、视频通话）确认邀请码&lt;/li>
+&lt;li>&lt;strong>定期更换密钥&lt;/strong>：删除联系人重新添加，生成新的密钥对&lt;/li>
+&lt;li>&lt;strong>保护私钥&lt;/strong>：
+&lt;ul>
+&lt;li>不要在公共电脑上使用&lt;/li>
+&lt;li>定期备份数据库文件&lt;/li>
+&lt;li>考虑用磁盘加密（FileVault、BitLocker）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;strong>验证解密结果&lt;/strong>：如果解密出来是乱码，可能是密文被篡改或用错了联系人&lt;/li>
+&lt;/ol>
+&lt;h3 id="与其他方案的对比">与其他方案的对比
+&lt;/h3>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>特性&lt;/th>
+&lt;th>千字密语&lt;/th>
+&lt;th>Signal&lt;/th>
+&lt;th>PGP&lt;/th>
+&lt;th>微信/QQ&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>端到端加密&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>前向安全&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>元数据保护&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>部分&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>无需注册&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>密文伪装&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>-&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>使用难度&lt;/td>
+&lt;td>低&lt;/td>
+&lt;td>低&lt;/td>
+&lt;td>高&lt;/td>
+&lt;td>低&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>群组支持&lt;/td>
+&lt;td>❌&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;td>✅&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>结论&lt;/strong>：&lt;/p>
+&lt;p>千字密语是一个&lt;strong>权衡方案&lt;/strong>。它牺牲了一些高级安全特性（前向安全、元数据保护），换来了：&lt;/p>
+&lt;ul>
+&lt;li>无需注册（不依赖服务器）&lt;/li>
+&lt;li>跨平台传输（密文可以在任何地方发）&lt;/li>
+&lt;li>简单易用（复制粘贴即可）&lt;/li>
+&lt;/ul>
+&lt;p>理解这些边界后，在合适的场景使用，仍然能显著提升安全性。&lt;/p>
+&lt;hr>
+&lt;h2 id="学习总结">学习总结
+&lt;/h2>&lt;p>通过研究这个项目，我对端到端加密有了更深的理解。&lt;/p>
+&lt;h3 id="学到的关键点">学到的关键点
+&lt;/h3>&lt;p>&lt;strong>ECDH 密钥协商&lt;/strong>：一开始我以为混合加密是&amp;quot;生成随机密钥 K，用公钥加密 K&amp;quot;。实际上 ECDH 是双方各自生成密钥对，交换公钥，然后用&amp;quot;我的私钥+对方公钥&amp;quot;算出共享密钥。这个过程&lt;strong>密钥永远不传输&lt;/strong>。我卡住的地方是：为什么双方算出来的密钥一样？查资料才知道这是椭圆曲线的交换律。&lt;/p>
+&lt;p>&lt;strong>数字签名的本质&lt;/strong>：很多文章说&amp;quot;签名是用私钥加密&amp;quot;，这不对。实际是用私钥生成指纹，别人用公钥验证。验证返回 &lt;code>true/false&lt;/code>，不是&amp;quot;解密出消息&amp;quot;。这个概念困扰了我很久。&lt;/p>
+&lt;p>&lt;strong>为什么要两对密钥&lt;/strong>：Ed25519（签名）+ X25519（密钥交换）。原因：算法不同不能混用；职责分离，泄露一个不影响另一个；密码学原则，同一密钥用于不同目的容易被攻击。&lt;/p>
+&lt;p>&lt;strong>语义安全和认证加密&lt;/strong>：nonce 让相同明文每次产生不同密文，这叫语义安全。MAC 需要密钥，不是 CRC，黑客改密文算不出新 MAC。我试过手动改密文，解密立即报错&amp;quot;MAC 验证失败&amp;quot;。&lt;/p>
+&lt;p>&lt;strong>千字文编码的意义&lt;/strong>：一开始觉得&amp;quot;花里胡哨&amp;quot;。后来明白这是流量伪装，降低被微信检测为&amp;quot;加密内容&amp;quot;的概率。不增加破解难度，但人工看起来像古文摘抄。&lt;/p>
+&lt;p>&lt;strong>几个工程经验&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>性能优化要测：Map 比数组快 10 倍（15ms vs 150ms），但要用数据支撑&lt;/li>
+&lt;li>错误处理很重要：用户会多复制空格、微信会插入不可见字符、会用错联系人&lt;/li>
+&lt;li>不要造轮子：加密算法用成熟的库，自己实现容易出侧信道攻击的 bug&lt;/li>
+&lt;/ul>
+&lt;h3 id="项目定位与局限性">项目定位与局限性
+&lt;/h3>&lt;p>千字密语填补的是细分场景：在微信/QQ 上安全发送比特币助记词、API Key 这类敏感信息。&lt;/p>
+&lt;p>它是 Signal 和明文之间的&lt;strong>折中方案&lt;/strong>。做好了前几层防护（ChaCha20、ECDH、Ed25519、Poly1305、随机 nonce），但应用层有短板：&lt;/p>
+&lt;ul>
+&lt;li>数据库未加密（联系人列表可见）&lt;/li>
+&lt;li>没有公钥指纹验证（首次交换需要带外认证）&lt;/li>
+&lt;li>无前向安全（私钥泄露，历史消息能被解密）&lt;/li>
+&lt;/ul>
+&lt;p>安全是多层防护，任何一层出问题整个系统都可能被攻破。理解工具的&lt;strong>边界&lt;/strong>比什么都重要。&lt;/p>
+&lt;h3 id="可能的改进方向">可能的改进方向
+&lt;/h3>&lt;p>&lt;strong>公钥指纹验证&lt;/strong>：现在首次密钥交换没有验证机制，靠用户自己通过可信渠道（面对面）确认。可以加个功能：生成公钥的 SHA-256 指纹，显示成 QR 码。双方扫描对方的 QR 码，对比前几位是否一致。Signal 就是这么做的。技术上不难，主要是 UI 设计。&lt;/p>
+&lt;p>&lt;strong>数据库加密&lt;/strong>：现在联系人列表明文存储在 SQLite 里。电脑被偷，盗贼能看到你的联系人。可以用 SQLCipher，给数据库设个主密码。但这增加了使用复杂度（用户要记密码），而且启动时要输入密码。是不是值得？我还在纠结。&lt;/p>
+&lt;p>&lt;strong>前向安全&lt;/strong>：现在用静态密钥对，私钥泄露历史消息全完。Signal 的双棘轮算法能解决：每条消息用不同的临时密钥，用完就销毁。但实现很复杂：要维护密钥链状态、处理消息乱序、离线消息怎么办。而且千字密语是异步通信（复制密文到微信），不像 Signal 那样实时。双棘轮可能不太适合。&lt;/p>
+&lt;p>&lt;strong>后量子算法&lt;/strong>：10-20 年内量子计算机可能破解 ECDH。NIST 已经标准化了 CRYSTALS-Kyber（密钥交换）和 Dilithium（签名）。但这些算法密钥很大（1-2KB），性能慢 2-10 倍。等它们成熟稳定了再说。&lt;/p>
+&lt;p>这些改进都有价值，但也都增加复杂度。目前最重要的是把基础功能做扎实，修复已知的短板（公钥指纹验证、数据库加密）。前向安全和群组加密留到后面再说。&lt;/p>
+&lt;h2 id="参考资料">参考资料
+&lt;/h2>&lt;ul>
+&lt;li>&lt;a class="link" href="https://github.com/wifi504/translate-ha-jimi" target="_blank" rel="noopener"
+>原项目 - translate-ha-jimi&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://libsodium.gitbook.io/" target="_blank" rel="noopener"
+>libsodium 文档&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://signal.org/docs/" target="_blank" rel="noopener"
+>Signal Protocol 白皮书&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://cr.yp.to/ecdh.html" target="_blank" rel="noopener"
+>Curve25519 论文&lt;/a>&lt;/li>
+&lt;/ul></description></item></channel></rss>

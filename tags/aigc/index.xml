@@ -1,0 +1,909 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>AIGC on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/aigc/</link><description>Recent content in AIGC on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Thu, 19 Dec 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/aigc/index.xml" rel="self" type="application/rss+xml"/><item><title>实用深度学习 Part1-1.入门</title><link>https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/</link><pubDate>Thu, 19 Dec 2024 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/</guid><description>&lt;h1 id="它是一只鸟吗-从您自己的数据创建模型">它是一只鸟吗？ 从您自己的数据创建模型
+&lt;/h1>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">#NB: Kaggle requires phone verification to use the internet or a GPU. If you haven&amp;#39;t done that yet, the cell below will fail&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># This code is only here to check that your internet is enabled. It doesn&amp;#39;t do anything else.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Here&amp;#39;s a help thread on getting your phone number verified: https://www.kaggle.com/product-feedback/135367&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">socket&lt;/span>&lt;span class="o">,&lt;/span>&lt;span class="nn">warnings&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">try&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">setdefaulttimeout&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">socket&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">AF_INET&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">SOCK_STREAM&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">connect&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="s1">&amp;#39;1.1.1.1&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">53&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">except&lt;/span> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">error&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">ex&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="k">raise&lt;/span> &lt;span class="ne">Exception&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;STOP: No internet. Click &amp;#39;&amp;gt;|&amp;#39; in top right and set &amp;#39;Internet&amp;#39; switch to on&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># It&amp;#39;s a good idea to ensure you&amp;#39;re running the latest version of any libraries you need.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># `!pip install -Uqq &amp;lt;libraries&amp;gt;` upgrades to the latest version of &amp;lt;libraries&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># NB: You can safely ignore any warnings or errors pip spits out about running as root or incompatibilities&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">os&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">iskaggle&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">os&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">environ&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;KAGGLE_KERNEL_RUN_TYPE&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="n">iskaggle&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="err">!&lt;/span>&lt;span class="n">pip&lt;/span> &lt;span class="n">install&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">Uqq&lt;/span> &lt;span class="n">fastai&lt;/span> &lt;span class="s1">&amp;#39;duckduckgo_search&amp;gt;=6.2&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>2015 年，创建一个可以识别鸟类的计算机系统的想法被认为非常具有挑战性，以至于它成为这个 XKCD 笑话的基础：&lt;/p>
+&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219180609.png"
+width="606"
+height="489"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219180609_hu3323407491388893832.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219180609_hu1595402411412305774.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="123"
+data-flex-basis="297px"
+>&lt;/p>
+&lt;p>但今天，我们只需几分钟就可以使用完全免费的资源做到这一点！
+我们将采取的基本步骤是：&lt;/p>
+&lt;ol>
+&lt;li>使用 DuckDuckGo 搜索“鸟照片”的图片&lt;/li>
+&lt;li>使用 DuckDuckGo 搜索“森林照片”的图片&lt;/li>
+&lt;li>微调预训练的神经网络以识别这两组&lt;/li>
+&lt;li>尝试在鸟的图片上运行此模型，看看它是否有效。&lt;/li>
+&lt;/ol>
+&lt;h2 id="step-1-下载鸟类和非鸟类的图像">Step 1: 下载鸟类和非鸟类的图像
+&lt;/h2>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">duckduckgo_search&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">DDGS&lt;/span> &lt;span class="c1">#DuckDuckGo has changed the api so we need to update &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">fastcore.all&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="o">*&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">keywords&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_images&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">200&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">L&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DDGS&lt;/span>&lt;span class="p">()&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">keywords&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_results&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">max_images&lt;/span>&lt;span class="p">))&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">itemgot&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;image&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">time&lt;/span>&lt;span class="o">,&lt;/span> &lt;span class="nn">json&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>让我们从搜索鸟照片开始，看看我们得到什么样的结果。我们首先从搜索中获取 URL：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">#NB: `search_images` depends on duckduckgo.com, which doesn&amp;#39;t always return correct responses.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># If you get a JSON error, just try running it again (it may take a couple of tries).&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">urls&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;bird photos&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_images&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">urls&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">&amp;#39;https://images.pexels.com/photos/326900/pexels-photo-326900.jpeg?cs=srgb&amp;amp;dl=wood-flight-bird-326900.jpg&amp;amp;fm=jpg&amp;#39;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&amp;hellip;然后下载图片并查看它：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">fastdownload&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">download_url&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">dest&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;bird.jpg&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">download_url&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">urls&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">dest&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">show_progress&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">False&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">fastai.vision.all&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="o">*&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">im&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">Image&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">open&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dest&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">im&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">to_thumb&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181231.png"
+width="256"
+height="171"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181231_hu11753680461174853147.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181231_hu11827023049726065876.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="149"
+data-flex-basis="359px"
+>&lt;/p>
+&lt;p>现在让我们下载“森林照片”并压缩事情：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">download_url&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;forest photos&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_images&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">)[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="s1">&amp;#39;forest.jpg&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">show_progress&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">False&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Image&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">open&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;forest.jpg&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">to_thumb&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181346.png"
+width="256"
+height="144"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181346_hu4261206687157492178.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181346_hu17184510574698968972.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="177"
+data-flex-basis="426px"
+>&lt;/p>
+&lt;p>我们搜索到了想要的结果，所以让我们再多下载一些“鸟”和“森林”的照片，并将它们保存到不同的文件夹中：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">searches&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;forest&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="s1">&amp;#39;bird&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">path&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">Path&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;bird_or_not&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">for&lt;/span> &lt;span class="n">o&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="n">searches&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">dest&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">dest&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">mkdir&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">exist_ok&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">True&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">parents&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">True&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">download_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dest&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">urls&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s1">&amp;#39;&lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s1"> photo&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">time&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sleep&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">5&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">resize_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_size&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">400&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dest&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="step-2-训练我们的模型">Step 2: 训练我们的模型
+&lt;/h2>&lt;p>有些照片可能无法正确下载，这可能会导致模型训练失败，因此需要删除它们：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">failed&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">verify_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">get_image_files&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">failed&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">map&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Path&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">unlink&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">failed&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>为了训练模型，我们需要 &lt;code>DataLoaders&lt;/code>，它是一个包含训练集（用于创建模型的图像）和验证集（用于检查模型准确性的图像&amp;ndash;训练期间未使用的数据）。 在 &lt;code>fastai&lt;/code> 中，我们可以使用 &lt;code>DataBlock&lt;/code> 轻松创建它，并从中查看示例图像：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">dls&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">DataBlock&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">blocks&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ImageBlock&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">CategoryBlock&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">get_items&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">get_image_files&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">splitter&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">RandomSplitter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">valid_pct&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mf">0.2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">seed&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">42&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">get_y&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">parent_label&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">item_tfms&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">Resize&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">192&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">method&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;squish&amp;#39;&lt;/span>&lt;span class="p">)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">dataloaders&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">bs&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">32&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">dls&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">show_batch&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">max_n&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">6&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219182854.png"
+width="717"
+height="499"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219182854_hu14700026338536030349.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219182854_hu17290892737116787282.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="143"
+data-flex-basis="344px"
+>&lt;/p>
+&lt;p>每个 &lt;code>DataBlock&lt;/code> 参数的含义如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">blocks=(ImageBlock, CategoryBlock),
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>我们模型的输入是图像，输出是类别（在本例中为“鸟”或“森林”）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">get_items=get_image_files,
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>要查找模型的所有输入，请运行 &lt;code>get_image_files&lt;/code> 函数（它返回路径中所有图像文件的列表）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">splitter=RandomSplitter(valid_pct=0.2, seed=42),
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>将数据随机分为训练集和验证集，使用 20% 的数据作为验证集。&lt;code>seed&lt;/code>是随机数种子，一般是一个固定的整数，它用来初始化生成随机数的算法。通过设置相同的种子，你可以确保在不同的机器或者不同的时间执行相同的代码时，得到相同的随机结果。42 是一个常见的随机数种子（也许有些人觉得它是一个“神秘的”数字），其实可以使用任何整数值，只要它们固定，就能保证一致的划分结果。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">get_y=parent_label,
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>标签（&lt;code>y&lt;/code> 值）是每个文件的 &lt;code>parent&lt;/code> 的名称（即它们所在的文件夹的名称，可以是 &lt;code>bird&lt;/code> 或 &lt;code>forest&lt;/code>）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">item_tfms=[Resize(192, method=&amp;#39;squish&amp;#39;)]
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Before training, resize each image to 192x192 pixels by &amp;ldquo;squishing&amp;rdquo; it (as opposed to cropping it).&lt;br>
+在训练之前，通过&lt;code>squish&lt;/code>图像（而不是裁剪图像）将每个图像的大小调整为 192x192 像素。&lt;/p>
+&lt;p>现在我们准备好训练我们的模型了。 最快广泛使用的计算机视觉模型是&lt;code>resnet18&lt;/code>。 即使在 CPU 上，也可以在几分钟内对其进行训练！ （在 GPU 上，通常需要不到 10 秒&amp;hellip;&amp;hellip;）&lt;/p>
+&lt;p>&lt;code>fastai&lt;/code> 附带了一个有用的 &lt;code>fine_tune()&lt;/code> 方法，该方法自动使用最佳实践来微调预训练模型，因此我们将使用它。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">learn&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">vision_learner&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dls&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">resnet18&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">metrics&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">error_rate&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">learn&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">fine_tune&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>• 参数3表示: 这个参数表示微调的训练轮数（epochs）。在这里，模型会在数据集上进行 3 个训练周期（epochs）的微调。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">Downloading&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://download.pytorch.org/models/resnet18-f37072fd.pth&amp;#34;&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">root&lt;/span>&lt;span class="o">/.&lt;/span>&lt;span class="n">cache&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">torch&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">hub&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">checkpoints&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">resnet18&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">f37072fd&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">pth&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">100&lt;/span>&lt;span class="o">%|&lt;/span>&lt;span class="err">██████████&lt;/span>&lt;span class="o">|&lt;/span> &lt;span class="mf">44.7&lt;/span>&lt;span class="n">M&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">44.7&lt;/span>&lt;span class="n">M&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="o">&amp;lt;&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mf">84.4&lt;/span>&lt;span class="n">MB&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>epoch&lt;/th>
+&lt;th>train_loss&lt;/th>
+&lt;th>valid_loss&lt;/th>
+&lt;th>error_rate&lt;/th>
+&lt;th>time&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>0.783741&lt;/td>
+&lt;td>0.634016&lt;/td>
+&lt;td>0.214286&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>epoch&lt;/th>
+&lt;th>train_loss&lt;/th>
+&lt;th>valid_loss&lt;/th>
+&lt;th>error_rate&lt;/th>
+&lt;th>time&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>0.045509&lt;/td>
+&lt;td>0.020604&lt;/td>
+&lt;td>0.000000&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>0.026428&lt;/td>
+&lt;td>0.000642&lt;/td>
+&lt;td>0.000000&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>0.017754&lt;/td>
+&lt;td>0.000184&lt;/td>
+&lt;td>0.000000&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>一般来说，当我运行此程序时，我会看到验证集的准确性为 100%（尽管每次运行可能会有所不同）。
+“微调”模型意味着我们从其他人使用其他数据集训练的模型（称为预训练模型）开始，并稍微调整权重，以便模型学会识别您的特定数据集。 在本例中，预训练模型经过训练，可以识别 imagenet 中的照片以及广泛使用的计算机视觉数据集，其中图像涵盖 1000 个类别）有关微调的详细信息及其重要性，请查看免费的 &lt;a class="link" href="https://course.fast.ai/" target="_blank" rel="noopener"
+>fast.ai课程&lt;/a>。&lt;/p>
+&lt;h2 id="step-3-第-3-步使用我们的模型构建您自己的模型">Step 3: 第 3 步：使用我们的模型（构建您自己的模型！）
+&lt;/h2>&lt;p>让我们看看我们的模型对我们一开始下载的那只鸟有什么看法：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">is_bird&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="n">_&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="n">probs&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">learn&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">predict&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">PILImage&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">create&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;bird.jpg&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s2">&amp;#34;This is a: &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">is_bird&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">.&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s2">&amp;#34;Probability it&amp;#39;s a bird: &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">probs&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="si">:&lt;/span>&lt;span class="s2">.4f&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">This is a: bird.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Probability it&amp;#39;s a bird: 1.0000
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Good job, resnet18&lt;/p>
+&lt;p>因此，正如所看到的，在几年的时间里，创建计算机视觉分类模型已经从“难得像一个笑话”变成了“非常简单且免费”！
+这不仅仅是在计算机视觉领域。 得益于深度学习，计算机现在可以做许多几年前看似不可能的事情，包括&lt;a class="link" href="https://openai.com/dall-e-2/" target="_blank" rel="noopener"
+>创作令人惊叹的艺术品&lt;/a>和&lt;a class="link" href="https://www.datanami.com/2022/04/22/googles-massive-new-language-model-can-explain-jokes/" target="_blank" rel="noopener"
+>解释笑话&lt;/a>。 它的发展速度如此之快，以至于即使是该领域的专家也很难预测它在未来几年将如何影响社会。
+有一点很明确——我们所有人都必须尽力理解这项技术，这一点很重要，否则我们就会落后！&lt;/p>
+&lt;p>现在轮到你了。 单击&lt;a class="link" href="https://www.kaggle.com/code/jhoward/is-it-a-bird-creating-a-model-from-your-own-data" target="_blank" rel="noopener"
+>此页面&lt;/a>的“Copy &amp;amp; Edit”并尝试使用您自己的图像搜索创建您自己的图像分类器！&lt;/p>
+&lt;p>如果您喜欢这个，请考虑点击右上角的“投票”按钮——知道人们何时欣赏我们的工作对我们笔记本作者来说是非常鼓舞人心的。&lt;/p></description></item><item><title>基于 MMS 模型的印尼语微调</title><link>https://cyber-blog.github.io/p/finetune-vits-mms-id/</link><pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/finetune-vits-mms-id/</guid><description>&lt;img src="https://cyber-blog.github.io/p/finetune-vits-mms-id/cover.png" alt="Featured image of post 基于 MMS 模型的印尼语微调" />&lt;p>VITS 是一种用于英语文本转语音 （TTS） 的轻量级、低延迟模型。
+大规模多语言语音 （MMS） 是 VITS 的多语言 TTS 扩展，支持 1100 多种语言。&lt;/p>
+&lt;p>两者都使用相同的底层 VITS 架构，由一个鉴别器和一个用于基于 GAN 的训练的生成器组成。它们的标记器不同：VITS 标记器将英语输入文本转换为音素，而 MMS 标记器将输入文本转换为基于字符的标记。&lt;/p>
+&lt;p>如果要使用宽松的英语 TTS 模型，则应微调基于 VITS 的 checkpoint，并针对所有其他情况微调基于 MMS 的检查点。
+针对印尼语的训练选择 &lt;a class="link" href="https://huggingface.co/fadhilamri/mms-tts-ind-train" target="_blank" rel="noopener"
+>mms-tts-ind-train&lt;/a>checkpoint&lt;/p>
+&lt;p>结合正确的数据和以下训练方法，您可以在 20 分钟内获得每个 VITS/MMS 检查点的出色微调版本，只需 80 到 150 个样本。&lt;/p>
+&lt;p>微调 VITS 或 MMS 需要按连续顺序完成多个阶段：&lt;/p>
+&lt;ol>
+&lt;li>&lt;a class="link" href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#1-requirements" target="_blank" rel="noopener"
+>Install requirements&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#2-model-selection" target="_blank" rel="noopener"
+>Choose or create the initial model&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#3-finetuning" target="_blank" rel="noopener"
+>Finetune the model&lt;/a> &lt;/li>
+&lt;li>&lt;a class="link" href="https://github.com/ylacombe/finetune-hf-vits?tab=readme-ov-file#4-inference" target="_blank" rel="noopener"
+>Optional - how to use the finetuned model&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h4 id="安装-requirements">安装 requirements
+&lt;/h4>&lt;ol start="0">
+&lt;li>克隆仓库并 install，确保&lt;code>python &amp;gt;= 3.10&lt;/code>&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">git&lt;/span> &lt;span class="n">clone&lt;/span> &lt;span class="n">git&lt;/span>&lt;span class="nd">@github.com&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="n">ylacombe&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">finetune&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">hf&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">vits&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">git&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">cd&lt;/span> &lt;span class="n">finetune&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">hf&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">vits&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">pip&lt;/span> &lt;span class="n">install&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="n">requirements&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">txt&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ol>
+&lt;li>链接您的 Hugging Face 帐户，以便您可以在 Hub 上拉取/推送模型仓库。这将使您能够在 Hub 上保存微调的权重，以便您可以与社区共享它们并轻松重复使用它们。运行以下命令：&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">git config --global credential.helper store
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">huggingface-cli login
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ol start="2">
+&lt;li>
+&lt;p>然后输入 &lt;a class="link" href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener"
+>https://huggingface.co/settings/tokens&lt;/a> 的身份验证令牌。如果还没有令牌，请创建一个新令牌。您应确保此令牌具有“写入”权限。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>使用 Cython 构建&lt;code>monotonic alignment search function&lt;/code>。这是绝对必要的，因为 Python 原生版本非常慢。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Cython-version Monotonoic Alignment Search&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> monotonic_align
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">mkdir monotonic_align
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">python setup.py build_ext --inplace
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> ..
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ol start="4">
+&lt;li>（可选）如果您使用的是原始 VITS 检查点，而不是 MMS 检查点，请安装&lt;code>phonemizer&lt;/code>。
+按照&lt;a class="link" href="https://bootphon.github.io/phonemizer/install.html" target="_blank" rel="noopener"
+>此处&lt;/a>指示的步骤操作。
+例如，如果你在 Debian/Unbuntu 上：&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Install dependencies&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sudo apt-get install festival espeak-ng mbrola
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Install phonemizer&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pip install phonemizer
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;pre>&lt;code>更多细节
+某些语言要求在将文本提供给 `VitsTokenizer` 之前使用 `uroman`，因为目前分词器本身不支持执行预处理。
+为此，您需要将 uroman 仓库克隆到本地计算机，并将 bash 变量 UROMAN 设置为本地路径：
+&lt;/code>&lt;/pre>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">git clone https://github.com/isi-nlp/uroman.git
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> uroman
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">export&lt;/span> &lt;span class="nv">UROMAN&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="k">$(&lt;/span>&lt;span class="nb">pwd&lt;/span>&lt;span class="k">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;pre>&lt;code>剩下的就是由训练脚本来处理了。
+&lt;/code>&lt;/pre>
+&lt;h4 id="选择模型">选择模型
+&lt;/h4>&lt;p>如果需要的 &lt;code>checkpoint&lt;/code> 已经存在。&lt;/p>
+&lt;p>目前一些&lt;code>checkpoint&lt;/code>已经可用，参照如下列表可以在 Hugging Face 搜索
+可以列表&lt;/p>
+&lt;ul>
+&lt;li>English
+&lt;ul>
+&lt;li>&lt;code>ylacombe/vits-ljs-with-discriminator&lt;/code> (确保 &lt;a class="link" href="https://bootphon.github.io/phonemizer/install.html" target="_blank" rel="noopener"
+>phonemizer&lt;/a>已安装) - 非常适合单一声音微调&lt;/li>
+&lt;li>&lt;code>ylacombe/vits-vctk-with-discriminator&lt;/code> (确保 &lt;a class="link" href="https://bootphon.github.io/phonemizer/install.html" target="_blank" rel="noopener"
+>phonemizer&lt;/a>已安装) - 适用于多声音英语微调。&lt;/li>
+&lt;li>&lt;code>ylacombe/mms-tts-eng-train&lt;/code> - 如果您想避免使用 &lt;code>phonemizer&lt;/code> 包。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>Spanish - &lt;code>ylacombe/mms-tts-spa-train&lt;/code> 西班牙语&lt;/li>
+&lt;li>Korean - &lt;code>ylacombe/mms-tts-kor-train&lt;/code> 韩语&lt;/li>
+&lt;li>Marathi - &lt;code>ylacombe/mms-tts-mar-train&lt;/code> 马拉地语&lt;/li>
+&lt;li>Tamil - &lt;code>ylacombe/mms-tts-tam-train&lt;/code> 泰米尔语&lt;/li>
+&lt;li>Gujarati - &lt;code>ylacombe/mms-tts-guj-train&lt;/code> 古吉拉特语
+在这种情况下，您找到了正确的检查点，记下存储库名称并直接传递到下一步🤗。
+在这里我选择了 &lt;code>fadhilamri/mms-tts-ind-train&lt;/code>🥳。&lt;/li>
+&lt;/ul>
+&lt;p>如果需要的需要微调的语言 &lt;code>checkpoint&lt;/code> 不存在，请参考&lt;a class="link" href="https://huggingface.co/dhavalgala/mms-tts-ind-train" target="_blank" rel="noopener"
+>这里&lt;/a>创建对应语言的&lt;code>checkpoint&lt;/code>。&lt;/p>
+&lt;h4 id="微调">微调
+&lt;/h4>&lt;p>使用 json 配置文件可以运行微调脚本，两种方法都使用命令行。请注意，您只需要一个 GPU 即可微调 VITS/MMS，因为模型非常轻巧（83M 参数）,根据数据集的大小对显存的需求有较大变化，我的数据集大小是&lt;code>602MB&lt;/code>、需要 21GB 显存左右。&lt;/p>
+&lt;blockquote>
+&lt;p>Note
+使用配置文件是使用微调脚本的首选方式，因为它包含要考虑的最重要的参数。有关参数的完整列表，请运行 &lt;code>python run_vits_finetuning.py --help&lt;/code>。请注意，训练脚本不会忽略某些参数。&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;a class="link" href="https://github.com/ylacombe/finetune-hf-vits/blob/main/training_config_examples" target="_blank" rel="noopener"
+>training_config_examples&lt;/a>文件夹包含配置文件的示例。一旦对您的配置文件感到满意，您就可以微调模型。&lt;/p>
+&lt;p>要考虑的重要参数：&lt;/p>
+&lt;ul>
+&lt;li>与工件相关的所有内容：&lt;code>project_name&lt;/code> 和输出目录 （&lt;code>hub_model_id&lt;/code>， &lt;code>output_dir&lt;/code>），用于跟踪模型。&lt;/li>
+&lt;li>需要微调的模型：&lt;code>model_name_or_path&lt;/code>。
+&lt;ul>
+&lt;li>这里，填写需要进行微调的模型（&lt;code>checkpoint&lt;/code>）。&lt;/li>
+&lt;li>例如，如果选择已存在的检查点：&lt;code>ylacombe/vits-ljs-with-discriminator&lt;/code>，或者转换了自己的检查点：&lt;code>&amp;lt;repo-id-you-want&amp;gt;&lt;/code> 或 &lt;code>&amp;lt;local-folder&amp;gt;&lt;/code>。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>数据集使用的 &lt;code>dataset_name&lt;/code> 及其详细信息：&lt;code>dataset_config_name&lt;/code>、列名等。
+&lt;ul>
+&lt;li>如果有多个声音，而您只想保留一个声音，请注意 &lt;code>speaker_id_column_name&lt;/code>、&lt;code>override_speaker_embeddings&lt;/code> 和 &lt;code>filter_on_speaker_id&lt;/code>。后者允许只保留一个声音，但您也可以使用多个声音进行训练。&lt;/li>
+&lt;li>例如，&lt;a class="link" href="https://github.com/ylacombe/finetune-hf-vits/blob/main/training_config_examples/finetune_english.json" target="_blank" rel="noopener"
+>&lt;code>finetune_english.json&lt;/code>&lt;/a> 中默认使用的数据集是 British Isles accents 数据集的子集，使用 &lt;code>welsh_female&lt;/code> 配置的单个威尔士女声，由 &lt;code>speaker_id=5223&lt;/code> 标识。&lt;/li>
+&lt;li>如何打包本地数据到上传到 HuggingFace 的 Datasets 请参考我写的上一篇&lt;a class="link" href="https://cyber-blog.github.io/p/dataset-upload2hugginface/" target="_blank" rel="noopener"
+>博客&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>超级重要的 &lt;code>hyperparameters&lt;/code>‼
+&lt;ul>
+&lt;li>&lt;code>learning_rate&lt;/code>&lt;/li>
+&lt;li>&lt;code>batch_size&lt;/code>&lt;/li>
+&lt;li>各种损失权重：&lt;code>weight_duration&lt;/code>、&lt;code>weight_kl&lt;/code>、&lt;code>weight_mel&lt;/code>、&lt;code>weight_disc&lt;/code>、&lt;code>weight_gen&lt;/code> 、&lt;code>weight_fmaps&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>可以参考我进行微调的配置文件&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;span class="lnt">43
+&lt;/span>&lt;span class="lnt">44
+&lt;/span>&lt;span class="lnt">45
+&lt;/span>&lt;span class="lnt">46
+&lt;/span>&lt;span class="lnt">47
+&lt;/span>&lt;span class="lnt">48
+&lt;/span>&lt;span class="lnt">49
+&lt;/span>&lt;span class="lnt">50
+&lt;/span>&lt;span class="lnt">51
+&lt;/span>&lt;span class="lnt">52
+&lt;/span>&lt;span class="lnt">53
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;project_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;vits_finetuned_ind_female&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;push_to_hub&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;hub_model_id&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;dhavalgala/mms-tts-ind-train&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;overwrite_output_dir&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;output_dir&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;./tmp/vits_finetuned_ind_female&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;dataset_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Majiang213/ind_famal&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;dataset_config_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;data&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;audio_column_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;audio&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;text_column_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;text&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;train_split_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;train&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;eval_split_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;train&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;speaker_id_column_name&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;speaker_id&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;override_speaker_embeddings&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;filter_on_speaker_id&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;12&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;max_duration_in_seconds&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">50&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;min_duration_in_seconds&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">1.0&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;max_tokens_length&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">5000&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;model_name_or_path&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;dhavalgala/mms-tts-ind-train&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;preprocessing_num_workers&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">4&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;do_train&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;num_train_epochs&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">200&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;gradient_accumulation_steps&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;gradient_checkpointing&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">false&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;per_device_train_batch_size&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">16&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;learning_rate&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">2e-5&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;adam_beta1&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">0.8&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;adam_beta2&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">0.99&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;warmup_ratio&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">0.01&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;group_by_length&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">false&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;do_eval&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;eval_steps&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">50&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;per_device_eval_batch_size&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">16&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;do_step_schedule_per_epoch&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;weight_disc&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;weight_fmaps&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;weight_gen&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;weight_kl&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mf">1.5&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;weight_duration&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;weight_mel&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">35&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;fp16&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;seed&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="mi">456&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="推理">推理
+&lt;/h4>&lt;p>只需几行代码，即可通过文本转语音 （TTS） 管道使用微调的模型！只需将 &lt;code>ylacombe/vits_ljs_welsh_female_monospeaker_2&lt;/code> 替换为您自己的模型 ID （&lt;code>hub_model_id&lt;/code>） 或模型的路径 （&lt;code>output_dir&lt;/code>）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">transformers&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">pipeline&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">scipy&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">model_id&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;ylacombe/vits_ljs_welsh_female_monospeaker_2&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">synthesiser&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">pipeline&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;text-to-speech&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">model_id&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1"># add device=0 if you want to use a GPU&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">speech&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">synthesiser&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;Hello, my dog is cooler than you!&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">scipy&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">io&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">wavfile&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">write&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;finetuned_output.wav&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">rate&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">speech&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;sampling_rate&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">data&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">speech&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;audio&amp;#34;&lt;/span>&lt;span class="p">][&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="问题">问题
+&lt;/h4>&lt;p>目前在推理时有一个关于 &lt;code>speaker_id&lt;/code>的代码兼容性问题，需要将&lt;code>run_vits_finetuning.py&lt;/code>文件里的所有 &lt;code>speaker_id=batch[&amp;quot;speaker_id&amp;quot;]&lt;/code> 代码注释掉。
+注释后参考&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">model_outputs_train&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">model&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">input_ids&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">batch&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;input_ids&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">attention_mask&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">batch&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;attention_mask&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">labels&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">batch&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;labels&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">labels_attention_mask&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">batch&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;labels_attention_mask&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># speaker_id=batch[&amp;#34;speaker_id&amp;#34;], &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">return_dict&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">True&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">monotonic_alignment_function&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">maximum_path&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="ps">PS
+&lt;/h4>&lt;ul>
+&lt;li>MMS 是由 Vineel Pratap、Andros Tjandra、Bowen Shi 等人在《 &lt;a class="link" href="https://arxiv.org/abs/2305.13516" target="_blank" rel="noopener"
+>Scaling Speech Technology to 1,000+ Languages&lt;/a>》中提出的。您可以在&lt;a class="link" href="https://dl.fbaipublicfiles.com/mms/misc/language_coverage_mms.html" target="_blank" rel="noopener"
+>MMS Language Coverage Overview&lt;/a>中找到有关受支持语言及其 ISO 639-3 代码的更多详细信息，并在 Hugging Face Hub 上查看所有 MMS-TTS 检查点：&lt;a class="link" href="https://huggingface.co/models?sort=trending&amp;amp;search=facebook%2Fmms-tts" target="_blank" rel="noopener"
+>facebook/mms-tts&lt;/a>。&lt;/li>
+&lt;li>&lt;a class="link" href="https://huggingface.co/docs/transformers/index" target="_blank" rel="noopener"
+>Hugging Face 🤗 Transformers&lt;/a> 用于模型集成，&lt;a class="link" href="https://huggingface.co/docs/accelerate/index" target="_blank" rel="noopener"
+>Hugging Face 🤗 Accelerate&lt;/a> 用于分布式代码，&lt;a class="link" href="https://huggingface.co/docs/datasets/index" target="_blank" rel="noopener"
+>Hugging Face 🤗 datasets&lt;/a>用于方便数据集访问。&lt;/li>
+&lt;/ul></description></item><item><title>音频文件打包 Dataset 上传 HugginFace</title><link>https://cyber-blog.github.io/p/dataset-upload2hugginface/</link><pubDate>Mon, 01 Jul 2024 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/dataset-upload2hugginface/</guid><description>&lt;h3 id="打包dataset">打包Dataset
+&lt;/h3>&lt;p>之前在使用 &lt;a class="link" href="https://github.com/ylacombe/finetune-hf-vits" target="_blank" rel="noopener"
+>finetune-hf-vits&lt;/a> 项目微调 &lt;code>MMS-TTS&lt;/code> 的印尼语模型的时候，该项目会读取 HuggingFace 的数据集，需要将本地的数据集上传到 HuggingFace。
+HugginFace 的数据集是 parquet 格式。可以使用 Hugging Face 官方提供的包生成。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">path&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;your-path&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 读取 Excel 文件 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">excel_file_path&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">os&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">join&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;FEMALE VOICE 2 .xlsx&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">df&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">pd&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">read_excel&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">excel_file_path&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 处理音频路径 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">df&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;audio&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">df&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;audio&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">apply&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">lambda&lt;/span> &lt;span class="n">x&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">load_audio_file_to_bytes&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">x&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="nb">isinstance&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">x&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">str&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="ow">and&lt;/span> &lt;span class="n">x&lt;/span> &lt;span class="k">else&lt;/span> &lt;span class="kc">None&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 转换 DataFrame 为字典格式 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">data_dict&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">df&lt;/span>&lt;span class="p">[[&lt;/span>&lt;span class="s1">&amp;#39;text&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;audio&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;speaker_id&amp;#39;&lt;/span>&lt;span class="p">]]&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">to_dict&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">orient&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;list&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 定义数据集特征，使用 Audio 类型 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">features&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">Features&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;text&amp;#39;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Value&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;string&amp;#39;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;audio&amp;#39;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Audio&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">sampling_rate&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">None&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="c1"># 这里定义音频特征 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;speaker_id&amp;#39;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="n">Value&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;string&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">})&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 创建 Dataset 对象 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">dataset&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">Dataset&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">from_dict&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">data_dict&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">features&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">features&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 保存为 Hugging Face 的数据集格式 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">dataset&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">push_to_hub&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;Majiang213/ind_female&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>通过代码可以看到，我的数据保存格式是一个 Excel 文件，里面有 text 列，为音频的文本，audio 列为文件路径，speaker_id 列为声音 id。在读取 Excel 之后，将音频路径转换为了实际的音频数据。然后将 &lt;code>Pandas DataFrame&lt;/code> 对象转换为了一个字典，通过 Hugging Face 包的 &lt;code>Dataset&lt;/code> 对象，进行转换，并上传。&lt;/p>
+&lt;p>另外不要忘记使用该命令登录&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">huggingface-cli login
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这是读取音频数据的代码和需要引入的包&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">io&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">os&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">librosa&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">pandas&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="nn">pd&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">soundfile&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="nn">sf&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">datasets&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">Dataset&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Audio&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Value&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Features&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">pydub&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">AudioSegment&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">load_audio_file_to_bytes&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">audio_path&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">audio_path&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">os&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">join&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">audio_path&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 获取文件扩展名 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">file_extension&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">audio_path&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">split&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;.&amp;#39;&lt;/span>&lt;span class="p">)[&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">lower&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 创建一个字节流对象 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">audio_bytes&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">io&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">BytesIO&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 处理不同格式的音频文件 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="n">file_extension&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;mp3&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;m4a&amp;#39;&lt;/span>&lt;span class="p">]:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 使用 pydub 读取 MP3 或 M4A 文件 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">audio&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">AudioSegment&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">from_file&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">audio_path&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">format&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">file_extension&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 直接保存音频数据到字节流 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">audio&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">export&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">audio_bytes&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">format&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;wav&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">elif&lt;/span> &lt;span class="n">file_extension&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;wav&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;flac&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;ogg&amp;#39;&lt;/span>&lt;span class="p">]:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 使用 librosa 直接读取音频文件 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">y&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">sr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">librosa&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">load&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">audio_path&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">sr&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">None&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 将 NumPy 数组转换为 int16 类型并写入字节流 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">sf&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">write&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">audio_bytes&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">y&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">sr&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">format&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;WAV&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">else&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">raise&lt;/span> &lt;span class="ne">ValueError&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s2">&amp;#34;Unsupported file format: &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">file_extension&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1"># 移动流的指针到起始位置，以便后续读取 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">audio_bytes&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">seek&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">audio_bytes&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">getvalue&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="ps">PS
+&lt;/h4>&lt;p>另外推荐一个处理音频文件的 Python 小工具 &lt;a class="link" href="https://github.com/fishaudio/audio-preprocess" target="_blank" rel="noopener"
+>audio-preprocess&lt;/a>。
+这个 Repo 包含了一些用于处理音频的脚本. 主要包含以下功能:&lt;/p>
+&lt;ul>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  视频/音频转 wav&lt;/li>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  音频人声分离&lt;/li>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  音频自动切片&lt;/li>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  音频响度匹配&lt;/li>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  音频数据统计（支持判断音频长度）&lt;/li>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  音频重采样&lt;/li>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  音频打标 (.lab)&lt;/li>
+&lt;li>&lt;input checked="" disabled="" type="checkbox">  音频打标 FunASR（使用 &lt;code>--model-type funasr&lt;/code> 开启, 详细使用方法可查看代码）&lt;/li>
+&lt;li>&lt;input disabled="" type="checkbox">  音频打标 WhisperX&lt;/li>
+&lt;li>&lt;input disabled="" type="checkbox">  .lab 标注合并为 .list 文件 (示例: &lt;code>fap merge-lab ./dataset list.txt &amp;quot;{PATH}|spkname|JP|{TEXT}&amp;quot;&lt;/code>)&lt;/li>
+&lt;/ul>
+&lt;p>([ ] 表示未完成, [x] 表示已完成)&lt;/p>
+&lt;h5 id="使用方式参考">使用方式参考
+&lt;/h5>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">pip install -e .
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">fap --help
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item></channel></rss>

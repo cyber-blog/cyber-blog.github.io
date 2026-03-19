@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>DeepLearning on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/deeplearning/</link><description>Recent content in DeepLearning on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Thu, 19 Dec 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/deeplearning/index.xml" rel="self" type="application/rss+xml"/><item><title>实用深度学习 Part1-1.入门</title><link>https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/</link><pubDate>Thu, 19 Dec 2024 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/</guid><description>&lt;h1 id="它是一只鸟吗-从您自己的数据创建模型">它是一只鸟吗？ 从您自己的数据创建模型
+&lt;/h1>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">#NB: Kaggle requires phone verification to use the internet or a GPU. If you haven&amp;#39;t done that yet, the cell below will fail&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># This code is only here to check that your internet is enabled. It doesn&amp;#39;t do anything else.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Here&amp;#39;s a help thread on getting your phone number verified: https://www.kaggle.com/product-feedback/135367&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">socket&lt;/span>&lt;span class="o">,&lt;/span>&lt;span class="nn">warnings&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">try&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">setdefaulttimeout&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">socket&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">AF_INET&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">SOCK_STREAM&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">connect&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="s1">&amp;#39;1.1.1.1&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">53&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">except&lt;/span> &lt;span class="n">socket&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">error&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="n">ex&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="k">raise&lt;/span> &lt;span class="ne">Exception&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;STOP: No internet. Click &amp;#39;&amp;gt;|&amp;#39; in top right and set &amp;#39;Internet&amp;#39; switch to on&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># It&amp;#39;s a good idea to ensure you&amp;#39;re running the latest version of any libraries you need.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># `!pip install -Uqq &amp;lt;libraries&amp;gt;` upgrades to the latest version of &amp;lt;libraries&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># NB: You can safely ignore any warnings or errors pip spits out about running as root or incompatibilities&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">os&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">iskaggle&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">os&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">environ&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;KAGGLE_KERNEL_RUN_TYPE&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="n">iskaggle&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="err">!&lt;/span>&lt;span class="n">pip&lt;/span> &lt;span class="n">install&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">Uqq&lt;/span> &lt;span class="n">fastai&lt;/span> &lt;span class="s1">&amp;#39;duckduckgo_search&amp;gt;=6.2&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>2015 年，创建一个可以识别鸟类的计算机系统的想法被认为非常具有挑战性，以至于它成为这个 XKCD 笑话的基础：&lt;/p>
+&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219180609.png"
+width="606"
+height="489"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219180609_hu3323407491388893832.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219180609_hu1595402411412305774.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="123"
+data-flex-basis="297px"
+>&lt;/p>
+&lt;p>但今天，我们只需几分钟就可以使用完全免费的资源做到这一点！
+我们将采取的基本步骤是：&lt;/p>
+&lt;ol>
+&lt;li>使用 DuckDuckGo 搜索“鸟照片”的图片&lt;/li>
+&lt;li>使用 DuckDuckGo 搜索“森林照片”的图片&lt;/li>
+&lt;li>微调预训练的神经网络以识别这两组&lt;/li>
+&lt;li>尝试在鸟的图片上运行此模型，看看它是否有效。&lt;/li>
+&lt;/ol>
+&lt;h2 id="step-1-下载鸟类和非鸟类的图像">Step 1: 下载鸟类和非鸟类的图像
+&lt;/h2>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">duckduckgo_search&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">DDGS&lt;/span> &lt;span class="c1">#DuckDuckGo has changed the api so we need to update &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">fastcore.all&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="o">*&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">keywords&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_images&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">200&lt;/span>&lt;span class="p">):&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="n">L&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">DDGS&lt;/span>&lt;span class="p">()&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">keywords&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_results&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">max_images&lt;/span>&lt;span class="p">))&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">itemgot&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;image&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">time&lt;/span>&lt;span class="o">,&lt;/span> &lt;span class="nn">json&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>让我们从搜索鸟照片开始，看看我们得到什么样的结果。我们首先从搜索中获取 URL：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">#NB: `search_images` depends on duckduckgo.com, which doesn&amp;#39;t always return correct responses.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># If you get a JSON error, just try running it again (it may take a couple of tries).&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">urls&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;bird photos&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_images&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">urls&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">&amp;#39;https://images.pexels.com/photos/326900/pexels-photo-326900.jpeg?cs=srgb&amp;amp;dl=wood-flight-bird-326900.jpg&amp;amp;fm=jpg&amp;#39;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&amp;hellip;然后下载图片并查看它：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">fastdownload&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">download_url&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">dest&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;bird.jpg&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">download_url&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">urls&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="n">dest&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">show_progress&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">False&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">fastai.vision.all&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="o">*&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">im&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">Image&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">open&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dest&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">im&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">to_thumb&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181231.png"
+width="256"
+height="171"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181231_hu11753680461174853147.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181231_hu11827023049726065876.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="149"
+data-flex-basis="359px"
+>&lt;/p>
+&lt;p>现在让我们下载“森林照片”并压缩事情：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">download_url&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;forest photos&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_images&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">)[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">],&lt;/span> &lt;span class="s1">&amp;#39;forest.jpg&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">show_progress&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">False&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">Image&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">open&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;forest.jpg&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">to_thumb&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mi">256&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181346.png"
+width="256"
+height="144"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181346_hu4261206687157492178.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219181346_hu17184510574698968972.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="177"
+data-flex-basis="426px"
+>&lt;/p>
+&lt;p>我们搜索到了想要的结果，所以让我们再多下载一些“鸟”和“森林”的照片，并将它们保存到不同的文件夹中：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">searches&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;forest&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="s1">&amp;#39;bird&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">path&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">Path&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;bird_or_not&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">for&lt;/span> &lt;span class="n">o&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="n">searches&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">dest&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">dest&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">mkdir&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">exist_ok&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">True&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">parents&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="kc">True&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">download_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dest&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">urls&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">search_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s1">&amp;#39;&lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s1"> photo&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">time&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">sleep&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">5&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">resize_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">max_size&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">400&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dest&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="step-2-训练我们的模型">Step 2: 训练我们的模型
+&lt;/h2>&lt;p>有些照片可能无法正确下载，这可能会导致模型训练失败，因此需要删除它们：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">failed&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">verify_images&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">get_image_files&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">failed&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">map&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Path&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">unlink&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">failed&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>为了训练模型，我们需要 &lt;code>DataLoaders&lt;/code>，它是一个包含训练集（用于创建模型的图像）和验证集（用于检查模型准确性的图像&amp;ndash;训练期间未使用的数据）。 在 &lt;code>fastai&lt;/code> 中，我们可以使用 &lt;code>DataBlock&lt;/code> 轻松创建它，并从中查看示例图像：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">dls&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">DataBlock&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">blocks&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">ImageBlock&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">CategoryBlock&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">get_items&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">get_image_files&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">splitter&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">RandomSplitter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">valid_pct&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mf">0.2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">seed&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">42&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">get_y&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">parent_label&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">item_tfms&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="n">Resize&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">192&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">method&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;squish&amp;#39;&lt;/span>&lt;span class="p">)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">dataloaders&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">bs&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">32&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">dls&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">show_batch&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">max_n&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">6&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219182854.png"
+width="717"
+height="499"
+srcset="https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219182854_hu14700026338536030349.png 480w, https://cyber-blog.github.io/p/practicaldeeplearning-pdl-part1-gettingstarted/Pasted_image_20241219182854_hu17290892737116787282.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="143"
+data-flex-basis="344px"
+>&lt;/p>
+&lt;p>每个 &lt;code>DataBlock&lt;/code> 参数的含义如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">blocks=(ImageBlock, CategoryBlock),
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>我们模型的输入是图像，输出是类别（在本例中为“鸟”或“森林”）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">get_items=get_image_files,
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>要查找模型的所有输入，请运行 &lt;code>get_image_files&lt;/code> 函数（它返回路径中所有图像文件的列表）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">splitter=RandomSplitter(valid_pct=0.2, seed=42),
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>将数据随机分为训练集和验证集，使用 20% 的数据作为验证集。&lt;code>seed&lt;/code>是随机数种子，一般是一个固定的整数，它用来初始化生成随机数的算法。通过设置相同的种子，你可以确保在不同的机器或者不同的时间执行相同的代码时，得到相同的随机结果。42 是一个常见的随机数种子（也许有些人觉得它是一个“神秘的”数字），其实可以使用任何整数值，只要它们固定，就能保证一致的划分结果。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">get_y=parent_label,
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>标签（&lt;code>y&lt;/code> 值）是每个文件的 &lt;code>parent&lt;/code> 的名称（即它们所在的文件夹的名称，可以是 &lt;code>bird&lt;/code> 或 &lt;code>forest&lt;/code>）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">item_tfms=[Resize(192, method=&amp;#39;squish&amp;#39;)]
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Before training, resize each image to 192x192 pixels by &amp;ldquo;squishing&amp;rdquo; it (as opposed to cropping it).&lt;br>
+在训练之前，通过&lt;code>squish&lt;/code>图像（而不是裁剪图像）将每个图像的大小调整为 192x192 像素。&lt;/p>
+&lt;p>现在我们准备好训练我们的模型了。 最快广泛使用的计算机视觉模型是&lt;code>resnet18&lt;/code>。 即使在 CPU 上，也可以在几分钟内对其进行训练！ （在 GPU 上，通常需要不到 10 秒&amp;hellip;&amp;hellip;）&lt;/p>
+&lt;p>&lt;code>fastai&lt;/code> 附带了一个有用的 &lt;code>fine_tune()&lt;/code> 方法，该方法自动使用最佳实践来微调预训练模型，因此我们将使用它。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">learn&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">vision_learner&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dls&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">resnet18&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">metrics&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">error_rate&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">learn&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">fine_tune&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>• 参数3表示: 这个参数表示微调的训练轮数（epochs）。在这里，模型会在数据集上进行 3 个训练周期（epochs）的微调。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span class="line">&lt;span class="cl">&lt;span class="n">Downloading&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;https://download.pytorch.org/models/resnet18-f37072fd.pth&amp;#34;&lt;/span> &lt;span class="n">to&lt;/span> &lt;span class="o">/&lt;/span>&lt;span class="n">root&lt;/span>&lt;span class="o">/.&lt;/span>&lt;span class="n">cache&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">torch&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">hub&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">checkpoints&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">resnet18&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">f37072fd&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">pth&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="mi">100&lt;/span>&lt;span class="o">%|&lt;/span>&lt;span class="err">██████████&lt;/span>&lt;span class="o">|&lt;/span> &lt;span class="mf">44.7&lt;/span>&lt;span class="n">M&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="mf">44.7&lt;/span>&lt;span class="n">M&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="o">&amp;lt;&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mf">84.4&lt;/span>&lt;span class="n">MB&lt;/span>&lt;span class="o">/&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>epoch&lt;/th>
+&lt;th>train_loss&lt;/th>
+&lt;th>valid_loss&lt;/th>
+&lt;th>error_rate&lt;/th>
+&lt;th>time&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>0.783741&lt;/td>
+&lt;td>0.634016&lt;/td>
+&lt;td>0.214286&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>epoch&lt;/th>
+&lt;th>train_loss&lt;/th>
+&lt;th>valid_loss&lt;/th>
+&lt;th>error_rate&lt;/th>
+&lt;th>time&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>0.045509&lt;/td>
+&lt;td>0.020604&lt;/td>
+&lt;td>0.000000&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>0.026428&lt;/td>
+&lt;td>0.000642&lt;/td>
+&lt;td>0.000000&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>0.017754&lt;/td>
+&lt;td>0.000184&lt;/td>
+&lt;td>0.000000&lt;/td>
+&lt;td>00:01&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>一般来说，当我运行此程序时，我会看到验证集的准确性为 100%（尽管每次运行可能会有所不同）。
+“微调”模型意味着我们从其他人使用其他数据集训练的模型（称为预训练模型）开始，并稍微调整权重，以便模型学会识别您的特定数据集。 在本例中，预训练模型经过训练，可以识别 imagenet 中的照片以及广泛使用的计算机视觉数据集，其中图像涵盖 1000 个类别）有关微调的详细信息及其重要性，请查看免费的 &lt;a class="link" href="https://course.fast.ai/" target="_blank" rel="noopener"
+>fast.ai课程&lt;/a>。&lt;/p>
+&lt;h2 id="step-3-第-3-步使用我们的模型构建您自己的模型">Step 3: 第 3 步：使用我们的模型（构建您自己的模型！）
+&lt;/h2>&lt;p>让我们看看我们的模型对我们一开始下载的那只鸟有什么看法：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="n">is_bird&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="n">_&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="n">probs&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">learn&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">predict&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">PILImage&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">create&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;bird.jpg&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s2">&amp;#34;This is a: &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">is_bird&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">.&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sa">f&lt;/span>&lt;span class="s2">&amp;#34;Probability it&amp;#39;s a bird: &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="n">probs&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="si">:&lt;/span>&lt;span class="s2">.4f&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">This is a: bird.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Probability it&amp;#39;s a bird: 1.0000
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Good job, resnet18&lt;/p>
+&lt;p>因此，正如所看到的，在几年的时间里，创建计算机视觉分类模型已经从“难得像一个笑话”变成了“非常简单且免费”！
+这不仅仅是在计算机视觉领域。 得益于深度学习，计算机现在可以做许多几年前看似不可能的事情，包括&lt;a class="link" href="https://openai.com/dall-e-2/" target="_blank" rel="noopener"
+>创作令人惊叹的艺术品&lt;/a>和&lt;a class="link" href="https://www.datanami.com/2022/04/22/googles-massive-new-language-model-can-explain-jokes/" target="_blank" rel="noopener"
+>解释笑话&lt;/a>。 它的发展速度如此之快，以至于即使是该领域的专家也很难预测它在未来几年将如何影响社会。
+有一点很明确——我们所有人都必须尽力理解这项技术，这一点很重要，否则我们就会落后！&lt;/p>
+&lt;p>现在轮到你了。 单击&lt;a class="link" href="https://www.kaggle.com/code/jhoward/is-it-a-bird-creating-a-model-from-your-own-data" target="_blank" rel="noopener"
+>此页面&lt;/a>的“Copy &amp;amp; Edit”并尝试使用您自己的图像搜索创建您自己的图像分类器！&lt;/p>
+&lt;p>如果您喜欢这个，请考虑点击右上角的“投票”按钮——知道人们何时欣赏我们的工作对我们笔记本作者来说是非常鼓舞人心的。&lt;/p></description></item></channel></rss>

@@ -1,0 +1,319 @@
+<!doctype html><html lang=zh-ch dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="翻译自Google出品的 《5 Agent Skill design patterns every ADK developer should know》"><title>5种Skill设计模式</title>
+<link rel=canonical href=https://cyber-blog.github.io/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/><link rel=stylesheet href=/scss/style.min.70a01615b5dd99826a360296920067f6e3896a41fe397d04d6b849efef75a174.css><meta property='og:title' content="5种Skill设计模式"><meta property='og:description' content="翻译自Google出品的 《5 Agent Skill design patterns every ADK developer should know》"><meta property='og:url' content='https://cyber-blog.github.io/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/'><meta property='og:site_name' content='仿生人会梦见电子羊吗？'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:published_time' content='2026-03-19T00:00:00+00:00'><meta property='article:modified_time' content='2026-03-19T00:00:00+00:00'><meta name=twitter:title content="5种Skill设计模式"><meta name=twitter:description content="翻译自Google出品的 《5 Agent Skill design patterns every ADK developer should know》"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu9062387157319251782.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🫥</span></figure><div class=site-meta><h1 class=site-name><a href=/>仿生人会梦见电子羊吗？</a></h1><h2 class=site-description>Do Androids Dream of Electric Sheep?</h2></div></header><ol class=menu-social><li><a href=https://github.com/majiang213 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#pattern-1-the-tool-wrapper-模式-1工具包装>Pattern 1: The Tool Wrapper 模式 1：工具包装</a></li><li><a href=#pattern-2-the-generator-模式-2生成器>Pattern 2: The Generator 模式 2：生成器</a></li><li><a href=#pattern-3-the-reviewer-模式三审阅者>Pattern 3: The Reviewer 模式三：审阅者</a></li><li><a href=#pattern-4-inversion-模式-4倒置>Pattern 4: Inversion 模式 4：倒置</a></li><li><a href=#pattern-5-the-pipeline-模式-5管道>Pattern 5: The Pipeline 模式 5：管道</a></li><li><a href=#choosing-the-right-agent-skill-pattern-选择合适的代理人技能模式>Choosing the right agent skill pattern 选择合适的代理人技能模式</a></li><li><a href=#and-finally-patterns-compose-最后模式构成>And finally, patterns compose 最后，模式构成</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/>5种Skill设计模式</a></h2><h3 class=article-subtitle>翻译自Google出品的 《5 Agent Skill design patterns every ADK developer should know》</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Mar 19, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 9 分钟</time></div></footer></div></header><section class=article-content><h1 id=5-agent-skill-design-patterns-every-adk-developer-should-know>5 Agent Skill design patterns every ADK developer should know</h1><p><strong>每位 ADK 开发人员都应该了解的 5 种代理技能设计模式</strong></p><p>When it comes to 𝚂𝙺𝙸𝙻𝙻.𝚖𝚍, developers tend to fixate on the format—getting the YAML right, structuring directories, and following the spec. But with more than 30 agent tools (like Claude Code, Gemini CLI, and Cursor) standardizing on the same layout, the formatting problem is practically obsolete.</p><blockquote><p>说到 𝚂𝙺𝙸𝙻𝙻.𝚖𝚍，开发者往往会过于关注格式——确保 YAML 代码正确、目录结构清晰、遵循规范。但由于已有超过 30 种代理工具（例如 Claude Code、Gemini CLI 和 Cursor）采用相同的布局，格式问题实际上已经过时了。</p></blockquote><p>The challenge now is content design. The specification explains how to package a skill, but offers zero guidance on how to structure the logic inside it. For example, a skill that wraps FastAPI conventions operates completely differently from a four-step documentation pipeline, even though their 𝚂𝙺𝙸𝙻𝙻.𝚖𝚍 files look identical on the outside.</p><blockquote><p>现在的挑战在于内容设计。规范解释了如何打包一项技能，但完全没有提供关于如何构建其内部逻辑的指导。例如，一个封装了 FastAPI 约定的技能与一个四步文档流程的技能，即使它们的 𝚂𝙺𝙸𝙻𝙻.𝚖𝚍 文件看起来完全相同，但它们的运行方式却截然不同。</p></blockquote><p>By studying how skills are built across the ecosystem—from Anthropic’s repositories to Vercel and Google&rsquo;s internal guidelines— there are five recurring design patterns that can help developers build agents.</p><blockquote><p>通过研究整个生态系统中技能的构建方式——从 Anthropic 的存储库到 Vercel 和 Google 的内部指南——可以发现五种反复出现的设计模式，这些模式可以帮助开发者构建代理。</p></blockquote><p>This article covers each one with working ADK code:
+本文将逐一介绍，并提供可运行的 ADK 代码：</p><ul><li>Tool Wrapper: Make your agent an instant expert on any library
+工具包装器：让您的代理人瞬间成为任何库的专家</li><li>Generator: Produce structured documents from a reusable template
+生成器：根据可重用模板生成结构化文档</li><li>Reviewer: Score code against a checklist by severity
+审核员：根据严重程度，对照检查清单对代码进行评分。</li><li>Inversion: The agent interviews you before acting
+反转：经纪人在采取行动前会先面试你。</li><li>Pipeline: Enforce a strict multi-step workflow with checkpoints
+流水线：通过检查点强制执行严格的多步骤工作流程</li></ul><p><img src=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoDgs6XAAYtw04.jpg width=680 height=380 srcset="/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoDgs6XAAYtw04_hu11205735677178973166.jpg 480w, /p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoDgs6XAAYtw04_hu10861395680489918419.jpg 1024w" loading=lazy alt=HDoDgs6XAAYtw04 class=gallery-image data-flex-grow=178 data-flex-basis=429px></p><h2 id=pattern-1-the-tool-wrapper-模式-1工具包装>Pattern 1: The Tool Wrapper 模式 1：工具包装</h2><p>A Tool Wrapper gives your agent on-demand context for a specific library. Instead of hardcoding API conventions into your system prompt, you package them into a skill. Your agent only loads this context when it actually works with that technology.
+工具封装器可为您的智能体提供特定库的按需上下文。您无需将 API 约定硬编码到系统提示中，而是将其打包到一个技能中。您的智能体仅在实际使用该技术时才会加载此上下文。</p><p><img src=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoDoIeXAAUmQoy.jpg width=680 height=380 srcset="/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoDoIeXAAUmQoy_hu16604467648954138018.jpg 480w, /p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoDoIeXAAUmQoy_hu678822357732358576.jpg 1024w" loading=lazy alt=HDoDoIeXAAUmQoy class=gallery-image data-flex-grow=178 data-flex-basis=429px></p><p>It is the simplest pattern to implement. The 𝚂𝙺𝙸𝙻𝙻.𝚖𝚍 file listens for specific library keywords in the user&rsquo;s prompt, dynamically loads your internal documentation from the 𝚛𝚎𝚏𝚎𝚛𝚎𝚗𝚌𝚎𝚜/ directory, and applies those rules as absolute truth. This is the exact mechanism you use to distribute your team&rsquo;s internal coding guidelines or specific framework best practices directly into your developers&rsquo; workflows.
+这是最容易实现的模式。𝚂𝙺𝙸𝙻𝙻.𝚖𝚍 文件监听用户提示符中的特定库关键字，从 𝚛𝚎𝚏𝚎𝚛𝚎𝚗𝚌𝚎𝚜/ 目录动态加载内部文档，并将这些规则作为绝对真理应用。这正是您将团队内部编码规范或特定框架最佳实践直接融入开发人员工作流程的机制。</p><p>Here is an example of a Tool Wrapper that teaches an agent how to write FastAPI code. Notice how the instructions explicitly tell the agent to load the 𝚌𝚘𝚗𝚟𝚎𝚗𝚝𝚒𝚘𝚗𝚜.𝚖𝚍 file only when it starts reviewing or writing code:
+以下是一个工具包装器的示例，它教会代理如何编写 FastAPI 代码。请注意，指令明确地告诉代理，只有在开始审查或编写代码时才加载 𝚌𝚘𝚗𝚟𝚎𝚗𝚝𝚒𝚘𝚗𝚜.𝚖𝚍 文件：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl><span class=gh># skills/api-expert/SKILL.md
+</span></span></span><span class=line><span class=cl><span class=gh></span>---
+</span></span><span class=line><span class=cl>name: api-expert
+</span></span><span class=line><span class=cl>description: FastAPI development best practices and conventions. Use when building, reviewing, or debugging FastAPI applications, REST APIs, or Pydantic models.
+</span></span><span class=line><span class=cl>metadata:
+</span></span><span class=line><span class=cl>  pattern: tool-wrapper
+</span></span><span class=line><span class=cl>  domain: fastapi
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>You are an expert in FastAPI development. Apply these conventions to the user&#39;s code or question.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Core Conventions
+</span></span></span><span class=line><span class=cl><span class=gu></span>
+</span></span><span class=line><span class=cl>Load &#39;references/conventions.md&#39; for the complete list of FastAPI best practices.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## When Reviewing Code
+</span></span></span><span class=line><span class=cl><span class=gu></span><span class=k>1.</span> Load the conventions reference
+</span></span><span class=line><span class=cl><span class=k>2.</span> Check the user&#39;s code against each convention
+</span></span><span class=line><span class=cl><span class=k>3.</span> For each violation, cite the specific rule and suggest the fix
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## When Writing Code
+</span></span></span><span class=line><span class=cl><span class=gu></span><span class=k>1.</span> Load the conventions reference
+</span></span><span class=line><span class=cl><span class=k>2.</span> Follow every convention exactly
+</span></span><span class=line><span class=cl><span class=k>3.</span> Add type annotations to all function signatures
+</span></span><span class=line><span class=cl><span class=k>4.</span> Use Annotated style for dependency injection
+</span></span></code></pre></td></tr></table></div></div><h2 id=pattern-2-the-generator-模式-2生成器>Pattern 2: The Generator 模式 2：生成器</h2><p>While the Tool Wrapper applies knowledge, the Generator enforces consistent output. If you struggle with an agent generating different document structures on every run, the Generator solves this by orchestrating a fill-in-the-blank process.
+工具包装器负责应用知识，而生成器则确保输出的一致性。如果您遇到代理每次运行生成不同文档结构的问题，生成器可以通过协调填空过程来解决这个问题。</p><p><img src=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEJdZbEAEdYMo.jpg width=680 height=380 srcset="/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEJdZbEAEdYMo_hu2156330562700179476.jpg 480w, /p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEJdZbEAEdYMo_hu16954300824751529403.jpg 1024w" loading=lazy alt=HDoEJdZbEAEdYMo class=gallery-image data-flex-grow=178 data-flex-basis=429px></p><p>It leverages two optional directories: 𝚊𝚜𝚜𝚎𝚝𝚜/ holds your output template, and 𝚛𝚎𝚏𝚎𝚛𝚎𝚗𝚌𝚎𝚜/ holds your style guide. The instructions act as a project manager. They tell the agent to load the template, read the style guide, ask the user for missing variables, and populate the document. This is practical for generating predictable API documentation, standardizing commit messages, or scaffolding project architectures.
+它利用了两个可选目录：<code>𝚊𝚜𝚜𝚎𝚝𝚜/</code> 存放输出模板，<code>𝚛𝚎𝚏𝚎𝚛𝚎𝚗𝚌𝚎𝚜/</code> 存放样式指南。指令充当项目管理器的角色。它们指示代理加载模板、读取样式指南、询问用户缺失的变量并填充文档。这对于生成可预测的 API 文档、标准化提交消息或搭建项目架构非常实用。</p><p>In this technical report generator example, the skill file does not contain the actual layout or the grammar rules. It simply coordinates the retrieval of those assets and forces the agent to execute them step by step:
+在这个技术报告生成器示例中，技能文件不包含实际的布局或语法规则。它只是协调这些资源的检索，并强制代理逐步执行它们：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl><span class=gh># skills/report-generator/SKILL.md
+</span></span></span><span class=line><span class=cl><span class=gh></span>---
+</span></span><span class=line><span class=cl>name: report-generator
+</span></span><span class=line><span class=cl>description: Generates structured technical reports in Markdown. Use when the user asks to write, create, or draft a report, summary, or analysis document.
+</span></span><span class=line><span class=cl>metadata:
+</span></span><span class=line><span class=cl>  pattern: generator
+</span></span><span class=line><span class=cl>  output-format: markdown
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>You are a technical report generator. Follow these steps exactly:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 1: Load &#39;references/style-guide.md&#39; for tone and formatting rules.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 2: Load &#39;assets/report-template.md&#39; for the required output structure.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 3: Ask the user for any missing information needed to fill the template:
+</span></span><span class=line><span class=cl><span class=k>-</span> Topic or subject
+</span></span><span class=line><span class=cl><span class=k>-</span> Key findings or data points
+</span></span><span class=line><span class=cl><span class=k>-</span> Target audience (technical, executive, general)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 4: Fill the template following the style guide rules. Every section in the template must be present in the output.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 5: Return the completed report as a single Markdown document.
+</span></span></code></pre></td></tr></table></div></div><h2 id=pattern-3-the-reviewer-模式三审阅者>Pattern 3: The Reviewer 模式三：审阅者</h2><p>The Reviewer pattern separates what to check from how to check it. Rather than writing a long system prompt detailing every code smell, you store a modular rubric inside a 𝚛𝚎𝚏𝚎𝚛𝚎𝚗𝚌𝚎𝚜/𝚛𝚎𝚟𝚒𝚎𝚠-𝚌𝚑𝚎𝚌𝚔𝚕𝚒𝚜𝚝.𝚖𝚍 file.
+Reviewer 模式将检查内容与检查方式分开。与其编写冗长的系统提示来详细说明每个代码异味，不如将模块化的评分标准存储在 𝚛𝚎𝚏𝚎𝚛𝚎𝚗𝚌𝚎𝚜/𝚛𝚎𝚟𝚒𝚎𝚠-𝚌𝚑𝚎𝚌𝚔𝚕𝚒𝚜𝚝.𝚖𝚍 文件中。</p><p><img src=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEa51XEAIKSnO.jpg width=680 height=380 srcset="/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEa51XEAIKSnO_hu12134976746725375635.jpg 480w, /p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEa51XEAIKSnO_hu8119998544153514179.jpg 1024w" loading=lazy alt=HDoEa51XEAIKSnO class=gallery-image data-flex-grow=178 data-flex-basis=429px></p><p>When a user submits code, the agent loads this checklist and methodically scores the submission, grouping its findings by severity. If you swap out a Python style checklist for an OWASP security checklist, you get a completely different, specialized audit using the exact same skill infrastructure. It is a highly effective way to automate PR reviews or catch vulnerabilities before a human looks at the code.
+当用户提交代码时，代理会加载此检查清单，并系统地对提交的代码进行评分，根据严重程度对结果进行分组。如果将 Python 风格的检查清单替换为 OWASP 安全检查清单，您将获得完全不同的、更专业的审计，而这一切都基于相同的技术基础架构。这是一种高效的方法，可以自动执行 PR 审查，或在人工查看代码之前发现漏洞。</p><p>The following code reviewer skill demonstrates this separation. The instructions remain static, but the agent dynamically loads the specific review criteria from an external checklist and forces a structured, severity-based output:
+以下代码审查员技能展示了这种分离。指令保持不变，但代理会从外部清单动态加载具体的审查标准，并强制生成结构化的、基于严重性的输出：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl><span class=gh># skills/code-reviewer/SKILL.md
+</span></span></span><span class=line><span class=cl><span class=gh></span>---
+</span></span><span class=line><span class=cl>name: code-reviewer
+</span></span><span class=line><span class=cl>description: Reviews Python code for quality, style, and common bugs. Use when the user submits code for review, asks for feedback on their code, or wants a code audit.
+</span></span><span class=line><span class=cl>metadata:
+</span></span><span class=line><span class=cl>  pattern: reviewer
+</span></span><span class=line><span class=cl>  severity-levels: error,warning,info
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>You are a Python code reviewer. Follow this review protocol exactly:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 1: Load &#39;references/review-checklist.md&#39; for the complete review criteria.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 2: Read the user&#39;s code carefully. Understand its purpose before critiquing.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 3: Apply each rule from the checklist to the code. For every violation found:
+</span></span><span class=line><span class=cl><span class=k>-</span> Note the line number (or approximate location)
+</span></span><span class=line><span class=cl><span class=k>-</span> Classify severity: error (must fix), warning (should fix), info (consider)
+</span></span><span class=line><span class=cl><span class=k>-</span> Explain WHY it&#39;s a problem, not just WHAT is wrong
+</span></span><span class=line><span class=cl><span class=k>-</span> Suggest a specific fix with corrected code
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Step 4: Produce a structured review with these sections:
+</span></span><span class=line><span class=cl><span class=k>-</span> **Summary**: What the code does, overall quality assessment
+</span></span><span class=line><span class=cl><span class=k>-</span> **Findings**: Grouped by severity (errors first, then warnings, then info)
+</span></span><span class=line><span class=cl><span class=k>-</span> **Score**: Rate 1-10 with brief justification
+</span></span><span class=line><span class=cl><span class=k>-</span> **Top 3 Recommendations**: The most impactful improvements
+</span></span></code></pre></td></tr></table></div></div><h2 id=pattern-4-inversion-模式-4倒置>Pattern 4: Inversion 模式 4：倒置</h2><p>Agents inherently want to guess and generate immediately. The Inversion pattern flips this dynamic. Instead of the user driving the prompt and the agent executing, the agent acts as an interviewer.
+智能体天生倾向于猜测并立即生成答案。反转模式颠覆了这种动态。用户不再提出问题，智能体也不再执行，而是由智能体扮演面试官的角色。</p><p><img src=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEo5XbEAUaaFG.jpg width=680 height=380 srcset="/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEo5XbEAUaaFG_hu14789143536514026936.jpg 480w, /p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoEo5XbEAUaaFG_hu4852719914999376120.jpg 1024w" loading=lazy alt=HDoEo5XbEAUaaFG class=gallery-image data-flex-grow=178 data-flex-basis=429px></p><p>Inversion relies on explicit, non-negotiable gating instructions (like &ldquo;DO NOT start building until all phases are complete&rdquo;) to force the agent to gather context first. It asks structured questions sequentially and waits for your answers before moving to the next phase. The agent refuses to synthesize a final output until it has a complete picture of your requirements and deployment constraints.
+逆向工程依赖于明确且不可协商的门控指令（例如“所有阶段完成后方可开始构建”），强制智能体首先收集上下文信息。它会按顺序提出结构化问题，并在获得您的答案后才进入下一阶段。智能体只有在全面了解您的需求和部署限制后才会生成最终输出。</p><p>To see this in action, look at this project planner skill. The crucial element here is the strict phasing and the explicit gatekeeping prompt that stops the agent from synthesizing the final plan until all user answers are collected:
+要了解具体操作，请查看此项目规划器技能。关键在于严格的阶段划分和明确的把关提示，这些提示会阻止代理在收集到所有用户答案之前生成最终计划：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl><span class=gh># skills/project-planner/SKILL.md
+</span></span></span><span class=line><span class=cl><span class=gh></span>---
+</span></span><span class=line><span class=cl>name: project-planner
+</span></span><span class=line><span class=cl>description: Plans a new software project by gathering requirements through structured questions before producing a plan. Use when the user says &#34;I want to build&#34;, &#34;help me plan&#34;, &#34;design a system&#34;, or &#34;start a new project&#34;.
+</span></span><span class=line><span class=cl>metadata:
+</span></span><span class=line><span class=cl>  pattern: inversion
+</span></span><span class=line><span class=cl>  interaction: multi-turn
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>You are conducting a structured requirements interview. DO NOT start building or designing until all phases are complete.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Phase 1 — Problem Discovery (ask one question at a time, wait for each answer)
+</span></span></span><span class=line><span class=cl><span class=gu></span>
+</span></span><span class=line><span class=cl>Ask these questions in order. Do not skip any.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>-</span> Q1: &#34;What problem does this project solve for its users?&#34;
+</span></span><span class=line><span class=cl><span class=k>-</span> Q2: &#34;Who are the primary users? What is their technical level?&#34;
+</span></span><span class=line><span class=cl><span class=k>-</span> Q3: &#34;What is the expected scale? (users per day, data volume, request rate)&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Phase 2 — Technical Constraints (only after Phase 1 is fully answered)
+</span></span></span><span class=line><span class=cl><span class=gu></span>
+</span></span><span class=line><span class=cl><span class=k>-</span> Q4: &#34;What deployment environment will you use?&#34;
+</span></span><span class=line><span class=cl><span class=k>-</span> Q5: &#34;Do you have any technology stack requirements or preferences?&#34;
+</span></span><span class=line><span class=cl><span class=k>-</span> Q6: &#34;What are the non-negotiable requirements? (latency, uptime, compliance, budget)&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Phase 3 — Synthesis (only after all questions are answered)
+</span></span></span><span class=line><span class=cl><span class=gu></span>
+</span></span><span class=line><span class=cl><span class=k>1.</span> Load &#39;assets/plan-template.md&#39; for the output format
+</span></span><span class=line><span class=cl><span class=k>2.</span> Fill in every section of the template using the gathered requirements
+</span></span><span class=line><span class=cl><span class=k>3.</span> Present the completed plan to the user
+</span></span><span class=line><span class=cl><span class=k>4.</span> Ask: &#34;Does this plan accurately capture your requirements? What would you change?&#34;
+</span></span><span class=line><span class=cl><span class=k>5.</span> Iterate on feedback until the user confirms
+</span></span></code></pre></td></tr></table></div></div><h2 id=pattern-5-the-pipeline-模式-5管道>Pattern 5: The Pipeline 模式 5：管道</h2><p>For complex tasks, you cannot afford skipped steps or ignored instructions. The Pipeline pattern enforces a strict, sequential workflow with hard checkpoints.
+对于复杂任务，容不得跳过任何步骤或忽略任何指令。流水线模式强制执行严格的顺序工作流程，并设置了关键的检查点。</p><p>The instructions themselves serve as the workflow definition. By implementing explicit diamond gate conditions (such as requiring user approval before moving from docstring generation to final assembly), the Pipeline ensures an agent cannot bypass a complex task and present an unvalidated final result.
+指令本身即构成工作流程定义。通过实施明确的菱形门控条件（例如，在从文档字符串生成到最终装配之前需要用户批准），该流程可确保代理无法绕过复杂任务并呈现未经验证的最终结果。</p><p><img src=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoE195bEAABitY.jpg width=680 height=380 srcset="/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoE195bEAABitY_hu2148505579338013978.jpg 480w, /p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoE195bEAABitY_hu3787321380301654207.jpg 1024w" loading=lazy alt=HDoE195bEAABitY class=gallery-image data-flex-grow=178 data-flex-basis=429px></p><p>This pattern utilizes all optional directories, pulling in different reference files and templates only at the specific step where they are needed, keeping the context window clean.
+此模式利用所有可选目录，仅在需要时才引入不同的参考文件和模板，从而保持上下文窗口的整洁。</p><p>In this documentation pipeline example, notice the explicit gate conditions. The agent is explicitly forbidden from moving to the assembly phase until the user confirms the generated docstrings in the previous step:
+在这个文档流水线示例中，请注意明确的门控条件。在用户确认上一步生成的文档字符串之前，代理程序被明确禁止进入组装阶段：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-markdown data-lang=markdown><span class=line><span class=cl><span class=gh># skills/doc-pipeline/SKILL.md
+</span></span></span><span class=line><span class=cl><span class=gh></span>---
+</span></span><span class=line><span class=cl>name: doc-pipeline
+</span></span><span class=line><span class=cl>description: Generates API documentation from Python source code through a multi-step pipeline. Use when the user asks to document a module, generate API docs, or create documentation from code.
+</span></span><span class=line><span class=cl>metadata:
+</span></span><span class=line><span class=cl>  pattern: pipeline
+</span></span><span class=line><span class=cl>  steps: &#34;4&#34;
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>You are running a documentation generation pipeline. Execute each step in order. Do NOT skip steps or proceed if a step fails.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 1 — Parse &amp; Inventory
+</span></span></span><span class=line><span class=cl><span class=gu></span>Analyze the user&#39;s Python code to extract all public classes, functions, and constants. Present the inventory as a checklist. Ask: &#34;Is this the complete public API you want documented?&#34;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 2 — Generate Docstrings
+</span></span></span><span class=line><span class=cl><span class=gu></span>For each function lacking a docstring:
+</span></span><span class=line><span class=cl><span class=k>-</span> Load &#39;references/docstring-style.md&#39; for the required format
+</span></span><span class=line><span class=cl><span class=k>-</span> Generate a docstring following the style guide exactly
+</span></span><span class=line><span class=cl><span class=k>-</span> Present each generated docstring for user approval
+</span></span><span class=line><span class=cl>Do NOT proceed to Step 3 until the user confirms.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 3 — Assemble Documentation
+</span></span></span><span class=line><span class=cl><span class=gu></span>Load &#39;assets/api-doc-template.md&#39; for the output structure. Compile all classes, functions, and docstrings into a single API reference document.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=gu>## Step 4 — Quality Check
+</span></span></span><span class=line><span class=cl><span class=gu></span>Review against &#39;references/quality-checklist.md&#39;:
+</span></span><span class=line><span class=cl><span class=k>-</span> Every public symbol documented
+</span></span><span class=line><span class=cl><span class=k>-</span> Every parameter has a type and description
+</span></span><span class=line><span class=cl><span class=k>-</span> At least one usage example per function
+</span></span><span class=line><span class=cl>Report results. Fix issues before presenting the final document.
+</span></span></code></pre></td></tr></table></div></div><h2 id=choosing-the-right-agent-skill-pattern-选择合适的代理人技能模式>Choosing the right agent skill pattern 选择合适的代理人技能模式</h2><p>Each pattern answers a different question. Use this decision tree to find the right one for your use-case:
+每种模式都回答不同的问题。请使用此决策树找到适合您用例的模式：</p><p><img src=/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoFWovXAAsbb8C.jpg width=680 height=380 srcset="/p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoFWovXAAsbb8C_hu3279245299763124562.jpg 480w, /p/5%E7%A7%8Dskill%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/HDoFWovXAAsbb8C_hu14130440750636762708.jpg 1024w" loading=lazy alt=HDoFWovXAAsbb8C class=gallery-image data-flex-grow=178 data-flex-basis=429px></p><h2 id=and-finally-patterns-compose-最后模式构成>And finally, patterns compose 最后，模式构成</h2><p>These patterns are not mutually exclusive. They compose.
+这些模式并非相互排斥，它们可以相互补充。</p><p>A Pipeline skill can include a Reviewer step at the end to double-check its own work. A Generator can rely on Inversion at the very beginning to gather the necessary variables before filling out its template. Thanks to ADK&rsquo;s 𝚂𝚔𝚒𝚕𝚕𝚃𝚘𝚘𝚕𝚜𝚎𝚝 and progressive disclosure, your agent only spends context tokens on the exact patterns it needs at runtime.
+流水线技能可以在最后添加一个审核步骤，以再次检查自身的工作。生成器可以在开始时依赖反转来收集必要的变量，然后再填充其模板。得益于 ADK 的 𝚂𝚔𝚒𝚕𝚕𝚃𝚘𝚘𝚕𝚜𝚎𝚝 和渐进式披露，您的代理仅在运行时将其上下文令牌用于所需的确切模式。</p><p>Stop trying to cram complex and fragile instructions into a single system prompt. Break your workflows down, apply the right structural pattern, and build reliable agents.
+不要试图将复杂且脆弱的指令塞进单个系统提示符中。分解工作流程，应用正确的结构模式，并构建可靠的代理。</p></section><footer class=article-footer><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Mar 19, 2026 00:00 UTC</span></section></footer></article><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//majiang.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2026 仿生人会梦见电子羊吗？</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.30.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>C on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/c/</link><description>Recent content in C on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Thu, 01 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/c/index.xml" rel="self" type="application/rss+xml"/><item><title>MacOS自行编译JDK</title><link>https://cyber-blog.github.io/p/macos-compile-jdk/</link><pubDate>Thu, 01 Dec 2022 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/macos-compile-jdk/</guid><description>&lt;img src="https://cyber-blog.github.io/p/macos-compile-jdk/cover.png" alt="Featured image of post MacOS自行编译JDK" />&lt;p>M1 macOS Monterey 12.6 (21G115)
+Xcode版本14.0.1&lt;/p>
+&lt;p>JDK版本17&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>初始化配置&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">bash configure --enable-debug --with-jvm-variants&lt;span class="o">=&lt;/span>client,server --disable-warnings-as-errors
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>编译&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">make
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;p>遇到的坑
+&lt;a class="link" href="https://bugs.openjdk.org/browse/JDK-8272700" target="_blank" rel="noopener"
+>https://bugs.openjdk.org/browse/JDK-8272700&lt;/a>
+&lt;a class="link" href="https://github.com/tarantool/tarantool/issues/6576" target="_blank" rel="noopener"
+>https://github.com/tarantool/tarantool/issues/6576&lt;/a>
+切换为jdk17u-dev之后的问题
+&lt;a class="link" href="https://bugs.openjdk.org/browse/JDK-8283221" target="_blank" rel="noopener"
+>https://bugs.openjdk.org/browse/JDK-8283221&lt;/a>&lt;/p>
+&lt;p>详细配置和步骤参考&lt;a class="link" href="https://openjdk.org/groups/build/" target="_blank" rel="noopener"
+>官网&lt;/a>&lt;/p>
+&lt;p>Xcode版本过新参考&lt;/p>
+&lt;blockquote>
+&lt;p>Problems with the Build Environment
+Make sure your configuration is correct. Re-run configure, and look for any warnings. Warnings that appear in the middle of the configure output is also repeated at the end, after the summary. The entire log is stored in $BUILD/configure.log.&lt;/p>
+&lt;p>Verify that the summary at the end looks correct. Are you indeed using the Boot JDK and native toolchain that you expect?&lt;/p>
+&lt;p>By default, the JDK has a strict approach where warnings from the compiler is considered errors which fail the build. For very new or very old compiler versions, this can trigger new classes of warnings, which thus fails the build. Run configure with &amp;ndash;disable-warnings-as-errors to turn of this behavior. (The warnings will still show, but not make the build fail.)&lt;/p>
+&lt;/blockquote></description></item></channel></rss>

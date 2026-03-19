@@ -1,0 +1,1525 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kubernetes on 仿生人会梦见电子羊吗？</title><link>https://cyber-blog.github.io/tags/kubernetes/</link><description>Recent content in Kubernetes on 仿生人会梦见电子羊吗？</description><generator>Hugo -- gohugo.io</generator><language>zh-ch</language><managingEditor>majiang213@foxmail.com (majiang)</managingEditor><webMaster>majiang213@foxmail.com (majiang)</webMaster><lastBuildDate>Fri, 04 Dec 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://cyber-blog.github.io/tags/kubernetes/index.xml" rel="self" type="application/rss+xml"/><item><title>已有Rancher集群添加节点</title><link>https://cyber-blog.github.io/p/rancher-add-node/</link><pubDate>Fri, 04 Dec 2020 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/rancher-add-node/</guid><description>&lt;ol>
+&lt;li>
+&lt;p>新增节点如果有磁盘则需要挂载磁盘&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>将k8s的master节点的公钥复制出来在新增的节点&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 查看公钥&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cat /root/.ssh/id_rsa.pub
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 以下命令在新增节点执行&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 创建 rancher 用户&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ useradd rancher
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 添加到 docker 组&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ usermod -aG docker rancher
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 切换到前面创建的用户&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ su rancher
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 进入自己的 home 目录&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ &lt;span class="nb">cd&lt;/span> ~
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 创建 .ssh 目录&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ mkdir .ssh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 写入3个服务的公钥&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ &lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;master节点公钥&amp;#34;&lt;/span> &amp;gt;&amp;gt; .ssh/authorized_keys
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 设置权限&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ chmod &lt;span class="m">700&lt;/span> .ssh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ chmod &lt;span class="m">644&lt;/span> .ssh/authorized_keys
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>执行完以上操作后可以用master节点连接进行测试&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>安装集群相同版本的docker&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 预先设置环境变量VERSION可以指定版本的前缀，如VERSION=18.06 将下载18.06.*的最新版本&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nv">VERSION&lt;/span>&lt;span class="o">=&lt;/span>18.06
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl -fsSL https://get.docker.com &lt;span class="p">|&lt;/span> bash -s docker --mirror Aliyun
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>没有启动过 docker 的情况下，配置目录还不存在，先创建 &lt;code>mkdir -p /etc/docker &lt;/code>，然后在 &lt;code>/data&lt;/code>
+下面创建一个 docker 目录（命令：&lt;code>mkdir /data/docker&lt;/code>），然后编辑配置文件 &lt;code>vi /etc/docker/daemon.json&lt;/code> 添加如下配置：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;#34;registry-mirrors&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2">&amp;#34;https://dockerhub.azk8s.cn&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s2">&amp;#34;https://reg-mirror.qiniu.com&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nt">&amp;#34;graph&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;/data/docker&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然后启动 docker&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 开机启动&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">systemctl &lt;span class="nb">enable&lt;/span> docker
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 启动服务&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">systemctl start docker
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>在master节点当中导出rancher相关镜像&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 导出镜像&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">docker save &lt;span class="k">$(&lt;/span>docker images &lt;span class="p">|&lt;/span> grep rancher &lt;span class="p">|&lt;/span> awk &lt;span class="s1">&amp;#39;{print $1&amp;#34;:&amp;#34;$2}&amp;#39;&lt;/span>&lt;span class="k">)&lt;/span> &amp;gt; rancher20201204.tar
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 导入镜像&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">docker load -i rancher20201204.tar
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ol start="5">
+&lt;li>
+&lt;p>编辑rancher-cluster.yml文件&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">nodes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">address&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">165.227.114.63&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">role&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="l">controlplane,worker,etcd]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">address&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">165.227.116.167&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">role&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="l">worker]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">address&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">165.227.127.226&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">role&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="l">worker]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">address&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">新节点ip&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">role&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="l">worker]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">etcd&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">snapshot&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">creation&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">6h&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">retention&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">24h&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>在master节点运行&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">rke up --update-only --config ./rancher-cluster.yml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol></description></item><item><title>内部 CA 证书管理</title><link>https://cyber-blog.github.io/p/ca-manage/</link><pubDate>Wed, 01 Apr 2020 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/ca-manage/</guid><description>&lt;img src="https://cyber-blog.github.io/p/ca-manage/cover.png" alt="Featured image of post 内部 CA 证书管理" />&lt;h2 id="生成-ca-证书">生成 CA 证书
+&lt;/h2>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 生成 KEY&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl genrsa -out ca.key &lt;span class="m">4096&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 生成证书&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl req -x509 -new -nodes -sha512 -days &lt;span class="m">3650&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -subj &lt;span class="s2">&amp;#34;/C=CN/ST=省/L=市/O=组织/OU=组织单位/CN=常用名(或域名)&amp;#34;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -key ca.key &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -out ca.crt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="导入-ca-证书">导入 CA 证书
+&lt;/h2>&lt;p>内部人员需要把该 ca.crt 证书添加到受信任的根证书中，这样通过改 CA 证书生成的其他证书也会被信任。&lt;/p>
+&lt;h3 id="windows">Windows
+&lt;/h3>&lt;p>Windows 运行输入 certmgr.msc 然后添加。操作如下图所示：&lt;/p>
+&lt;p>&lt;img src="https://cyber-blog.github.io/p/ca-manage/ca-manage.png"
+width="768"
+height="502"
+srcset="https://cyber-blog.github.io/p/ca-manage/ca-manage_hu7322496937184039996.png 480w, https://cyber-blog.github.io/p/ca-manage/ca-manage_hu6699336193131837673.png 1024w"
+loading="lazy"
+alt="在这里插入图片描述"
+class="gallery-image"
+data-flex-grow="152"
+data-flex-basis="367px"
+>&lt;/p>
+&lt;h3 id="centos导入-ca-证书">CentOS导入 CA 证书
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 如果没有 ca-certificates 就安装&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">yum install -y ca-certificates
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 把 ca.crt 证书放到下面目录&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">/etc/pki/ca-trust/source/anchors
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 执行下面命令更新证书&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">update-ca-trust
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 如果根证书是以 *.pem 结尾，需要转换成crt，然后再执行上述步骤。命令如下：&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl x509 -in ca.pem -inform PEM -out ca.crt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="debian导入ca证书">Debian导入CA证书
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 一般情况下应该是已经有安装的了&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">apt-get install ca-certificates
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 建立local目录是为了方便区分这是自己填加的证书，可以自定义，但一定要在/usr/share/ca-certificates目录下&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">mkdir -p /usr/share/ca-certificates/local
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 如果根证书是以 *.pem 结尾，需要转换成crt，然后再执行上述步骤。命令如下：&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl x509 -in ca.pem -inform PEM -out ca.crt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 将CA证书复制至/usr/share/ca-certificates/local目录&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 执行下面命令后会进入一个图形化界面，第一个界面选yes，然后选中刚刚添加的证书，回车即可&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">dpkg-reconfigure ca-certificates
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="使用-ca-证书生成其他证书">使用 CA 证书生成其他证书
+&lt;/h2>&lt;p>例如生成泛域名证书：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 生成 KEY&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl genrsa -out *.majiang.com.key &lt;span class="m">4096&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 生成证书请求&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl req -sha512 -new &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -subj &lt;span class="s2">&amp;#34;/C=CN/ST=河北省/L=石家庄市/O=MJ/OU=MJ/CN=*.majiang.com&amp;#34;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -key *.majiang.com.key &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -out *.majiang.com.csr
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 设置证书信息，主要是泛域名时，可以指定额外的 x.com&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cat &amp;gt; majiang.com.ext &lt;span class="s">&amp;lt;&amp;lt;-EOF
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">authorityKeyIdentifier=keyid,issuer
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">basicConstraints=CA:FALSE
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">extendedKeyUsage = serverAuth
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">subjectAltName = @alt_names
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">[alt_names]
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">DNS.1=*.majiang.com
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">DNS.2=majiang.com
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">EOF&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 使用 CA 证书生成具体的证书&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">openssl x509 -req -sha512 -days &lt;span class="m">3650&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -extfile majiang.com.ext &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -CA ca.crt -CAkey ca.key -CAcreateserial &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -in *.majiang.com.csr &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -out *.majiang.com.crt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>操作过程中生成的下面两个关键的文件：&lt;/p>
+&lt;p>私钥：&lt;code>*.majiang.com.key&lt;/code>
+公钥：&lt;code>*.majiang.com.crt&lt;/code>
+网站配置使用上面两个文件即可。&lt;/p>
+&lt;p>参考链接&lt;/p>
+&lt;p>&lt;a class="link" href="https://blog.csdn.net/isea533/article/details/106397248" target="_blank" rel="noopener"
+>https://blog.csdn.net/isea533/article/details/106397248&lt;/a>&lt;/p>
+&lt;p>&lt;a class="link" href="https://github.com/goharbor/harbor/blob/v1.9.3/docs/configure_https.md" target="_blank" rel="noopener"
+>https://github.com/goharbor/harbor/blob/v1.9.3/docs/configure_https.md&lt;/a>
+&lt;a class="link" href="https://gist.github.com/Soarez/9688998" target="_blank" rel="noopener"
+>https://gist.github.com/Soarez/9688998&lt;/a>&lt;/p></description></item><item><title>Ranchar CentOS 安装指南</title><link>https://cyber-blog.github.io/p/ranchar-install/</link><pubDate>Tue, 21 Jan 2020 00:00:00 +0000</pubDate><author>majiang213@foxmail.com (majiang)</author><guid>https://cyber-blog.github.io/p/ranchar-install/</guid><description>&lt;img src="https://cyber-blog.github.io/p/ranchar-install/cover.png" alt="Featured image of post Ranchar CentOS 安装指南" />&lt;blockquote>
+&lt;p>&lt;a class="link" href="https://developer.aliyun.com/mirror/centos?spm=a2c6h.13651102.0.0.3e221b1175Oh74" target="_blank" rel="noopener"
+>yum安装慢的解决方法，修改yum源为阿里云&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="1docker安装配置">1.Docker安装配置
+&lt;/h2>&lt;h3 id="11-防火墙配置">1.1 防火墙配置
+&lt;/h3>&lt;p>禁用防火墙&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">systemctl disable firewalld
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>关闭防火墙&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">systemctl stop firewalld
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>禁用 SELinux，目的是让容器可以读取主机文件系统&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">setenforce &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>配置禁用 SELinux,修改 SELINUX 为 disabled&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">vi /etc/sysconfig/selinux
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nv">SELINUX&lt;/span>&lt;span class="o">=&lt;/span>disabled
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">#SELINUX=enforcing&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>禁用 swap 分区&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">#禁用当前的 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">swap sudo swapoff -a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">#同时永久禁掉swap分区，打开如下文件注释掉swap那一行 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sudo vi /etc/fstab
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="12-挂载磁盘">1.2 挂载磁盘
+&lt;/h3>&lt;blockquote>
+&lt;p>&lt;strong>挂载磁盘，参考：&lt;/strong> &lt;a class="link" href="https://blog.csdn.net/isea533/article/details/94393429" target="_blank" rel="noopener"
+>Linux 不重启(动态)挂载磁盘以及简单的数据迁移&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>一般购买服务器的时候会挂载一个100G以上的硬盘，需要先对硬盘进行格式化和挂载配置，然后修改 docker 配置为该挂载的路径。下面是磁盘的相关操作步骤。&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>通过 &lt;code>fdisk -l&lt;/code> 查看系统挂载的磁盘，阿里云中通常第二个磁盘为 &lt;code>/dev/vdb&lt;/code> ，如果磁盘没有分区和格式化，先进行第 2 步操作。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>对磁盘分区，执行 &lt;code>fdisk /dev/vdb&lt;/code> 进入配置后，输入 &lt;code>n&lt;/code> ，后续提示全部使用默认设置，最后输入 &lt;code>w&lt;/code> 写入配置进行保存。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>格式化磁盘，使用 &lt;code>mkfs.ext4 /dev/vdb1&lt;/code> 进行格式化。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>输入命令编辑配置文件 &lt;code>vi /etc/fstab&lt;/code> ，在最后一行添加如下配置：&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">/dev/vdb1 /data ext4 defaults &lt;span class="m">1&lt;/span> &lt;span class="m">2&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>​ 手工和上面的配置对齐好看就行。&lt;/p>
+&lt;p>5 .挂载目录，在根目录创建 &lt;code>/data&lt;/code> 目录，然后使用命令 &lt;code>mount -a&lt;/code> 或 &lt;code> mount /dev/vdb1 /data&lt;/code>进行挂载，这种方式重启后会失效，还需继续下一步配置。&lt;/p>
+&lt;ol start="6">
+&lt;li>接下来就可以使用 &lt;code>/data&lt;/code> 目录了。&lt;/li>
+&lt;/ol>
+&lt;h3 id="13-安装docker">1.3 安装docker
+&lt;/h3>&lt;p>在阿里巴巴开源镜像站搜docker-ce。帮助中给了一个地址：&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;a class="link" href="https://developer.aliyun.com/article/110806" target="_blank" rel="noopener"
+>https://developer.aliyun.com/article/110806&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>使用官方安装脚本自动安装 （仅适用于公网环境）&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">curl -fsSL https://get.docker.com &lt;span class="p">|&lt;/span> bash -s docker --mirror Aliyun
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>安装完成后先别着急设置 docker 自动启动和启动服务。没有启动过 docker 的情况下，配置目录还不存在，先创建 &lt;code>mkdir -p /etc/docker&lt;/code> ，然后在 &lt;code>/data&lt;/code>下面创建一个 docker 目录（命令： &lt;code>mkdir /data/docker&lt;/code> ），然后编辑配置文件 &lt;code>vi /etc/docker/daemon.json&lt;/code> 添加如下配置：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;registry-mirrors&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;https://dockerhub.azk8s.cn&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;https://reg-mirror.qiniu.com&amp;#34;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nt">&amp;#34;graph&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;/data/docker&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>配置好docker 后，可以设置开机启动和启动服务了。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 开机启动 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">systemctl &lt;span class="nb">enable&lt;/span> docker
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 启动服务 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">systemctl start docker
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="14-docker离线安装">1.4 docker离线安装
+&lt;/h4>&lt;p>在没有外网连接的特殊环境下安装docker的步骤&lt;/p>
+&lt;blockquote>
+&lt;p>参考自：https://www.centlinux.com/2019/02/install-docker-ce-on-offline-centos-7-machine.html&lt;/p>
+&lt;/blockquote>
+&lt;p>首先找到一台有外网的linux服务器运行如下命令&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>Dockerce 需要一些在 EPEL (enterpriselinux 的额外包) yum 存储库中可用的软件包。因此，我们必须首先安装 epelyum 存储库。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">yum install -y epel-release.noarch
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>使用yum-config-manager安装 Docker CE yum 存储库&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">yum-config-manager --add-repo&lt;span class="o">=&lt;/span>https://download.docker.com/linux/centos/docker-ce.repo
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>启用 dockerce (Nightly) yum 存储库。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">yum-config-manager --enable docker-ce-nightly
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>我们在 Linux 服务器中添加了两个 yum 存储库，因此，我们应该为 yum 包管理器构建缓存。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">yum makecache fast
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>下载 Docker CE 和软件依赖&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 创建一个下载 dockerce 和相关软件包的目录。&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">mkdir ~/docker
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> ~/docker
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 执行命令下载 dockerce 和依赖包。&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">yumdownloader --resolve docker-ce
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 压缩&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tar cvzf ~/docker.tar.gz *
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>将下载的这些包安装在没有外网链接的服务器上&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 创建文件夹&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">mkdir docker
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 解压缩&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tar xvf docker.tar.gz -C ~/docker
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> docker
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 安装并忽略依赖关系&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">rpm -ivh --replacefiles --replacepkgs *.rpm
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;h3 id="15-修改hostname">1.5 修改hostname
+&lt;/h3>&lt;p>根据本次安装的集群规模为每台服务器修改为规律的hostname&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">hostnamectl set-hostname master1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="2-kubectl下载安装">2. kubectl下载安装
+&lt;/h2>&lt;blockquote>
+&lt;p>国内直接使用阿里巴巴开源镜像站安装：&lt;/p>
+&lt;p>&lt;a class="link" href="https://opsx.alibaba.com/mirror" target="_blank" rel="noopener"
+>https://opsx.alibaba.com/mirror&lt;/a>&lt;/p>
+&lt;p>从列表找到 kubernetes，点击帮助，显示如下信息。&lt;/p>
+&lt;p>&lt;strong>重要提示：&lt;/strong>&lt;/p>
+&lt;p>可以从安裝列表去掉 kubeadm、kubelet，只安装 kubectl&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>Debian / Ubuntu&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">apt-get update &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> apt-get install -y apt-transport-https
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg &lt;span class="p">|&lt;/span> apt-key add -
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">cat &lt;span class="s">&amp;lt;&amp;lt;EOF &amp;gt;/etc/apt/sources.list.d/kubernetes.list
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">EOF&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">apt-get update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">apt-get install -y kubectl
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>CentOS / RHEL / Fedora&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">cat &lt;span class="s">&amp;lt;&amp;lt;EOF &amp;gt; /etc/yum.repos.d/kubernetes.repo
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">[kubernetes]
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">name=Kubernetes
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">enabled=1
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">gpgcheck=1
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">repo_gpgcheck=1
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="s">EOF&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;p>如果需要离线安装的话,则在在线环境安装之后将可执行的二进制&lt;code>kubectl&lt;/code>文件复制出来即可&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 查找文件位置，找到后复制出来&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">find / -name &lt;span class="s2">&amp;#34;kubectl&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/blockquote>
+&lt;h2 id="3-rke下载安装">3. rke下载安装
+&lt;/h2>&lt;p>&lt;strong>下载RKE二进制文件&lt;/strong>在您的工作站上，打开Web浏览器并导航到我们的&lt;a class="link" href="https://github.com/rancher/rke/releases/tag/v1.2.4" target="_blank" rel="noopener"
+>RKE版本页面&lt;/a>。下载适用于您的操作系统和体系结构的最新RKE安装程序：&lt;/p>
+&lt;ul>
+&lt;li>MacOS：rke_darwin-amd64&lt;/li>
+&lt;li>Linux（Intel / AMD）：rke_linux-amd64&lt;/li>
+&lt;li>Linux（ARM 32位）：rke_linux-arm&lt;/li>
+&lt;li>Linux（ARM 64位）：rke_linux-arm64&lt;/li>
+&lt;li>Windows（32位）：rke_windows-386.exe&lt;/li>
+&lt;li>Windows（64位）：rke_windows-amd64.exe&lt;/li>
+&lt;/ul>
+&lt;p>将RKE二进制文件复制到您的文件夹中 $PATH 并重命名 rke（或 rke.exe 用于 Windows）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># MacOS &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ mv rke_darwin-amd64 rke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 增加可执行权限 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ chmod +x rke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Linux &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ mv rke_linux-amd64 rke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 增加可执行权限 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ chmod +x rke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># Windows PowerShell &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;gt; mv rke_windows-amd64.exe rke.exe
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 验证安装：&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ rke --version
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 输出类似下面版本信息 rke version v1.0.5&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="4-helm3-下载安装">4. helm3 下载安装
+&lt;/h2>&lt;blockquote>
+&lt;p>官方文档：&lt;a class="link" href="https://helm.sh/docs/intro/install/" target="_blank" rel="noopener"
+>Installing Helm&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>针对 Linux 系统，使用下面的命令进行安装：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">$ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ chmod &lt;span class="m">700&lt;/span> get_helm.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ ./get_helm.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="5-ssh-key各个节点的配置">5. ssh-key各个节点的配置
+&lt;/h2>&lt;p>假设分别为 NODE1, NODE2, NODE3 3个节点。使用的 &lt;em>root&lt;/em> 账号生成ssh-key。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">$ ssh-keygen -t rsa
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 之后会有一些默认选项和可以手工配置的选项，可以自行配制，或者一直回车用默认值 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 执行完成后，会生成两个文件 &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Your identification has been saved in /root/.ssh/id_rsa.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Your public key has been saved in /root/.ssh/id_rsa.pub.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>查看 &lt;code>id_rsa.pub&lt;/code> 文件，&lt;strong>复制文件内容&lt;/strong>。在每个节点上，切换到rancher用户，然后执行如下命令&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 创建 rancher 用户&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ useradd rancher
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 添加到 docker 组&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ usermod -aG docker rancher
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 切换到前面创建的用户&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ su rancher
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 进入自己的 home 目录&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ &lt;span class="nb">cd&lt;/span> ~
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 创建 .ssh 目录&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ mkdir .ssh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 写入NODE1的root用户的公钥&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ &lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;复制的内容&amp;#34;&lt;/span> &amp;gt;&amp;gt; .ssh/authorized_keys
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 设置权限&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ chmod &lt;span class="m">700&lt;/span> .ssh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ chmod &lt;span class="m">644&lt;/span> .ssh/authorized_key
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 配置后可以在 NODE1 测试&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 连接成功后通过 exit 退出&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ ssh rancher@NODE2
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;p>&lt;strong>特别注意！&lt;/strong>&lt;/p>
+&lt;p>两个潜在的坑，ssh配置authorized_keys后仍然需要输入密码的问题&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>注意 $HOME/.ssh 目录 或 $HOME目录的权限 最好是700，我就在这里栽跟头了。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>注意 uthorized_keys 的权限 chmod 644 authorized_keys 这个也是要注意的。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;h2 id="6--rke-配置集群">6. rke 配置集群
+&lt;/h2>&lt;h3 id="61-rke配置离线集群">6.1 rke配置离线集群
+&lt;/h3>&lt;p>在离线环境当中安装集群时，要求您使用一个 Linux 工作站，它可以访问互联网和您的私有镜像库。请确保至少有 20GB 的磁盘空间可用。如果要使用 ARM64 主机，则镜像仓库必须支持 Docker Manifest。截至 2020 年 4 月，Amazon Elastic Container Registry 不支持 Docker Manifest 功能。&lt;/p>
+&lt;blockquote>
+&lt;h4 id="查找您用的-rancher-版本所需要的资源">查找您用的 Rancher 版本所需要的资源
+&lt;/h4>&lt;ol>
+&lt;li>
+&lt;p>浏览我们的&lt;a class="link" href="https://github.com/rancher/rancher/releases" target="_blank" rel="noopener"
+>版本发布页面&lt;/a>，查找您想安装的 Rancher v2.x.x 版本。不要下载标记为 &lt;code>rc&lt;/code> 或 &lt;code>Pre-release&lt;/code> 的版本，因为它们在生产环境下是不稳定的。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>从发行版 &lt;strong>Assets&lt;/strong> 部分下载以下文件，这些文件是离线环境下安装 Rancher 所必需的：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Release 文件&lt;/th>
+&lt;th>描述&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>rancher-images.txt&lt;/code>&lt;/td>
+&lt;td>此文件包含安装 Rancher、创建集群和运行 Rancher 工具所需的镜像列表。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>rancher-save-images.sh&lt;/code>&lt;/td>
+&lt;td>这个脚本会从 DockerHub 中拉取在文件&lt;code>rancher-images.txt&lt;/code>中描述的所有镜像，并将它们保存为文件&lt;code>rancher-images.tar.gz&lt;/code>。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>rancher-load-images.sh&lt;/code>&lt;/td>
+&lt;td>这个脚本会载入文件&lt;code>rancher-images.tar.gz&lt;/code>中的镜像，并将它们推送到您自己的私有镜像库。&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ol>
+&lt;h4 id="收集-cert-manager-镜像">收集 cert-manager 镜像
+&lt;/h4>&lt;p>如果您使用自己的证书，或者要在外部负载均衡器上终止 TLS，请跳过此步骤。&lt;/p>
+&lt;p>在安装高可用过程中，如果选择使用 Rancher 默认的自签名 TLS 证书，则还必须将 &lt;a class="link" href="https://hub.helm.sh/charts/jetstack/cert-manager" target="_blank" rel="noopener"
+>&lt;code>cert-manager&lt;/code>&lt;/a> 镜像添加到 &lt;code>rancher-images.txt&lt;/code> 文件中。如果使用自己的证书，则跳过此步骤。&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>获取最新的&lt;code>cert-manager&lt;/code> Helm chart，解析模板,获取镜像详细信息：&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>注意：&lt;/strong> 由于&lt;code>cert-manager&lt;/code>最近的改动，您需要升级&lt;code>cert-manager&lt;/code>版本。如果您要升级 Rancher 并且使用&lt;code>cert-manager&lt;/code>的版本低于 v0.12.0，请看我们的&lt;a class="link" href="https://docs.rancher.cn/docs/rancher2/installation_new/options/upgrading-cert-manager/_index" target="_blank" rel="noopener"
+>升级文档&lt;/a>。&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">helm repo add jetstack https://charts.jetstack.io
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">helm repo update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">helm fetch jetstack/cert-manager --version v0.12.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">helm template ./cert-manager-&amp;lt;version&amp;gt;.tgz &lt;span class="p">|&lt;/span> grep -oP &lt;span class="s1">&amp;#39;(?&amp;lt;=image: &amp;#34;).*(?=&amp;#34;)&amp;#39;&lt;/span> &amp;gt;&amp;gt; ./rancher-images.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>对镜像列表进行排序和唯一化，去除重复的镜像源：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">sort -u rancher-images.txt -o rancher-images.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;h4 id="将镜像保存到您的工作站中">将镜像保存到您的工作站中
+&lt;/h4>&lt;ol>
+&lt;li>
+&lt;p>为&lt;code>rancher-save-images.sh&lt;/code> 文件添加可执行权限：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">chmod +x rancher-save-images.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>执行脚本&lt;code>rancher-save-images.sh&lt;/code>并以&lt;code>--image-list ./rancher-images.txt&lt;/code> 作为参数，创建所有需要镜像的压缩包：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">./rancher-save-images.sh --image-list ./rancher-images.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>结果：&lt;/strong> Docker 会开始拉取用于离线安装所需的镜像。这个过程会花费几分钟时间。完成时，您的当前目录会输出名为&lt;code>rancher-images.tar.gz&lt;/code>的压缩包。请确认输出文件是否存在。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h4 id="推送镜像到私有镜像库">推送镜像到私有镜像库
+&lt;/h4>&lt;p>下一步，您将使用脚本将文件 &lt;code>rancher-images.tar.gz&lt;/code> 中的镜像上传到您自己的私有镜像库。&lt;/p>
+&lt;p>文件 &lt;code>rancher-images.txt&lt;/code> 和 &lt;code>rancher-images.tar.gz&lt;/code> 应该位于工作站中运行 &lt;code>rancher-load-images.sh&lt;/code> 脚本的同一目录下。&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>登录私有镜像库：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">docker login &amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>为 &lt;code>rancher-load-images.sh&lt;/code> 添加可执行权限：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">chmod +x rancher-load-images.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>使用脚本 &lt;code>rancher-load-images.sh&lt;/code>提取&lt;code>rancher-images.tar.gz&lt;/code>文件中的镜像，根据文件&lt;code>rancher-images.txt&lt;/code>中的镜像列表对提取的镜像文件重新打 tag 并推送到您的私有镜像库：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">./rancher-load-images.sh --image-list ./rancher-images.txt --registry &amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;p>参考自&lt;a class="link" href="https://docs.rancher.cn/docs/rancher2/installation_new/other-installation-methods/air-gap/prepare-nodes/_index" target="_blank" rel="noopener"
+>官方文档&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;p>参考下面的示例创建rancher-cluster.yml文件，替换 nodes 3个节点的配置信息。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yml" data-lang="yml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">nodes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">address&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">192.168.0.28&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">role&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="l">controlplane,worker,etcd]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">address&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">192.168.0.30&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">role&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="l">worker,etcd]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">address&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">192.168.0.26&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">role&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="l">worker,etcd]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">etcd&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">snapshot&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">creation&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">6h&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">retention&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">24h&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">kube-controller&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># CIDR pool used to assign IP addresses to pods in the cluster&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">cluster_cidr&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">10.90.0.0&lt;/span>&lt;span class="l">/16&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c"># 如果有私有的镜像仓库则可选该配置&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">private_registries&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">url&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">&amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># 私有镜像库地址&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">user&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">rancher&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">password&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;*********&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">is_default&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;p>&lt;strong>常见的RKE节点选项&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>Option&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Required&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Description&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>address&lt;/code>&lt;/td>
+&lt;td>yes&lt;/td>
+&lt;td>公共DNS或IP地址&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>user&lt;/code>&lt;/td>
+&lt;td>yes&lt;/td>
+&lt;td>可以运行docker命令的用户&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>role&lt;/code>&lt;/td>
+&lt;td>yes&lt;/td>
+&lt;td>分配给节点的Kubernetes角色列表&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>internal_address&lt;/td>
+&lt;td>no&lt;/td>
+&lt;td>内部集群流量的私有DNS或IP地址&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>ssh_key_path&lt;/td>
+&lt;td>no&lt;/td>
+&lt;td>用于对节点进行身份验证的SSH私钥的路径（默认&lt;code>~/.ssh/id_rsa&lt;/code>)&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>高级配置&lt;/strong>&lt;/p>
+&lt;p>RKE有许多配置选项可用于自定义安装以适合您的特定环境。&lt;/p>
+&lt;p>有关选项和功能的完整列表，请参阅&lt;a class="link" href="https://rancher.com/docs/rke/latest/en/config-options/" target="_blank" rel="noopener"
+>RKE文档&lt;/a>。&lt;/p>
+&lt;p>要为&lt;strong>更大&lt;/strong>的Rancher安装调整您的etcd集群，请参阅&lt;a class="link" href="https://rancher.com/docs/rancher/v2.x/en/installation/resources/advanced/etcd/" target="_blank" rel="noopener"
+>etcd设置指南&lt;/a>。&lt;/p>
+&lt;p>&lt;strong>特别注意&lt;/strong>：如果使用了阿里云等公有云环境时，确保主机之间端口能够互相访问，例如在阿里云&lt;/p>
+&lt;p>配置：&lt;/p>
+&lt;p>&lt;img src="https://cyber-blog.github.io/image-20210118144125499.png"
+loading="lazy"
+alt="image-20210118144125499"
+>&lt;/p>
+&lt;/blockquote>
+&lt;p>根据自己的配置修改保存好&lt;code> rancher-cluster.yml&lt;/code> 后，执行下面的命令：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">rke up --config ./rancher-cluster.yml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>该命令根据网速等多种情况，需要等待很久。这期间输出的部分日志如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># rke up --config ./rancher-cluster.yml&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> Initiating Kubernetes cluster
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>certificates&lt;span class="o">]&lt;/span> Generating admin certificates and kubeconfig
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> Successfully Deployed state file at &lt;span class="o">[&lt;/span>./rancher-cluster.rkestate&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> Building Kubernetes cluster
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>dialer&lt;span class="o">]&lt;/span> Setup tunnel &lt;span class="k">for&lt;/span> host &lt;span class="o">[&lt;/span>192.168.0.1&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>dialer&lt;span class="o">]&lt;/span> Setup tunnel &lt;span class="k">for&lt;/span> host &lt;span class="o">[&lt;/span>192.168.0.2&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>dialer&lt;span class="o">]&lt;/span> Setup tunnel &lt;span class="k">for&lt;/span> host &lt;span class="o">[&lt;/span>192.168.0.3&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>network&lt;span class="o">]&lt;/span> Deploying port listener containers
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>network&lt;span class="o">]&lt;/span> Pulling image &lt;span class="o">[&lt;/span>rancher/rke-tools:v0.1.34&lt;span class="o">]&lt;/span> on host
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>10.10.1.238&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>network&lt;span class="o">]&lt;/span> Pulling image &lt;span class="o">[&lt;/span>rancher/rke-tools:v0.1.34&lt;span class="o">]&lt;/span> on host
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>10.10.1.241&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0000&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>network&lt;span class="o">]&lt;/span> Pulling image &lt;span class="o">[&lt;/span>rancher/rke-tools:v0.1.34&lt;span class="o">]&lt;/span> on host
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">[&lt;/span>10.10.1.242&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">INFO&lt;span class="o">[&lt;/span>0030&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>network&lt;span class="o">]&lt;/span> Successfully pulled image &lt;span class="o">[&lt;/span>rancher/rke-tools:v0.1.34&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">on host &lt;span class="o">[&lt;/span>10.10.1.241&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>集群创建成功后，在当前目录下面有以下文件：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">-rw-r----- &lt;span class="m">1&lt;/span> root root &lt;span class="m">5382&lt;/span> Aug &lt;span class="m">1&lt;/span> 16:17 kube_config_rancher-cluster.yml
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">-rw-r----- &lt;span class="m">1&lt;/span> root root &lt;span class="m">114422&lt;/span> Aug &lt;span class="m">1&lt;/span> 16:18 rancher-cluster.rkestate
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">-rw-r--r-- &lt;span class="m">1&lt;/span> root root &lt;span class="m">423&lt;/span> Aug &lt;span class="m">1&lt;/span> 15:50 rancher-cluster.yml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>RKE 自动创建了一个 &lt;code>kube_config_rancher-cluster.yml&lt;/code> ，这个文件有 &lt;code>kubectl&lt;/code> 和 &lt;code>helm&lt;/code> 的凭据。&lt;/p>
+&lt;blockquote>
+&lt;h3 id="保存您的文件">保存您的文件
+&lt;/h3>&lt;p>&lt;strong>重要&lt;/strong> 以下文件需要被维护，用来故障排查和升级集群。&lt;/p>
+&lt;p>将以下文件的副本保存在安全的位置：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>rancher-cluster.yml&lt;/code>：RKE 配置文件&lt;/li>
+&lt;li>&lt;code>kube_config_rancher-cluster.yml&lt;/code>：&lt;a class="link" href="https://docs.rancher.cn/docs/rke/kubeconfig/_index" target="_blank" rel="noopener"
+>Kubeconfig 文件&lt;/a>&lt;/li>
+&lt;li>&lt;code>rancher-cluster.rkestate&lt;/code>：&lt;a class="link" href="https://docs.rancher.cn/docs/rke/installation/_index" target="_blank" rel="noopener"
+>Kubernetes 集群状态文件&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>注意：&lt;/strong> 后两个文件名的“rancher-cluster”部分取决于您如何命名 RKE 集群的配置文件。&lt;/p>
+&lt;/blockquote>
+&lt;p>将&lt;code> kube_config_rancher-cluster.yml&lt;/code> 复制到&lt;code> $HOME/.kube/config&lt;/code> ，如果想在其他节点通过&lt;code>kubectl &lt;/code>访问集群，将该文件复制到其他节点的相同路径下。
+现在可以通过 &lt;code>kubectl &lt;/code>来查看当前的节点状态：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">$ kubectl get nodes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NAME STATUS ROLES AGE VERSION
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">192.168.0.1 Ready controlplane,etcd,worker 16m v1.14.3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">192.168.0.2 Ready worker 16m v1.14.3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">192.168.0.3 Ready worker 16m v1.14.3
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="7helm安装rancher">7.helm安装rancher
+&lt;/h2>&lt;blockquote>
+&lt;p>参考文档：&lt;a class="link" href="https://rancher.com/docs/rancher/v2.x/en/installation/k8s-install/helm-rancher/" target="_blank" rel="noopener"
+>helm-rancher&lt;/a>&lt;/p>
+&lt;p>离线安装参考&lt;a class="link" href="https://docs.rancher.cn/docs/rancher2/installation_new/other-installation-methods/air-gap/install-rancher/_index" target="_blank" rel="noopener"
+>文档&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="71-添加稳定版helm-chart仓库">7.1 添加稳定版Helm Chart仓库
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>如果为离线环境安装的话则参考以下步骤执行：&lt;/strong>&lt;/p>
+&lt;p>从可以访问 Internet 的系统中，获取最新的 Rancher Helm Chart，然后将内容复制到可以访问 Rancher Server 集群的系统中。&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>如果您还没有在有互联网访问的系统上安装&lt;code>helm&lt;/code>。注意：请参考&lt;a class="link" href="https://docs.rancher.cn/docs/rancher2/installation_new/options/helm-version/_index" target="_blank" rel="noopener"
+>Helm 版本要求&lt;/a>来选择一个 Helm 版本来安装 Rancher。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>使用&lt;code>helm repo add&lt;/code>来添加仓库，不同的地址适应不同的 Rancher 版本，请替换命令中的&lt;code>&amp;lt;CHART_REPO&amp;gt;&lt;/code>，替换为&lt;code>latest&lt;/code>，&lt;code>stable&lt;/code>或&lt;code>alpha&lt;/code>。更多信息请参考&lt;a class="link" href="https://docs.rancher.cn/docs/rancher2/installation_new/options/server-tags/_index" target="_blank" rel="noopener"
+>如何选择 Rancher 版本&lt;/a>。&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>latest&lt;/code>： 最新版，建议在尝试新功能时使用。&lt;/li>
+&lt;li>&lt;code>stable&lt;/code>：稳定版，建议生产环境中使用。&lt;/li>
+&lt;li>&lt;code>alpha&lt;/code>：预览版， 未来版本的实验性预览。&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">helm repo add rancher-&amp;lt;CHART_REPO&amp;gt; https://releases.rancher.com/server-charts/&amp;lt;CHART_REPO&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>获取最新的 Rancher Chart，您会看到对应的 tgz 文件下载到本地。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">helm fetch rancher-&amp;lt;CHART_REPO&amp;gt;/rancher
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;h3 id="72-为rancher创建名称空间">7.2 为Rancher创建名称空间
+&lt;/h3>&lt;p>我们需要定义一个名称空间，应在该名称空间中安装由Chart创建的资源。这应该始终是&lt;code>cattle-system&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">kubectl create namespace cattle-system
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="73-选择您的ssl配置">7.3 选择您的SSL配置
+&lt;/h3>&lt;p>Rancher Server 在默认情况下被设计为安全的，并且需要 SSL/TLS 配置。&lt;/p>
+&lt;p>当在离线环境的 Kubernetes 中安装 Rancher 时，推荐两种证书生成方式。&lt;/p>
+&lt;blockquote>
+&lt;p>**注意：**如果要在外部终止 SSL/TLS，请参阅&lt;a class="link" href="https://docs.rancher.cn/docs/rancher2/installation_new/options/chart-options/_index" target="_blank" rel="noopener"
+>在外部负载均衡器上终止 TLS&lt;/a>。&lt;/p>
+&lt;/blockquote>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>设置&lt;/th>
+&lt;th>Chart 选项&lt;/th>
+&lt;th>描述&lt;/th>
+&lt;th>是否需要 cert-manager？&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Rancher 生成的自签名证书&lt;/td>
+&lt;td>&lt;code>ingress.tls.source=rancher&lt;/code>&lt;/td>
+&lt;td>使用 Rancher 生成的 CA 签发的自签名证书 此项为&lt;strong>默认选项&lt;/strong>。在渲染 Rancher Helm 模板时不需要传递此项。&lt;/td>
+&lt;td>是&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>已有的证书&lt;/td>
+&lt;td>&lt;code>ingress.tls.source=secret&lt;/code>&lt;/td>
+&lt;td>通过创建 Kubernetes Secret（s）使用您已有的证书文件。 渲染 Rancher Helm 模板时必须传递此选项。&lt;/td>
+&lt;td>否&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;blockquote>
+&lt;p>重要&lt;/p>
+&lt;p>Rancher 中国技术支持团队建议您使用“您已有的证书” &lt;code>ingress.tls.source=secret&lt;/code> 这种方式，从而减少对 cert-manager 的运维成本。&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>选择 CA 颁发的可靠证书。&lt;/strong>&lt;/p>
+&lt;p>根据您自己的证书创建Kubernetes secrent，以供Rancher使用。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">kubectl -n cattle-system create secret tls tls-rancher-ingress \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">--cert=tls.crt \
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">--key=tls.key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;p>大部分情况下会使用自生成的证书，自生成证书的步骤参考https://blog.csdn.net/isea533/article/details/106397248。&lt;/p>
+&lt;p>&lt;strong>注意证书相关文件的名称只能是固定的&lt;code>tls&lt;/code> 和&lt;code>cacerts&lt;/code>&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>&lt;code>.crt&lt;/code> 和 &lt;code>.pem&lt;/code> 的转换只需要修改后缀名称即可&lt;/strong>。参考https://stackoverflow.com/questions/991758/how-to-get-pem-file-from-key-and-crt-files&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>使用自生成的证书创建Kubernetes secrent&lt;/strong>&lt;/p>
+&lt;blockquote>
+&lt;p>参考 &lt;a class="link" href="https://rancher.com/docs/rancher/v2.x/en/installation/resources/tls-secrets/" target="_blank" rel="noopener"
+>https://rancher.com/docs/rancher/v2.x/en/installation/resources/tls-secrets/&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 使用自己生成的证书。将泛域名证书的名称修改为tls&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl -n cattle-system create secret tls tls-rancher-ingress &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --cert&lt;span class="o">=&lt;/span>tls.crt &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --key&lt;span class="o">=&lt;/span>tls.key
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 将之前生成的 ca.crt 修改为 cacerts.pem&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl -n cattle-system create secret generic tls-ca &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --from-file&lt;span class="o">=&lt;/span>cacerts.pem&lt;span class="o">=&lt;/span>./cacerts.pem
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="74-安装rancher">7.4 安装rancher
+&lt;/h3>&lt;p>&lt;strong>在线环境直接运行以下命令即可&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">helm install rancher rancher-stable/rancher &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span>--namespace cattle-system &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span>--set &lt;span class="nv">hostname&lt;/span>&lt;span class="o">=&lt;/span>rancher.my.org &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span>--set ingress.tls.source&lt;span class="o">=&lt;/span>secret
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 使用自生成证书则使用以下命令&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">helm install rancher rancher-stable/rancher &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --namespace cattle-system &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">hostname&lt;/span>&lt;span class="o">=&lt;/span>lims-rancher.sh-tec.com &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set ingress.tls.source&lt;span class="o">=&lt;/span>secret &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">privateCA&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h4 id="741-离线环境安装步骤">7.4.1 &lt;strong>离线环境安装步骤&lt;/strong>
+&lt;/h4>&lt;p>&lt;strong>渲染您的 Rancher Helm 模板&lt;/strong>&lt;/p>
+&lt;p>设置 Rancher Helm 模板时，Chart 中有几个选项是专门为离线安装设计的。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Chart 选项&lt;/th>
+&lt;th>值&lt;/th>
+&lt;th>描述&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>certmanager.version&lt;/code>&lt;/td>
+&lt;td>&amp;quot;&amp;quot;&lt;/td>
+&lt;td>根据运行的 cert-manager 版本配置适当的 Rancher TLS 颁发者。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>systemDefaultRegistry&lt;/code>&lt;/td>
+&lt;td>&lt;code>&amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt;&lt;/code>&lt;/td>
+&lt;td>配置 Rancher，在创建集群时，Rancher Server 始终从私有镜像仓库中拉取镜像&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>useBundledSystemChart&lt;/code>&lt;/td>
+&lt;td>&lt;code>true&lt;/code>&lt;/td>
+&lt;td>配置 Rancher Server 使用内置的 system-chart，&lt;a class="link" href="https://github.com/rancher/system-charts" target="_blank" rel="noopener"
+>system-chart&lt;/a>中包含监控，日志，告警和全局 DNS 等功能所需的 Chart。这些 &lt;a class="link" href="https://github.com/rancher/system-charts" target="_blank" rel="noopener"
+>Helm charts&lt;/a> 位于 GitHub 中，但是由于您处于离线环境中，因此使用 Rancher 中内置的 Chart 比设置一个 Git 镜像简单得多。当然您也可以选择自己手动镜像 GitHub 中的 Rancher System Chart。&lt;em>自 v2.3.0 起可用&lt;/em>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>使用已有的证书&lt;/strong>&lt;/p>
+&lt;p>根据您已有的证书创建 Kubernetes 密文，以供 Rancher 使用。证书的&lt;code>common name&lt;/code>将需要与以下命令中的&lt;code>hostname&lt;/code>选项匹配，否则 ingress controller 将无法为 Rancher 设置入口。&lt;/p>
+&lt;p>设置 Rancher 模板，声明您选择的选项。使用下面表中的参考选项，需要给 Rancher 配置使用私有镜像库。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>占位符&lt;/th>
+&lt;th>描述&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>&amp;lt;VERSION&amp;gt;&lt;/code>&lt;/td>
+&lt;td>Rancher 版本&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>&amp;lt;RANCHER.YOURDOMAIN.COM&amp;gt;&lt;/code>&lt;/td>
+&lt;td>负载均衡器对应的 DNS&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>&amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt;&lt;/code>&lt;/td>
+&lt;td>私有镜像库对应的 DNS&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl"> helm template rancher ./rancher-&amp;lt;VERSION&amp;gt;.tgz --output-dir . &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --namespace cattle-system &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">hostname&lt;/span>&lt;span class="o">=&lt;/span>&amp;lt;RANCHER.YOURDOMAIN.COM&amp;gt; &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">rancherImage&lt;/span>&lt;span class="o">=&lt;/span>&amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt;/rancher/rancher &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set ingress.tls.source&lt;span class="o">=&lt;/span>secret &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">systemDefaultRegistry&lt;/span>&lt;span class="o">=&lt;/span>&amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt; &lt;span class="se">\ &lt;/span>&lt;span class="c1"># 自v2.2.0可用，设置默认的系统镜像仓库&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> --set &lt;span class="nv">useBundledSystemChart&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> &lt;span class="c1"># 自v2.3.0可用，使用内嵌的 Rancher system charts&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如果您使用的是由私有 CA 签名的证书，则在&lt;code>--set ingress.tls.source=secret&lt;/code>之后添加&lt;code>--set privateCA=true&lt;/code>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">helm template rancher ./rancher-&amp;lt;VERSION&amp;gt;.tgz --output-dir . &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --namespace cattle-system &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">hostname&lt;/span>&lt;span class="o">=&lt;/span>&amp;lt;RANCHER.YOURDOMAIN.COM&amp;gt; &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">rancherImage&lt;/span>&lt;span class="o">=&lt;/span>&amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt;/rancher/rancher &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set ingress.tls.source&lt;span class="o">=&lt;/span>secret &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">privateCA&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">systemDefaultRegistry&lt;/span>&lt;span class="o">=&lt;/span>&amp;lt;REGISTRY.YOURDOMAIN.COM:PORT&amp;gt; &lt;span class="se">\ &lt;/span>&lt;span class="c1"># 自v2.2.0可用，设置默认的系统镜像仓库&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> --set &lt;span class="nv">useBundledSystemChart&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> &lt;span class="c1"># 自v2.3.0可用，使用内嵌的 Rancher system charts&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># example&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">helm template rancher ./rancher-2.4.4.tgz --output-dir . &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --namespace cattle-system &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">hostname&lt;/span>&lt;span class="o">=&lt;/span>rancher.wx.com &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set ingress.tls.source&lt;span class="o">=&lt;/span>secret &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">privateCA&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --set &lt;span class="nv">useBundledSystemChart&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nb">true&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>可选&lt;/strong>：要安装指定的 Rancher 版本，请设置&lt;code>rancherImageTag&lt;/code>的值，例如：&lt;code>--set rancherImageTag = v2.3.6&lt;/code>&lt;/p>
+&lt;p>然后请参考&lt;a class="link" href="https://docs.rancher.cn/docs/rancher2/installation_new/options/tls-secrets/_index" target="_blank" rel="noopener"
+>添加 TLS 密文&lt;/a>发布证书文件，以便 Rancher 和 ingress controller 可以使用它们。&lt;/p>
+&lt;p>安装rancher&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">kubectl -n cattle-system apply -R -f ./rancher
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>验证 Rancher Server 是否已成功部署&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 检查 Rancher Server 是否运行成功：&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl -n cattle-system rollout status deploy/rancher
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Waiting &lt;span class="k">for&lt;/span> deployment &lt;span class="s2">&amp;#34;rancher&amp;#34;&lt;/span> rollout to finish: &lt;span class="m">0&lt;/span> of &lt;span class="m">3&lt;/span> updated replicas are available...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">deployment &lt;span class="s2">&amp;#34;rancher&amp;#34;&lt;/span> successfully rolled out
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;blockquote>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 重置rancher密码&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl --kubeconfig kube_config_rancher-cluster.yml -n cattle-system &lt;span class="nb">exec&lt;/span> &lt;span class="k">$(&lt;/span>kubectl --kubeconfig kube_config_rancher-cluster.yml -n cattle-system get pods -l &lt;span class="nv">app&lt;/span>&lt;span class="o">=&lt;/span>rancher &lt;span class="p">|&lt;/span> grep &lt;span class="s1">&amp;#39;1/1&amp;#39;&lt;/span> &lt;span class="p">|&lt;/span> head -1 &lt;span class="p">|&lt;/span> awk &lt;span class="s1">&amp;#39;{ print $1 }&amp;#39;&lt;/span>&lt;span class="k">)&lt;/span> -- reset-password
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/blockquote>
+&lt;h1 id="harbor安装">harbor安装
+&lt;/h1>&lt;p>harbor系统需求docker 17.06.0-ce+、docker-compose 1.18.0+。docker-compose为二进制可执行文件&lt;/p>
+&lt;blockquote>
+&lt;p>docker-compose安装参考&lt;a class="link" href="https://docs.docker.com/compose/install/" target="_blank" rel="noopener"
+>官方文档&lt;/a>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-sh" data-lang="sh">&lt;span class="line">&lt;span class="cl">sudo curl -L &lt;span class="s2">&amp;#34;https://github.com/docker/compose/releases/download/1.27.4/docker-compose-&lt;/span>&lt;span class="k">$(&lt;/span>uname -s&lt;span class="k">)&lt;/span>&lt;span class="s2">-&lt;/span>&lt;span class="k">$(&lt;/span>uname -m&lt;span class="k">)&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span> -o /usr/local/bin/docker-compose
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># 添加可执行权限&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">sudo chmod +x /usr/local/bin/docker-compose
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/blockquote>
+&lt;p>harbor安装参照官方github&lt;a class="link" href="https://github.com/goharbor/harbor/releases" target="_blank" rel="noopener"
+>release&lt;/a>页面下载最新的安装包&lt;/p>
+&lt;p>harbor配置文件参考&lt;/p>
+&lt;p>&lt;img src="https://cyber-blog.github.io/p/ranchar-install/harbor_yaml.png"
+width="1209"
+height="513"
+srcset="https://cyber-blog.github.io/p/ranchar-install/harbor_yaml_hu5815470480611913929.png 480w, https://cyber-blog.github.io/p/ranchar-install/harbor_yaml_hu3728669794012258620.png 1024w"
+loading="lazy"
+alt="harbor_yaml"
+class="gallery-image"
+data-flex-grow="235"
+data-flex-basis="565px"
+>&lt;/p>
+&lt;p>参考官方&lt;a class="link" href="https://goharbor.io/docs/2.0.0/install-config/quick-install-script/" target="_blank" rel="noopener"
+>文档&lt;/a>&lt;/p>
+&lt;p>关于Harbor https 私有证书配置注意事项 &lt;a class="link" href="https://blog.csdn.net/isea533/article/details/102872633" target="_blank" rel="noopener"
+>https://blog.csdn.net/isea533/article/details/102872633&lt;/a>&lt;/p>
+&lt;p>自生成证书的步骤参考https://blog.csdn.net/isea533/article/details/106397248。&lt;/p>
+&lt;p>&lt;code>.crt&lt;/code> he &lt;code>.pem&lt;/code> 的转换只需要修改后缀名称即可。参考https://stackoverflow.com/questions/991758/how-to-get-pem-file-from-key-and-crt-files&lt;/p>
+&lt;p>&lt;strong>注意，安装方式解决harbor不会自启动的问题参考https://www.cnblogs.com/kirito-c/p/11145881.html&lt;/strong>&lt;/p></description></item></channel></rss>
